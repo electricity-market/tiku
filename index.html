@@ -308,10 +308,10 @@ function init() {
 }
 
 function fixKnownTableData() {
-  // 修复第一题中两张表的已知列错位，避免数值落入错误表头。
-  const q = DATA[0];
-  if (!q) return;
-  q.problems.forEach(block => {
+  // 统一修复原始文档转换过程中出现的缺列、右移和空白单元格。
+  const q1 = DATA[0];
+  if (!q1) return;
+  q1.problems.forEach(block => {
     if (!block || block.type !== 'table') return;
     if (block.caption === '表1支路参数' && block.headers.length === 5) {
       block.rows = block.rows.map((row, i) => {
@@ -325,12 +325,34 @@ function fixKnownTableData() {
     }
     if (block.caption === '表2机组参数' && block.headers.length === 5) {
       block.rows = block.rows.map(row => {
-        if ((row[0] === 'G2' || row[0] === 'G4') && row.length === 4) {
-          return [row[0], row[1], row[2], row[2], row[3]];
+        if (row[0] === 'G2' || row[0] === 'G4') {
+          return [row[0], row[1], '150', '150', '—'];
         }
         return row;
       });
     }
+  });
+
+  const q7 = DATA.find(q => q.id === 7);
+  if (q7) q7.problems.forEach(block => {
+    if (!block || block.type !== 'table' || block.caption !== '表1 机组参数信息表') return;
+    const cValues = {
+      '装机容量（兆瓦）': '600',
+      '最小可调出力（兆瓦）': '400',
+      '爬坡速率（兆瓦/5分钟）': '6'
+    };
+    block.rows = block.rows.map(row => cValues[row[0]] ? [row[0], row[1], row[2], cValues[row[0]]] : row);
+  });
+
+  const q9 = DATA.find(q => q.id === 9);
+  if (q9) q9.problems.forEach(block => {
+    if (!block || block.type !== 'table' || block.headers[0] !== '机组' || block.headers.length !== 11) return;
+    block.rows = block.rows.map(row => {
+      if (row[0] === 'G1' && row[1] === '15：00-16：00') {
+        return ['G1', '15：00-16：00', '400', '335', '350', '320', '320', '260', '320', '30', '350'];
+      }
+      return row;
+    });
   });
 }
 
