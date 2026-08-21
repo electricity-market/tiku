@@ -191,7 +191,7 @@ tr:nth-child(even) { background: #f8f9fa; }
 </div>
 <button class="back-to-top" id="backToTop" type="button" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="回到顶部">↑</button>
 
-<script src="objective-questions.js"></script>
+<script src="objective-questions.js?v=20260821-1" onerror="window.OBJECTIVE_LOAD_FAILED=true"></script>
 <script>
 
 const SAMPLE_BANKS = {
@@ -281,7 +281,11 @@ function renderSampleQuestion(q, idx) {
 
 function renderEmptyBank(bankData) {
   document.getElementById('navList').innerHTML = '';
-  document.getElementById('contentArea').innerHTML = '<div class="card"><h3>' + esc(bankData.title) + '</h3><div class="placeholder-note">' + esc(bankData.subtitle) + '。本次只导入单选、多选和判断题。</div></div>';
+  const objectiveType = ['single', 'multiple', 'judge'].includes(activeBank);
+  const message = objectiveType
+    ? '题库数据加载失败，请刷新页面重试；如果仍未显示，请清除浏览器缓存后重新打开。'
+    : bankData.subtitle + '。本次只导入单选、多选和判断题。';
+  document.getElementById('contentArea').innerHTML = '<div class="card"><h3>' + esc(bankData.title) + '</h3><div class="placeholder-note">' + esc(message) + '</div></div>';
 }
 
 function filterObjectiveQuestions(value) {
