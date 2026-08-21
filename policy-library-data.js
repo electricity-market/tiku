@@ -617,25 +617,9 @@ window.POLICY_DATA = [
   },
   {
     "category": "绿电绿证",
-    "subcategory": "通知",
-    "title": "关于做好可再生能源绿色电力证书与自愿减排市场衔接工作的通知",
-    "doc": "国能综通新能〔2024〕124号",
-    "url": "",
-    "origin": "原网站"
-  },
-  {
-    "category": "绿电绿证",
     "subcategory": "方案",
     "title": "2024—2025年节能降碳行动方案",
     "doc": "国发〔2024〕12号",
-    "url": "",
-    "origin": "原网站"
-  },
-  {
-    "category": "新型主体",
-    "subcategory": "意见",
-    "title": "关于促进新能源集成融合发展的指导意见",
-    "doc": "国能发新能〔2025〕93号",
     "url": "",
     "origin": "原网站"
   }
@@ -718,8 +702,5 @@ window.POLICY_PDF_MAP = {
   "发改经体〔2015〕2752号附件4|关于有序放开发用电计划的实施意见": "policies/library/policy-075.pdf",
   "发改经体〔2015〕2752号附件6|关于加强和规范燃煤自备电厂监督管理的指导意见": "policies/library/policy-076.pdf",
   "京电交市〔2024〕59号|北京电力交易中心绿色电力交易实施细则（2024年修订稿）": "policies/library/policy-077.pdf",
-  "国能综通新能〔2024〕124号|关于做好可再生能源绿色电力证书与自愿减排市场衔接工作的通知": "policies/library/policy-078.pdf",
-  "国发〔2024〕12号|2024—2025年节能降碳行动方案": "policies/library/policy-079.pdf",
-  "国能发新能〔2025〕93号|关于促进新能源集成融合发展的指导意见": "policies/library/policy-080.pdf"
+  "国发〔2024〕12号|2024—2025年节能降碳行动方案": "policies/library/policy-079.pdf"
 };
-
