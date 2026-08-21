@@ -230,6 +230,15 @@ tr:nth-child(even) { background: #f8f9fa; }
 .section-entry span { color:#667085; font-size:14px; }
 .section-entry em { display:block; margin-top:22px; color:var(--primary); font-style:normal; font-weight:700; }
 .policy-category-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; }
+.policy-intro-row { display:flex; align-items:flex-end; justify-content:space-between; gap:28px; }
+.policy-home-search { position:relative; width:min(480px,46vw); flex:0 0 auto; }
+.policy-home-search::before { content:"⌕"; position:absolute; left:15px; top:50%; transform:translateY(-52%); color:#667085; font-size:22px; }
+.policy-home-search input { width:100%; padding:14px 18px 14px 48px; border:1px solid #cfd7e5; border-radius:13px; background:#fff; color:var(--text); outline:none; font:inherit; box-shadow:0 4px 16px rgba(31,42,68,.05); }
+.policy-home-search input:focus { border-color:var(--primary); box-shadow:0 0 0 3px rgba(36,87,197,.11); }
+.policy-search-results { margin-top:8px; }
+.policy-search-results-head { display:flex; align-items:center; justify-content:space-between; margin:2px 0 16px; }
+.policy-search-results-head h3 { color:#172033; font-size:22px; }
+.policy-search-empty { padding:38px; border:1px dashed #cfd7e5; border-radius:14px; background:#fff; color:#667085; text-align:center; }
 .policy-category-card { min-height:135px; padding:20px; border:1px solid #e1e6ef; border-radius:16px; background:#fff; cursor:pointer; text-align:left; transition:.2s; }
 .policy-category-card:hover { border-color:#9db5ea; transform:translateY(-2px); }
 .policy-category-card strong { display:block; margin-bottom:18px; color:#172033; font-size:17px; line-height:1.45; }
@@ -249,6 +258,8 @@ tr:nth-child(even) { background: #f8f9fa; }
   .policy-dashboard { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .policy-stat { padding: 10px; }
   .policy-stat strong { font-size: 18px; }
+  .policy-intro-row { display:block; }
+  .policy-home-search { width:100%; margin-top:18px; }
   .policy-action.primary { margin-left: 0; }
   .reader-head { position: static; }
   .reader-body { padding: 20px 17px; font-size: 16px; }
@@ -547,8 +558,9 @@ function renderPolicyCategories() {
   recordRoute({view:'policy-categories'});
   setViewClass('policy-view');
   policyCategory = '全部';
+  policyQuery = '';
   const categories = policyCategories().filter(category => category !== '全部');
-  let html = '<div class="section-shell"><div class="section-intro"><h2>政策学习</h2><p>按主题进入政策清单，点击文件后直接在站内阅读 PDF 原文。</p></div><div class="policy-category-grid">';
+  let html = '<div class="section-shell"><div class="section-intro policy-intro-row"><div><h2>政策学习</h2><p>按主题进入政策清单，点击文件后直接在站内阅读 PDF 原文。</p></div><div class="policy-home-search"><input id="policyHomeSearch" type="search" autocomplete="off" placeholder="搜索政策名称或文号" aria-label="搜索政策名称或文号" oninput="updatePolicyHomeSearch(this.value)"></div></div><div id="policySearchResults" class="policy-search-results hidden"></div><div id="policyCategoryGrid" class="policy-category-grid">';
   categories.forEach(category => {
     const count = POLICY_DATA.filter(item => item.category === category).length;
     html += '<button class="policy-category-card" onclick="openPolicyCategory(\'' + esc(category) + '\')"><strong>' + esc(category) + '</strong><span>' + count + ' 份政策原文　→</span></button>';
@@ -556,6 +568,39 @@ function renderPolicyCategories() {
   html += '</div></div>';
   document.getElementById('contentArea').innerHTML = html;
   window.scrollTo(0, 0);
+}
+
+function updatePolicyHomeSearch(value) {
+  policyQuery = value.trim();
+  const resultsBox = document.getElementById('policySearchResults');
+  const categoryGrid = document.getElementById('policyCategoryGrid');
+  if (!resultsBox || !categoryGrid) return;
+  if (!policyQuery) {
+    resultsBox.classList.add('hidden');
+    resultsBox.innerHTML = '';
+    categoryGrid.classList.remove('hidden');
+    return;
+  }
+  const query = policyQuery.toLowerCase();
+  const results = POLICY_DATA.filter(item => [item.title, item.doc].join(' ').toLowerCase().includes(query));
+  categoryGrid.classList.add('hidden');
+  resultsBox.classList.remove('hidden');
+  let html = '<div class="policy-search-results-head"><h3>搜索结果</h3><span class="subtitle">找到 ' + results.length + ' 份政策</span></div>';
+  if (!results.length) {
+    html += '<div class="policy-search-empty">没有找到匹配的政策，请换一个名称或文号试试。</div>';
+  } else {
+    html += '<div class="policy-list">';
+    results.forEach(item => {
+      const key = policyKey(item);
+      const isRead = policyRead.includes(key);
+      html += '<article class="policy-card ' + (isRead ? 'is-read' : '') + '" onmouseenter="warmPolicyPdf(\'' + esc(key) + '\')" onfocusin="warmPolicyPdf(\'' + esc(key) + '\')"><span class="policy-category">' + esc(item.category) + ' · ' + esc(item.subcategory) + '</span><h4>' + esc(item.title) + '</h4>';
+      html += '<div class="policy-meta"><span>' + esc(item.doc || '文号未注明') + '</span>' + (isRead ? '<span style="color:#137333">✓ 已读</span>' : '') + '</div><div class="policy-actions">';
+      html += POLICY_PDF_MAP[key] ? '<button class="policy-action primary" onclick="openPolicyReader(\'' + esc(key) + '\')">阅读原文 →</button>' : '<span class="policy-action">暂无 PDF</span>';
+      html += '</div></article>';
+    });
+    html += '</div>';
+  }
+  resultsBox.innerHTML = html;
 }
 
 function openPolicyCategory(category) {
