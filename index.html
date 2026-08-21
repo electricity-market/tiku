@@ -23,6 +23,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helv
 .container { display: flex; min-height: 100vh; }
 body.home-view .sidebar, body.policy-view .sidebar, body.section-view .sidebar { display: none; }
 body.home-view .main, body.policy-view .main, body.section-view .main { margin-left: 0; width: 100%; }
+body.reader-view .sidebar, body.reader-view .header { display: none; }
+body.reader-view .main { margin-left: 0; width: 100%; padding-top: 14px; }
 
 /* Sidebar */
 .sidebar {
@@ -174,10 +176,10 @@ tr:nth-child(even) { background: #f8f9fa; }
 .policy-details summary { color: var(--primary); cursor: pointer; font-size: 13px; }
 .policy-details-body { margin-top: 10px; padding: 12px 14px; border-radius: 8px; background: #f8fafc; color: var(--text-sec); line-height: 1.75; }
 .policy-reader { width: 100%; max-width: none; margin: 0; }
-.reader-head { position: sticky; top: 0; z-index: 8; padding: 14px 16px; margin-bottom: 16px; border: 1px solid var(--border); border-radius: 10px; background: rgba(255,255,255,.97); box-shadow: 0 5px 18px rgba(0,0,0,.06); }
+.reader-head { position: sticky; top: 0; z-index: 8; padding: 10px 14px; margin-bottom: 12px; border: 1px solid var(--border); border-radius: 10px; background: rgba(255,255,255,.97); box-shadow: 0 5px 18px rgba(0,0,0,.06); }
 .reader-tools { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .reader-back { margin-right: auto; }
-.reader-title { margin: 18px 0 8px; color: var(--text); font-size: 25px; line-height: 1.5; }
+.reader-title { margin: 10px 0 4px; color: var(--text); font-size: 21px; line-height: 1.4; }
 .reader-doc { color: var(--text-sec); font-size: 13px; }
 .reader-note { margin: 14px 0 18px; padding: 12px 14px; border-left: 4px solid #f9ab00; border-radius: 6px; background: #fff8e1; color: #6b5200; line-height: 1.65; font-size: 13px; }
 .reader-body { padding: 26px 34px; border: 1px solid var(--border); border-radius: 12px; background: #fff; font-size: 17px; line-height: 2; }
@@ -384,11 +386,19 @@ function esc(s) {
 }
 
 function setViewClass(name) {
-  document.body.classList.remove('home-view', 'section-view', 'policy-view');
+  document.body.classList.remove('home-view', 'section-view', 'policy-view', 'reader-view');
   if (name) document.body.classList.add(name);
 }
 
+let restoringHistory = false;
+function recordRoute(state, replace) {
+  if (restoringHistory) return;
+  const method = replace ? 'replaceState' : 'pushState';
+  history[method](state, '', location.pathname + location.search);
+}
+
 function renderHome() {
+  recordRoute({view:'home'});
   activeBank = 'home';
   setViewClass('home-view');
   document.getElementById('pageSubtitle').textContent = '选择一个学习模块开始';
@@ -397,7 +407,7 @@ function renderHome() {
     '<section class="home-hero"><div class="home-kicker">ELECTRICITY MARKET LEARNING</div><h2>今天想学习什么？</h2><p>先选择大类，再进入具体题型或政策主题。页面只呈现当前需要的内容，减少来回寻找。</p></section>' +
     '<section class="home-grid" aria-label="学习模块">' +
       '<button class="home-entry" onclick="renderQuestionSection()"><span class="entry-icon">选</span><span class="entry-meta">' + objectiveCount + ' 题</span><h3>选择题</h3><p>单选、多选与判断题，按题型进入练习。</p><span class="entry-go">进入练习 →</span></button>' +
-      '<button class="home-entry" onclick="renderWrittenSection()"><span class="entry-icon">答</span><span class="entry-meta">持续整理</span><h3>简答与计算</h3><p>简答题、普通计算题和综合仿真分析。</p><span class="entry-go">选择题型 →</span></button>' +
+      '<button class="home-entry" onclick="renderWrittenSection()"><span class="entry-icon">答</span><span class="entry-meta">持续整理</span><h3>简答与计算</h3><p>简答题与普通计算题，按难度独立练习。</p><span class="entry-go">选择题型 →</span></button>' +
       '<button class="home-entry" onclick="switchQuestionType(\'analysis\')"><span class="entry-icon">析</span><span class="entry-meta">13 道大题</span><h3>仿真分析</h3><p>现货出清、节点电价、输电权等完整案例。</p><span class="entry-go">开始学习 →</span></button>' +
       '<button class="home-entry" onclick="switchQuestionType(\'policy\')"><span class="entry-icon">政</span><span class="entry-meta">' + POLICY_DATA.length + ' 份原文</span><h3>政策学习</h3><p>先选政策主题，再直接阅读无标注 PDF 原件。</p><span class="entry-go">浏览政策 →</span></button>' +
     '</section>';
@@ -405,6 +415,7 @@ function renderHome() {
 }
 
 function renderQuestionSection() {
+  recordRoute({view:'question-types'});
   setViewClass('section-view');
   document.getElementById('pageSubtitle').textContent = '选择具体题型';
   const cards = [
@@ -416,16 +427,17 @@ function renderQuestionSection() {
 }
 
 function renderWrittenSection() {
+  recordRoute({view:'written-types'});
   setViewClass('section-view');
   document.getElementById('pageSubtitle').textContent = '选择具体题型';
-  document.getElementById('contentArea').innerHTML = '<div class="section-shell"><div class="section-intro"><h2>简答与计算</h2><p>普通题与综合案例分开，避免不同难度混在一起。</p></div><div class="section-grid">' +
+  document.getElementById('contentArea').innerHTML = '<div class="section-shell"><div class="section-intro"><h2>简答与计算</h2><p>简答题与普通计算题分开练习。</p></div><div class="section-grid">' +
     '<button class="section-entry" onclick="switchQuestionType(\'short\')"><strong>简答题</strong><span>知识点表述与规则理解</span><em>进入题库 →</em></button>' +
     '<button class="section-entry" onclick="switchQuestionType(\'calculation\')"><strong>普通计算题</strong><span>独立公式与基础计算</span><em>3 道 · 进入题库 →</em></button>' +
-    '<button class="section-entry" onclick="switchQuestionType(\'analysis\')"><strong>仿真分析大题</strong><span>多步骤综合计算案例</span><em>13 道 · 开始学习 →</em></button>' +
     '</div></div>';
 }
 
 function switchQuestionType(bank) {
+  if (bank !== 'policy') recordRoute({view:'bank', bank:bank, question:0});
   activeBank = bank;
   currentQ = 0;
   setViewClass(bank === 'policy' ? 'policy-view' : '');
@@ -503,6 +515,8 @@ function renderPolicyNav() {
 }
 
 function renderPolicyCategories() {
+  recordRoute({view:'policy-categories'});
+  setViewClass('policy-view');
   policyCategory = '全部';
   const categories = policyCategories().filter(category => category !== '全部');
   let html = '<div class="section-shell"><div class="section-intro"><h2>政策学习</h2><p>按主题进入政策清单，点击文件后直接在站内阅读 PDF 原文。</p></div><div class="policy-category-grid">';
@@ -522,6 +536,8 @@ function openPolicyCategory(category) {
 }
 
 function renderPolicyColumn() {
+  recordRoute({view:'policy-list', category:policyCategory});
+  setViewClass('policy-view');
   const items = POLICY_DATA.filter(item => item.category === policyCategory);
   let html = '<div class="section-shell"><div class="policy-list-head"><div><h2>' + esc(policyCategory) + '</h2><div class="subtitle">共 ' + items.length + ' 份无标注 PDF 原文</div></div><button type="button" onclick="renderPolicyCategories()">← 返回政策主题</button></div><div class="policy-list">';
   items.forEach(item => {
@@ -662,6 +678,8 @@ function openPolicyReader(key) {
   const content = POLICY_CONTENT[key] || {};
   const pdfUrl = POLICY_PDF_MAP[key] || content.pdfUrl || '';
   if (!item || !pdfUrl) return;
+  recordRoute({view:'policy-reader', key:key, category:item.category});
+  setViewClass('reader-view');
   markPolicyRead(key);
   let html = '<div class="policy-reader"><div class="reader-head"><div class="reader-tools">';
   html += '<button class="policy-action reader-back" onclick="closePolicyReader()">← 返回政策列表</button>';
@@ -682,8 +700,7 @@ function openPolicyReader(key) {
 }
 
 function closePolicyReader() {
-  renderPolicyColumn();
-  window.scrollTo(0, 0);
+  history.back();
 }
 
 function changeReaderFont(delta) {
@@ -814,10 +831,39 @@ function checkCalculation() {
 function init() {
   fixKnownTableData();
   updateProgress();
+  restoringHistory = true;
   renderHome();
+  restoringHistory = false;
+  history.replaceState({view:'home'}, '', location.pathname + location.search);
+  window.addEventListener('popstate', event => applyRoute(event.state || {view:'home'}));
   window.addEventListener('scroll', () => {
     document.getElementById('backToTop').classList.toggle('show', window.scrollY > 500);
   }, { passive: true });
+}
+
+function applyRoute(route) {
+  restoringHistory = true;
+  try {
+    if (route.view === 'question-types') renderQuestionSection();
+    else if (route.view === 'written-types') renderWrittenSection();
+    else if (route.view === 'bank') {
+      switchQuestionType(route.bank);
+      if (Number.isInteger(route.question) && route.question > 0) goTo(route.question);
+    } else if (route.view === 'policy-categories') {
+      activeBank = 'policy';
+      renderPolicyCategories();
+    } else if (route.view === 'policy-list') {
+      activeBank = 'policy';
+      policyCategory = route.category || '全部';
+      renderPolicyColumn();
+    } else if (route.view === 'policy-reader') {
+      activeBank = 'policy';
+      policyCategory = route.category || '全部';
+      openPolicyReader(route.key);
+    } else renderHome();
+  } finally {
+    restoringHistory = false;
+  }
 }
 
 function fixKnownTableData() {
@@ -874,7 +920,7 @@ function renderNav() {
   ul.innerHTML = '';
   richQuestions().forEach((q, i) => {
     const li = document.createElement('li');
-    li.textContent = q.id + '. ' + q.title;
+    li.textContent = (i + 1) + '. ' + q.title;
     li.dataset.idx = i;
     if (i === currentQ) li.classList.add('active');
     if (completed.includes(q.id)) li.classList.add('done');
@@ -945,7 +991,7 @@ function renderQuestion(idx) {
   const q = items[idx];
   const container = document.getElementById('contentArea');
   let html = '<div class="card">';
-  html += '<h3><span class="qnum">' + q.id + '</span>' + esc(q.title) + '</h3>';
+  html += '<h3><span class="qnum">' + (idx + 1) + '</span>' + esc(q.title) + '</h3>';
   html += '<div class="category">' + esc(q.category) + '</div>';
 
   html += '<div class="problem-text">';
@@ -993,6 +1039,7 @@ function toggleAnswer(idx) {
 
 function goTo(idx) {
   currentQ = idx;
+  recordRoute({view:'bank', bank:activeBank, question:idx});
   renderQuestion(idx);
   renderNav();
   window.scrollTo(0, 0);
@@ -1091,3 +1138,4 @@ init();
 </script>
 </body>
 </html>
+
