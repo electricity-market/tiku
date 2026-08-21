@@ -149,9 +149,34 @@ tr:nth-child(even) { background: #f8f9fa; }
 .policy-meta { display: flex; gap: 8px 16px; flex-wrap: wrap; color: var(--text-sec); font-size: 12px; }
 .policy-category { display: inline-block; margin-bottom: 9px; padding: 3px 9px; border-radius: 999px; color: #137333; background: #e6f4ea; font-size: 12px; }
 .policy-open { margin-left: auto; color: var(--primary); font-weight: 600; }
+.policy-dashboard { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-bottom: 16px; }
+.policy-stat { padding: 13px 15px; border: 1px solid var(--border); border-radius: 10px; background: #f8faff; }
+.policy-stat strong { display: block; margin-bottom: 3px; color: var(--primary); font-size: 21px; }
+.policy-stat span { color: var(--text-sec); font-size: 12px; }
+.policy-toolbar { position: sticky; top: 0; z-index: 5; padding: 12px; margin: -4px -4px 14px; border: 1px solid var(--border); border-radius: 10px; background: rgba(255,255,255,.96); box-shadow: 0 4px 12px rgba(0,0,0,.04); }
+.policy-statuses { display: flex; gap: 7px; flex-wrap: wrap; }
+.policy-status { padding: 9px 12px; border: 1px solid var(--border); border-radius: 8px; background: #fff; cursor: pointer; }
+.policy-status.active { color: #fff; background: #475569; border-color: #475569; }
+.policy-subtitle { margin: 17px 0 9px; color: var(--text-sec); font-size: 12px; font-weight: 600; }
+.policy-card { padding: 15px 17px; }
+.policy-card.is-read { background: #fbfdfb; border-color: #d7ead9; }
+.policy-card h4 { margin-bottom: 5px; }
+.policy-card-summary { margin: 9px 0 0; color: var(--text-sec); line-height: 1.65; }
+.policy-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 13px; padding-top: 12px; border-top: 1px dashed var(--border); }
+.policy-action { padding: 7px 11px; border: 1px solid var(--border); border-radius: 7px; background: #fff; color: var(--text); cursor: pointer; text-decoration: none; font-size: 13px; }
+.policy-action:hover { border-color: var(--primary); color: var(--primary); }
+.policy-action.primary { margin-left: auto; color: #fff; background: var(--primary); border-color: var(--primary); }
+.policy-details { margin-top: 10px; }
+.policy-details summary { color: var(--primary); cursor: pointer; font-size: 13px; }
+.policy-details-body { margin-top: 10px; padding: 12px 14px; border-radius: 8px; background: #f8fafc; color: var(--text-sec); line-height: 1.75; }
 @media (max-width: 768px) {
   .bank-switcher { grid-template-columns: repeat(3, 1fr); gap: 8px; }
   .bank-tab { padding: 10px 5px; font-size: 12px; }
+  .policy-toolbar { position: static; }
+  .policy-search { min-width: 100%; }
+  .policy-stat { padding: 10px; }
+  .policy-stat strong { font-size: 18px; }
+  .policy-action.primary { margin-left: 0; }
 }
 
 .card .problem-text .sec-title, .ans-body .sec-title { font-weight: 700; color: var(--primary); margin: 14px 0 6px; }
@@ -221,7 +246,11 @@ let objectiveQuery = '';
 let objectiveFiltered = [];
 let objectiveCompleted = JSON.parse(localStorage.getItem('huadian_objective_completed') || '{}');
 let policyCategory = '全部';
+let policySubcategory = '全部';
 let policyQuery = '';
+let policyStatus = '全部';
+let policyRead = JSON.parse(localStorage.getItem('huadian_policy_read') || '[]');
+let policyStarred = JSON.parse(localStorage.getItem('huadian_policy_starred') || '[]');
 
 const POLICY_DATA = window.POLICY_DATA || [];
 
@@ -252,7 +281,9 @@ function switchQuestionType(bank) {
     renderQuestion(0);
   } else if (bank === 'policy') {
     policyCategory = '全部';
+    policySubcategory = '全部';
     policyQuery = '';
+    policyStatus = '全部';
     document.getElementById('sidebarTitle').textContent = '政策分类';
     document.getElementById('pageSubtitle').textContent = '电力市场政策法规 · 点击条目直达政府部门政策原文';
     renderPolicyNav();
@@ -274,12 +305,25 @@ function policyCategories() {
   return ['全部', ...new Set(POLICY_DATA.map(item => item.category))];
 }
 
+function policyKey(item) {
+  return item.doc + '|' + item.title;
+}
+
+function policySubcategories() {
+  if (policyCategory === '全部') return ['全部'];
+  const source = POLICY_DATA.filter(item => item.category === policyCategory);
+  return ['全部', ...new Set(source.map(item => item.subcategory))];
+}
+
 function filteredPolicies() {
   const query = policyQuery.trim().toLowerCase();
   return POLICY_DATA.filter(item => {
     const categoryMatch = policyCategory === '全部' || item.category === policyCategory;
+    const subcategoryMatch = policySubcategory === '全部' || item.subcategory === policySubcategory;
+    const key = policyKey(item);
+    const statusMatch = policyStatus === '全部' || (policyStatus === '未读' && !policyRead.includes(key)) || (policyStatus === '已读' && policyRead.includes(key)) || (policyStatus === '已收藏' && policyStarred.includes(key));
     const text = [item.title, item.doc, item.category, item.subcategory, item.summary, item.significance].join(' ').toLowerCase();
-    return categoryMatch && (!query || text.includes(query));
+    return categoryMatch && subcategoryMatch && statusMatch && (!query || text.includes(query));
   });
 }
 
@@ -291,27 +335,41 @@ function renderPolicyNav() {
     const count = category === '全部' ? POLICY_DATA.length : POLICY_DATA.filter(item => item.category === category).length;
     li.className = category === policyCategory ? 'active' : '';
     li.textContent = category + '（' + count + '）';
-    li.onclick = () => { policyCategory = category; renderPolicyNav(); renderPolicyColumn(); };
+    li.onclick = () => { policyCategory = category; policySubcategory = '全部'; renderPolicyNav(); renderPolicyColumn(); };
     ul.appendChild(li);
   });
 }
 
 function renderPolicyColumn() {
   const items = filteredPolicies();
-  let html = '<div class="card"><h3><span class="qnum">政</span>政策法规原文</h3>';
-  html += '<div class="policy-toolbar"><input id="policySearch" class="policy-search" type="search" value="' + esc(policyQuery) + '" placeholder="搜索政策名称、文号、分类或核心内容" oninput="updatePolicySearch(this.value)"></div>';
-  html += '<div class="policy-filters">';
-  policyCategories().forEach(category => {
-    html += '<button type="button" class="policy-filter ' + (category === policyCategory ? 'active' : '') + '" onclick="setPolicyCategory(\'' + category + '\')">' + esc(category) + '</button>';
+  const readCount = POLICY_DATA.filter(item => policyRead.includes(policyKey(item))).length;
+  const starredCount = POLICY_DATA.filter(item => policyStarred.includes(policyKey(item))).length;
+  let html = '<div class="card"><h3><span class="qnum">政</span>政策法规学习</h3>';
+  html += '<div class="policy-dashboard"><div class="policy-stat"><strong>' + POLICY_DATA.length + '</strong><span>政策总数</span></div><div class="policy-stat"><strong>' + readCount + '</strong><span>已读政策</span></div><div class="policy-stat"><strong>' + starredCount + '</strong><span>已收藏</span></div></div>';
+  html += '<div class="policy-toolbar"><input id="policySearch" class="policy-search" type="search" value="' + esc(policyQuery) + '" placeholder="搜索政策名称、文号或核心内容" oninput="updatePolicySearch(this.value)"><div class="policy-statuses">';
+  ['全部', '未读', '已读', '已收藏'].forEach(status => {
+    html += '<button type="button" class="policy-status ' + (status === policyStatus ? 'active' : '') + '" onclick="setPolicyStatus(\'' + status + '\')">' + status + '</button>';
   });
-  html += '</div><div class="objective-summary">共找到 ' + items.length + ' 份政策 · 点击条目打开原文或资料来源</div><div class="policy-list">';
+  html += '</div></div>';
+  if (policyCategory !== '全部') {
+    html += '<div class="policy-subtitle">二级分类</div><div class="policy-filters">';
+    policySubcategories().forEach(category => {
+      html += '<button type="button" class="policy-filter ' + (category === policySubcategory ? 'active' : '') + '" onclick="setPolicySubcategory(\'' + category + '\')">' + esc(category) + '</button>';
+    });
+    html += '</div>';
+  }
+  html += '<div class="objective-summary">当前显示 ' + items.length + ' 份 · 一级分类：' + esc(policyCategory) + '</div><div class="policy-list">';
   items.forEach(item => {
-    html += '<a class="policy-card" href="' + esc(item.url) + '" target="_blank" rel="noopener noreferrer">';
-    html += '<span class="policy-category">' + esc(item.category) + ' · ' + esc(item.subcategory) + '</span><h4>' + esc(item.title) + '</h4>';
-    html += '<div class="policy-meta"><span>' + esc(item.doc || '文号未注明') + '</span><span class="policy-open">查看原文 ↗</span></div>';
-    if (item.summary) html += '<p style="margin:12px 0 6px;line-height:1.7;color:var(--text-sec)"><strong style="color:var(--text)">核心内容：</strong>' + esc(item.summary) + '</p>';
-    if (item.significance) html += '<p style="margin:0;line-height:1.7;color:var(--text-sec)"><strong style="color:var(--text)">主要意义：</strong>' + esc(item.significance) + '</p>';
-    html += '</a>';
+    const key = policyKey(item);
+    const isRead = policyRead.includes(key);
+    const isStarred = policyStarred.includes(key);
+    html += '<article class="policy-card ' + (isRead ? 'is-read' : '') + '"><span class="policy-category">' + esc(item.subcategory) + '</span><h4>' + esc(item.title) + '</h4>';
+    html += '<div class="policy-meta"><span>' + esc(item.doc || '文号未注明') + '</span>' + (isRead ? '<span style="color:#137333">✓ 已读</span>' : '') + '</div>';
+    if (item.summary) html += '<p class="policy-card-summary">' + esc(item.summary) + '</p>';
+    if (item.significance) html += '<details class="policy-details"><summary>展开学习要点</summary><div class="policy-details-body"><strong>主要意义：</strong>' + esc(item.significance) + '</div></details>';
+    html += '<div class="policy-actions"><button class="policy-action" onclick="togglePolicyStarred(\'' + esc(key) + '\')">' + (isStarred ? '★ 已收藏' : '☆ 收藏') + '</button>';
+    html += '<button class="policy-action" onclick="togglePolicyRead(\'' + esc(key) + '\')">' + (isRead ? '标为未读' : '✓ 标记已读') + '</button>';
+    html += '<a class="policy-action primary" href="' + esc(item.url) + '" target="_blank" rel="noopener noreferrer" onclick="markPolicyRead(\'' + esc(key) + '\')">打开原文 ↗</a></div></article>';
   });
   if (!items.length) html += '<div class="placeholder-note">没有找到匹配的政策。</div>';
   html += '</div></div>';
@@ -320,7 +378,37 @@ function renderPolicyColumn() {
 
 function setPolicyCategory(category) {
   policyCategory = category;
+  policySubcategory = '全部';
   renderPolicyNav();
+  renderPolicyColumn();
+}
+
+function setPolicySubcategory(category) {
+  policySubcategory = category;
+  renderPolicyColumn();
+}
+
+function setPolicyStatus(status) {
+  policyStatus = status;
+  renderPolicyColumn();
+}
+
+function togglePolicyRead(key) {
+  policyRead = policyRead.includes(key) ? policyRead.filter(item => item !== key) : [...policyRead, key];
+  localStorage.setItem('huadian_policy_read', JSON.stringify(policyRead));
+  renderPolicyColumn();
+}
+
+function markPolicyRead(key) {
+  if (!policyRead.includes(key)) {
+    policyRead.push(key);
+    localStorage.setItem('huadian_policy_read', JSON.stringify(policyRead));
+  }
+}
+
+function togglePolicyStarred(key) {
+  policyStarred = policyStarred.includes(key) ? policyStarred.filter(item => item !== key) : [...policyStarred, key];
+  localStorage.setItem('huadian_policy_starred', JSON.stringify(policyStarred));
   renderPolicyColumn();
 }
 
