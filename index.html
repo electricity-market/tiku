@@ -251,9 +251,7 @@ tr:nth-child(even) { background: #f8f9fa; }
 <button class="back-to-top" id="backToTop" type="button" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="回到顶部">↑</button>
 
 <script src="objective-questions.js?v=20260821-1" onerror="window.OBJECTIVE_LOAD_FAILED=true"></script>
-<script src="policy-data.js?v=20260821-1" onerror="window.POLICY_LOAD_FAILED=true"></script>
-<script src="policy-content.js?v=20260821-1" onerror="window.POLICY_CONTENT_LOAD_FAILED=true"></script>
-<script src="policy-pdf-map.js?v=20260821-1" onerror="window.POLICY_PDF_MAP_LOAD_FAILED=true"></script>
+<script src="policy-library-data.js?v=20260821-2" onerror="window.POLICY_LOAD_FAILED=true"></script>
 <script>
 
 const SAMPLE_BANKS = {
@@ -310,7 +308,7 @@ function switchQuestionType(bank) {
     policyQuery = '';
     policyStatus = '全部';
     document.getElementById('sidebarTitle').textContent = '政策分类';
-    document.getElementById('pageSubtitle').textContent = '政策全文站内学习 · 首批25份已支持站内阅读';
+    document.getElementById('pageSubtitle').textContent = '政策原版 PDF 站内学习 · 共' + POLICY_DATA.length + '份无标注原件';
     renderPolicyNav();
     renderPolicyColumn();
   } else {
@@ -346,7 +344,7 @@ function filteredPolicies() {
     const categoryMatch = policyCategory === '全部' || item.category === policyCategory;
     const subcategoryMatch = policySubcategory === '全部' || item.subcategory === policySubcategory;
     const key = policyKey(item);
-    const statusMatch = policyStatus === '全部' || (policyStatus === '未读' && !policyRead.includes(key)) || (policyStatus === '已读' && policyRead.includes(key)) || (policyStatus === '已收藏' && policyStarred.includes(key)) || (policyStatus === '可站内阅读' && !!POLICY_CONTENT[key]);
+    const statusMatch = policyStatus === '全部' || (policyStatus === '未读' && !policyRead.includes(key)) || (policyStatus === '已读' && policyRead.includes(key)) || (policyStatus === '已收藏' && policyStarred.includes(key)) || (policyStatus === '可站内阅读' && !!POLICY_PDF_MAP[key]);
     const text = [item.title, item.doc, item.category, item.subcategory, item.summary, item.significance].join(' ').toLowerCase();
     return categoryMatch && subcategoryMatch && statusMatch && (!query || text.includes(query));
   });
@@ -370,7 +368,7 @@ function renderPolicyColumn() {
   const readCount = POLICY_DATA.filter(item => policyRead.includes(policyKey(item))).length;
   const starredCount = POLICY_DATA.filter(item => policyStarred.includes(policyKey(item))).length;
   let html = '<div class="card"><h3><span class="qnum">政</span>政策法规学习</h3>';
-  html += '<div class="policy-dashboard"><div class="policy-stat"><strong>' + POLICY_DATA.length + '</strong><span>政策总数</span></div><div class="policy-stat"><strong>' + Object.keys(POLICY_CONTENT).length + '</strong><span>站内全文</span></div><div class="policy-stat"><strong>' + readCount + '</strong><span>已读政策</span></div><div class="policy-stat"><strong>' + starredCount + '</strong><span>已收藏</span></div></div>';
+  html += '<div class="policy-dashboard"><div class="policy-stat"><strong>' + POLICY_DATA.length + '</strong><span>政策总数</span></div><div class="policy-stat"><strong>' + Object.keys(POLICY_PDF_MAP).length + '</strong><span>无标注 PDF</span></div><div class="policy-stat"><strong>' + readCount + '</strong><span>已读政策</span></div><div class="policy-stat"><strong>' + starredCount + '</strong><span>已收藏</span></div></div>';
   html += '<div class="policy-toolbar"><input id="policySearch" class="policy-search" type="search" value="' + esc(policyQuery) + '" placeholder="搜索政策名称、文号或核心内容" oninput="updatePolicySearch(this.value)"><div class="policy-statuses">';
   ['全部', '可站内阅读', '未读', '已读', '已收藏'].forEach(status => {
     html += '<button type="button" class="policy-status ' + (status === policyStatus ? 'active' : '') + '" onclick="setPolicyStatus(\'' + status + '\')">' + status + '</button>';
@@ -394,10 +392,10 @@ function renderPolicyColumn() {
     if (item.significance) html += '<details class="policy-details"><summary>展开学习要点</summary><div class="policy-details-body"><strong>主要意义：</strong>' + esc(item.significance) + '</div></details>';
     html += '<div class="policy-actions"><button class="policy-action" onclick="togglePolicyStarred(\'' + esc(key) + '\')">' + (isStarred ? '★ 已收藏' : '☆ 收藏') + '</button>';
     html += '<button class="policy-action" onclick="togglePolicyRead(\'' + esc(key) + '\')">' + (isRead ? '标为未读' : '✓ 标记已读') + '</button>';
-    if (POLICY_CONTENT[key]) {
+    if (POLICY_PDF_MAP[key]) {
       html += '<button class="policy-action primary" onclick="openPolicyReader(\'' + esc(key) + '\')">站内阅读全文 →</button>';
     } else {
-      html += '<a class="policy-action primary" href="' + esc(item.url) + '" target="_blank" rel="noopener noreferrer" onclick="markPolicyRead(\'' + esc(key) + '\')">打开原文 ↗</a>';
+      html += '<span class="policy-action">暂无 PDF</span>';
     }
     html += '</div></article>';
   });
@@ -524,15 +522,16 @@ function policyTextHtml(text, title) {
 
 function openPolicyReader(key) {
   const item = POLICY_DATA.find(policy => policyKey(policy) === key);
-  const content = POLICY_CONTENT[key];
-  if (!item || !content) return;
-  const pdfUrl = content.pdfUrl || POLICY_PDF_MAP[key] || '';
+  const content = POLICY_CONTENT[key] || {};
+  const pdfUrl = POLICY_PDF_MAP[key] || content.pdfUrl || '';
+  if (!item || !pdfUrl) return;
   markPolicyRead(key);
   let html = '<div class="policy-reader"><div class="reader-head"><div class="reader-tools">';
   html += '<button class="policy-action reader-back" onclick="closePolicyReader()">← 返回政策列表</button>';
   if (!pdfUrl) html += '<button class="policy-action" onclick="changeReaderFont(-1)">A−</button><button class="policy-action" onclick="changeReaderFont(1)">A＋</button>';
   if (pdfUrl) html += '<a class="policy-action" href="' + esc(pdfUrl) + '" target="_blank" rel="noopener">单独打开 PDF ↗</a>';
-  html += '<a class="policy-action" href="' + esc(item.url) + '" target="_blank" rel="noopener noreferrer">核验官方来源 ↗</a></div>';
+  if (item.url) html += '<a class="policy-action" href="' + esc(item.url) + '" target="_blank" rel="noopener noreferrer">核验官方来源 ↗</a>';
+  html += '</div>';
   html += '<h2 class="reader-title">' + esc(item.title) + '</h2><div class="reader-doc">' + esc(item.doc || '文号未注明') + ' · ' + esc(item.category) + ' / ' + esc(item.subcategory) + '</div></div>';
   if (pdfUrl) {
     html += '<div class="reader-note">下方直接显示你提供的 PDF 原件，页码、表格和原始版式均保持不变。</div>';
@@ -541,7 +540,7 @@ function openPolicyReader(key) {
     html += '<div class="reader-note">正文根据政府部门公开网页整理，建议通过右上角官方链接核验最新版本。</div>';
     html += '<article id="policyReaderBody" class="reader-body">' + policyTextHtml(content.text, item.title) + '</article>';
   }
-  html += '<div class="reader-footer"><button class="policy-action" onclick="closePolicyReader()">← 返回列表</button><a class="policy-action primary" href="' + esc(item.url) + '" target="_blank" rel="noopener noreferrer">核验官方来源 ↗</a></div></div>';
+  html += '<div class="reader-footer"><button class="policy-action" onclick="closePolicyReader()">← 返回列表</button>' + (item.url ? '<a class="policy-action primary" href="' + esc(item.url) + '" target="_blank" rel="noopener noreferrer">核验官方来源 ↗</a>' : '') + '</div></div>';
   document.getElementById('contentArea').innerHTML = html;
   window.scrollTo(0, 0);
 }
@@ -952,3 +951,4 @@ init();
 </script>
 </body>
 </html>
+
