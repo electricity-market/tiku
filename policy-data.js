@@ -552,7 +552,7 @@ window.POLICY_DATA = [
     "category": "七、安全保供与市场监管政策",
     "subcategory": "跨省跨区应急调度",
     "title": "跨省跨区电力应急调度管理办法",
-    "doc": "发改能源规〔2025〕号",
+    "doc": "发改运行规〔2025〕1193号",
     "summary": "建立跨省跨区电力应急调度的组织体系",
     "significance": "制度化保障省间应急互济和电力安全供应",
     "url": "https://www.ndrc.gov.cn/xxgk/zcfb/ghxwj/202510/t20251013_1400912.html"
@@ -601,5 +601,149 @@ window.POLICY_DATA = [
     "summary": "规定电力交易员职业的职业概况、基本要求、工作要求和技能等级标准",
     "significance": "规范电力交易员职业能力要求，为电力交易人才培养、评价提供官方依据",
     "url": "https://www.mohrss.gov.cn/xxgk2020/fdzdgknr/rcrs_4225/jnrc/202402/W020240227573393376261.pdf"
+  },
+  {
+    "category": "一、顶层规划与基础规则",
+    "subcategory": "电改配套文件",
+    "title": "关于印发电力体制改革配套文件的通知",
+    "doc": "发改经体〔2015〕2752号",
+    "summary": "印发新一轮电力体制改革的六个配套文件，细化输配电价、电力市场、交易机构、发用电计划、售电侧和自备电厂改革安排",
+    "significance": "将中发〔2015〕9号的总体部署转化为可执行的制度体系",
+    "url": "https://www.ndrc.gov.cn/fzggw/jgsj/tgs/sjdt/201511/t20151130_1021524.html"
+  },
+  {
+    "category": "一、顶层规划与基础规则",
+    "subcategory": "电改配套文件",
+    "title": "关于推进输配电价改革的实施意见",
+    "doc": "发改经体〔2015〕2752号附件1",
+    "summary": "推进输配电价单独核定，建立规则明晰、水平合理、监管有力的输配电价体系",
+    "significance": "奠定管住电网自然垄断环节价格的制度基础",
+    "url": "https://www.ndrc.gov.cn/fzggw/jgsj/tgs/sjdt/201511/t20151130_1021524.html"
+  },
+  {
+    "category": "一、顶层规划与基础规则",
+    "subcategory": "电改配套文件",
+    "title": "关于推进电力市场建设的实施意见",
+    "doc": "发改经体〔2015〕2752号附件2",
+    "summary": "明确电力市场的总体架构、市场主体、交易品种、交易机制和市场监管要求",
+    "significance": "构建多层次统一电力市场的早期基础制度",
+    "url": "https://www.ndrc.gov.cn/fzggw/jgsj/tgs/sjdt/201511/t20151130_1021524.html"
+  },
+  {
+    "category": "一、顶层规划与基础规则",
+    "subcategory": "电改配套文件",
+    "title": "关于电力交易机构组建和规范运行的实施意见",
+    "doc": "发改经体〔2015〕2752号附件3",
+    "summary": "规范电力交易机构的组建方式、职责边界、治理结构和运行要求",
+    "significance": "保障交易机构相对独立、规范和公开透明运行",
+    "url": "https://www.ndrc.gov.cn/fzggw/jgsj/tgs/sjdt/201511/t20151130_1021524.html"
+  },
+  {
+    "category": "一、顶层规划与基础规则",
+    "subcategory": "电改配套文件",
+    "title": "关于有序放开发用电计划的实施意见",
+    "doc": "发改经体〔2015〕2752号附件4",
+    "summary": "明确优先发电、优先购电和逐步放开发用电计划的范围、步骤及保障措施",
+    "significance": "推动电量配置从计划方式逐步转向市场交易",
+    "url": "https://www.ndrc.gov.cn/fzggw/jgsj/tgs/sjdt/201511/t20151130_1021524.html"
+  },
+  {
+    "category": "一、顶层规划与基础规则",
+    "subcategory": "电改配套文件",
+    "title": "关于推进售电侧改革的实施意见",
+    "doc": "发改经体〔2015〕2752号附件5",
+    "summary": "向社会资本开放售电业务，培育多元售电主体并明确权责与监管要求",
+    "significance": "推动售电侧竞争并扩大用户市场化选择权",
+    "url": "https://www.ndrc.gov.cn/fzggw/jgsj/tgs/sjdt/201511/t20151130_1021524.html"
+  },
+  {
+    "category": "一、顶层规划与基础规则",
+    "subcategory": "电改配套文件",
+    "title": "关于加强和规范燃煤自备电厂监督管理的指导意见",
+    "doc": "发改经体〔2015〕2752号附件6",
+    "summary": "规范燃煤自备电厂规划建设、并网运行、社会责任和监督管理",
+    "significance": "促进自备电厂公平承担政策性交叉补贴和环保安全责任",
+    "url": "https://www.ndrc.gov.cn/fzggw/jgsj/tgs/sjdt/201511/t20151130_1021524.html"
+  },
+  {
+    "category": "一、顶层规划与基础规则",
+    "subcategory": "市场总则",
+    "title": "全国统一电力市场发展规划蓝皮书",
+    "doc": "国家能源局统筹组织发布",
+    "summary": "提出全国统一电力市场2025年初步建成、2029年全面建成、2035年完善提升的路线图",
+    "significance": "系统呈现全国统一电力市场建设的阶段目标和重点任务",
+    "url": "https://www.nea.gov.cn/2024-12/02/c_1310787408.htm"
+  },
+  {
+    "category": "一、顶层规划与基础规则",
+    "subcategory": "分市场交易规则",
+    "title": "关于进一步加快电力现货市场建设工作的通知",
+    "doc": "发改办体改〔2023〕813号",
+    "summary": "部署省级现货市场建设进度、市场衔接、价格机制、容量补偿和运营保障工作",
+    "significance": "在全面加快现货市场建设前承上启下，明确现货市场覆盖与连续运行要求",
+    "url": "https://www.ndrc.gov.cn/xxgk/zcfb/tz/202311/t20231101_1361704.html"
+  },
+  {
+    "category": "三、价格机制有关政策",
+    "subcategory": "煤电价格联动",
+    "title": "关于进一步完善煤炭市场价格形成机制的通知",
+    "doc": "发改价格〔2022〕303号",
+    "summary": "明确煤炭中长期交易价格合理区间，完善煤电价格传导和价格调控监管机制",
+    "significance": "促进煤电上下游协调，保障能源安全稳定供应",
+    "url": "https://www.ndrc.gov.cn/xxgk/zcfb/tz/202202/t20220225_1317003.html"
+  },
+  {
+    "category": "三、价格机制有关政策",
+    "subcategory": "输配电价与输电权",
+    "title": "区域电网输电价格定价办法",
+    "doc": "发改价格规〔2025〕1490号附件",
+    "summary": "规范区域电网输电价格的核定原则、定价方法和监管要求",
+    "significance": "完善跨省区域电网输电价格形成机制",
+    "url": "https://www.ndrc.gov.cn/xxgk/zcfb/ghxwj/202511/t20251127_1401964.html"
+  },
+  {
+    "category": "三、价格机制有关政策",
+    "subcategory": "输配电价与输电权",
+    "title": "跨省跨区专项工程输电价格定价办法",
+    "doc": "发改价格规〔2025〕1490号附件",
+    "summary": "规范跨省跨区专项输电工程临时和正式输电价格的核定、校核与调整",
+    "significance": "促进跨省跨区资源优化配置并强化专项输电工程价格监管",
+    "url": "https://www.ndrc.gov.cn/xxgk/zcfb/ghxwj/202511/t20251127_1401964.html"
+  },
+  {
+    "category": "四、绿电绿证市场政策",
+    "subcategory": "绿电交易",
+    "title": "北京电力交易中心绿色电力交易实施细则（2024年修订稿）",
+    "doc": "京电交市〔2024〕59号",
+    "summary": "规范国家电网经营区域内绿色电力交易的市场成员、交易组织、合同、计量和结算",
+    "significance": "细化跨区跨省及省内绿电交易操作机制",
+    "url": "https://piinfo.com.cn/uploads/tinymce/images/5253d8d07207436a130718e8f6e3e14e66ea9c3a48caa.pdf"
+  },
+  {
+    "category": "四、绿电绿证市场政策",
+    "subcategory": "绿证全链条管理",
+    "title": "关于做好可再生能源绿色电力证书与自愿减排市场衔接工作的通知",
+    "doc": "国能综通新能〔2024〕124号",
+    "summary": "明确绿证与全国温室气体自愿减排交易市场衔接规则，避免环境权益重复计算和重复获益",
+    "significance": "保障绿证和CCER环境权益的唯一性与公信力",
+    "url": "https://zfxxgk.nea.gov.cn/2024-08/26/c_1310786081.htm"
+  },
+  {
+    "category": "四、绿电绿证市场政策",
+    "subcategory": "可再生能源发展保障性政策",
+    "title": "2024—2025年节能降碳行动方案",
+    "doc": "国发〔2024〕12号",
+    "summary": "部署能源、工业、建筑、交通等重点领域节能降碳行动，强化非化石能源消费",
+    "significance": "为完成十四五节能降碳约束性指标提供综合行动安排",
+    "url": "https://www.mee.gov.cn/zcwj/gwywj/202405/t20240530_1074495.shtml"
+  },
+  {
+    "category": "五、新型主体建设有关政策",
+    "subcategory": "新能源融合发展",
+    "title": "关于促进新能源集成融合发展的指导意见",
+    "doc": "国能发新能〔2025〕93号",
+    "summary": "推动新能源多维度一体化开发、与多产业协同发展和多元化非电利用",
+    "significance": "促进新能源从单一开发向集成融合、高水平消纳转变",
+    "url": "https://www.nea.gov.cn/20251112/79210278a3184efea9ccf2d546fdf1b7/c.html"
   }
 ];
