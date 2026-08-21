@@ -48,7 +48,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helv
 .sidebar li.review::after { content: "复习"; margin-left: auto; font-size: 11px; }
 
 /* Main */
-.main { margin-left: var(--sidebar-w); flex: 1; padding: 24px 32px; max-width: 900px; }
+.main { margin-left: var(--sidebar-w); flex: 1; width: calc(100% - var(--sidebar-w)); padding: 24px 32px; max-width: none; }
 .header { margin-bottom: 24px; }
 .header h1 { font-size: 22px; color: var(--primary); margin-bottom: 4px; }
 .header .subtitle { font-size: 13px; color: var(--text-sec); }
@@ -106,7 +106,7 @@ tr:nth-child(even) { background: #f8f9fa; }
 /* Responsive */
 @media (max-width: 768px) {
   .sidebar { width: 100%; position: relative; height: auto; border-right: none; border-bottom: 1px solid var(--border); }
-  .main { margin-left: 0; padding: 16px; }
+  .main { margin-left: 0; width: 100%; padding: 16px; }
   .question-tools { top: 0; }
   .back-to-top { right: 14px; bottom: 14px; }
 }
@@ -169,7 +169,7 @@ tr:nth-child(even) { background: #f8f9fa; }
 .policy-details { margin-top: 10px; }
 .policy-details summary { color: var(--primary); cursor: pointer; font-size: 13px; }
 .policy-details-body { margin-top: 10px; padding: 12px 14px; border-radius: 8px; background: #f8fafc; color: var(--text-sec); line-height: 1.75; }
-.policy-reader { max-width: 900px; margin: 0 auto; }
+.policy-reader { width: 100%; max-width: none; margin: 0; }
 .reader-head { position: sticky; top: 0; z-index: 8; padding: 14px 16px; margin-bottom: 16px; border: 1px solid var(--border); border-radius: 10px; background: rgba(255,255,255,.97); box-shadow: 0 5px 18px rgba(0,0,0,.06); }
 .reader-tools { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .reader-back { margin-right: auto; }
@@ -178,7 +178,7 @@ tr:nth-child(even) { background: #f8f9fa; }
 .reader-note { margin: 14px 0 18px; padding: 12px 14px; border-left: 4px solid #f9ab00; border-radius: 6px; background: #fff8e1; color: #6b5200; line-height: 1.65; font-size: 13px; }
 .reader-body { padding: 26px 34px; border: 1px solid var(--border); border-radius: 12px; background: #fff; font-size: 17px; line-height: 2; }
 .reader-body p { margin: 0 0 14px; text-align: justify; }
-.reader-body .reader-section { margin: 24px 0 12px; color: var(--primary); font-size: 1.08em; font-weight: 700; }
+.reader-body .reader-section { margin: 24px 0 12px; color: inherit; font-size: 1.08em; font-weight: 700; }
 .reader-footer { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 18px; }
 @media (max-width: 768px) {
   .bank-switcher { grid-template-columns: repeat(3, 1fr); gap: 8px; }
@@ -438,7 +438,7 @@ function policyTextHtml(text) {
   return String(text).split(/\n+/).map(line => {
     const value = line.trim();
     if (!value) return '';
-    const isSection = /^(第[一二三四五六七八九十百]+[章节条]|[一二三四五六七八九十]+、|[（(][一二三四五六七八九十0-9]+[）)])/.test(value) && value.length < 70;
+    const isSection = /^(第[一二三四五六七八九十百]+章|[一二三四五六七八九十]+、)/.test(value) && value.length < 70;
     return '<p class="' + (isSection ? 'reader-section' : '') + '">' + esc(value) + '</p>';
   }).join('');
 }
