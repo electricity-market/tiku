@@ -3,14 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>华电仿真分析大题练习平台（完整14题）</title>
+<title>华电电力交易学习平台</title>
 <style>
 :root {
-  --sidebar-w: 280px;
-  --primary: #1a73e8;
-  --primary-light: #e8f0fe;
+  --sidebar-w: 268px;
+  --primary: #2457c5;
+  --primary-light: #edf3ff;
   --accent: #34a853;
-  --bg: #f5f7fa;
+  --bg: #f4f6fa;
   --card: #fff;
   --text: #202124;
   --text-sec: #5f6368;
@@ -21,6 +21,8 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
 .container { display: flex; min-height: 100vh; }
+body.home-view .sidebar, body.policy-view .sidebar, body.section-view .sidebar { display: none; }
+body.home-view .main, body.policy-view .main, body.section-view .main { margin-left: 0; width: 100%; }
 
 /* Sidebar */
 .sidebar {
@@ -48,10 +50,12 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helv
 .sidebar li.review::after { content: "复习"; margin-left: auto; font-size: 11px; }
 
 /* Main */
-.main { margin-left: var(--sidebar-w); flex: 1; width: calc(100% - var(--sidebar-w)); padding: 24px 32px; max-width: none; }
-.header { margin-bottom: 24px; }
-.header h1 { font-size: 22px; color: var(--primary); margin-bottom: 4px; }
+.main { margin-left: var(--sidebar-w); flex: 1; width: calc(100% - var(--sidebar-w)); padding: 28px clamp(22px,4vw,64px); max-width: none; }
+.header { margin-bottom: 24px; display:flex; align-items:flex-end; justify-content:space-between; gap:20px; }
+.header h1 { font-size: 25px; color: #172033; margin-bottom: 4px; letter-spacing:-.02em; }
 .header .subtitle { font-size: 13px; color: var(--text-sec); }
+.home-button { display:none; border:1px solid var(--border); background:#fff; color:#344054; border-radius:10px; padding:9px 14px; cursor:pointer; font-weight:600; }
+body:not(.home-view) .home-button { display:inline-flex; }
 .question-tools { position: sticky; top: 0; z-index: 20; display: flex; align-items: center; gap: 8px; padding: 10px 12px; margin-bottom: 12px; background: rgba(255,255,255,.96); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 2px 8px rgba(60,64,67,.08); }
 .question-tools label { font-size: 12px; color: var(--text-sec); white-space: nowrap; }
 .question-tools select { min-width: 0; flex: 1; padding: 7px 8px; border: 1px solid var(--border); border-radius: 5px; background: #fff; }
@@ -113,7 +117,7 @@ tr:nth-child(even) { background: #f8f9fa; }
 .hidden { display: none !important; }
 
 /* Question bank switcher */
-.bank-switcher { display: grid; grid-template-columns: repeat(7, minmax(96px, 1fr)); gap: 10px; margin: 0 0 18px; }
+.bank-switcher { display: none; }
 .bank-tab { border: 1px solid var(--border); background: #fff; color: var(--text-sec); padding: 12px 8px; border-radius: 10px; cursor: pointer; font-size: 13px; transition: .2s; }
 .bank-tab:hover { border-color: var(--primary); color: var(--primary); transform: translateY(-1px); }
 .bank-tab.active { color: #fff; background: var(--primary); border-color: var(--primary); box-shadow: 0 4px 12px rgba(26,115,232,.22); }
@@ -185,6 +189,40 @@ tr:nth-child(even) { background: #f8f9fa; }
 .reader-pdf { display: block; width: 100%; height: calc(100vh - 185px); min-height: 760px; border: 0; }
 .reader-pdf-fallback { padding: 24px; background: #fff; text-align: center; }
 .reader-footer { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 18px; }
+.home-hero { max-width:1180px; margin:7vh auto 34px; }
+.home-kicker { color:var(--primary); font-weight:700; letter-spacing:.12em; font-size:13px; }
+.home-hero h2 { margin:10px 0 12px; font-size:clamp(32px,4.2vw,56px); line-height:1.15; color:#172033; letter-spacing:-.04em; }
+.home-hero p { max-width:720px; color:#667085; font-size:16px; }
+.home-grid { max-width:1180px; margin:0 auto; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px; }
+.home-entry { position:relative; min-height:210px; padding:28px; border:1px solid #e1e6ef; border-radius:22px; background:#fff; cursor:pointer; text-align:left; transition:.22s; box-shadow:0 8px 30px rgba(31,42,68,.055); overflow:hidden; }
+.home-entry:hover { transform:translateY(-3px); border-color:#a9bce9; box-shadow:0 14px 36px rgba(36,87,197,.11); }
+.home-entry .entry-icon { display:grid; place-items:center; width:48px; height:48px; margin-bottom:30px; border-radius:14px; color:#fff; background:var(--primary); font-size:22px; font-weight:700; }
+.home-entry h3 { margin:0 0 7px; font-size:24px; color:#172033; }
+.home-entry p { margin:0; color:#667085; font-size:14px; }
+.home-entry .entry-meta { position:absolute; right:26px; top:28px; color:#98a2b3; font-size:13px; }
+.home-entry .entry-go { position:absolute; right:26px; bottom:24px; color:var(--primary); font-weight:700; }
+.section-shell { max-width:1180px; margin:0 auto; }
+.section-intro { padding:32px 0 24px; }
+.section-intro h2 { font-size:32px; color:#172033; margin-bottom:7px; }
+.section-intro p { color:#667085; }
+.section-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; }
+.section-entry { min-height:166px; padding:24px; border:1px solid #e1e6ef; border-radius:18px; background:#fff; cursor:pointer; text-align:left; transition:.2s; }
+.section-entry:hover { border-color:#9db5ea; transform:translateY(-2px); }
+.section-entry strong { display:block; margin-bottom:9px; color:#172033; font-size:21px; }
+.section-entry span { color:#667085; font-size:14px; }
+.section-entry em { display:block; margin-top:22px; color:var(--primary); font-style:normal; font-weight:700; }
+.policy-category-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; }
+.policy-category-card { min-height:135px; padding:20px; border:1px solid #e1e6ef; border-radius:16px; background:#fff; cursor:pointer; text-align:left; transition:.2s; }
+.policy-category-card:hover { border-color:#9db5ea; transform:translateY(-2px); }
+.policy-category-card strong { display:block; margin-bottom:18px; color:#172033; font-size:17px; line-height:1.45; }
+.policy-category-card span { color:#667085; }
+.policy-list-head { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:16px; }
+.policy-list-head h2 { color:#172033; font-size:27px; }
+.policy-list-head button { border:0; background:transparent; color:var(--primary); cursor:pointer; font-weight:700; }
+.policy-list { grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+.policy-card { border-radius:14px; box-shadow:none; }
+.policy-card h4 { color:#172033; font-size:16px; }
+.policy-category { color:#475467; background:#f2f4f7; }
 @media (max-width: 768px) {
   .bank-switcher { grid-template-columns: repeat(3, 1fr); gap: 8px; }
   .bank-tab { padding: 10px 5px; font-size: 12px; }
@@ -198,6 +236,10 @@ tr:nth-child(even) { background: #f8f9fa; }
   .reader-body { padding: 20px 17px; font-size: 16px; }
   .reader-title { font-size: 21px; }
   .reader-pdf { height: 78vh; min-height: 560px; }
+  .header { align-items:flex-start; }
+  .home-grid,.section-grid,.policy-category-grid,.policy-list { grid-template-columns:1fr; }
+  .home-hero { margin-top:24px; }
+  .home-entry { min-height:180px; }
 }
 
 .card .problem-text .sec-title, .ans-body .sec-title { font-weight: 700; color: var(--primary); margin: 14px 0 6px; }
@@ -233,18 +275,10 @@ tr:nth-child(even) { background: #f8f9fa; }
 
   <main class="main">
     <div class="header">
-      <h1>华电电力交易综合题库</h1>
-      <div class="subtitle" id="pageSubtitle">完整14道仿真分析大题 · 后续可持续加入单选、多选、判断、简答及计算题</div>
+      <div><h1>华电电力交易学习平台</h1>
+      <div class="subtitle" id="pageSubtitle">选择一个学习模块开始</div></div>
+      <button class="home-button" type="button" onclick="renderHome()">返回首页</button>
     </div>
-    <nav class="bank-switcher" aria-label="题型分类">
-      <button class="bank-tab active" data-bank="analysis" onclick="switchQuestionType('analysis')"><span>📊</span>仿真分析</button>
-      <button class="bank-tab" data-bank="single" onclick="switchQuestionType('single')"><span>◉</span>单选题</button>
-      <button class="bank-tab" data-bank="multiple" onclick="switchQuestionType('multiple')"><span>☑</span>多选题</button>
-      <button class="bank-tab" data-bank="judge" onclick="switchQuestionType('judge')"><span>✓</span>判断题</button>
-      <button class="bank-tab" data-bank="short" onclick="switchQuestionType('short')"><span>✎</span>简答题</button>
-      <button class="bank-tab" data-bank="calculation" onclick="switchQuestionType('calculation')"><span>∑</span>计算题</button>
-      <button class="bank-tab" data-bank="policy" onclick="switchQuestionType('policy')"><span>▤</span>政策专栏</button>
-    </nav>
     <div id="contentArea"></div>
   </main>
 </div>
@@ -288,10 +322,52 @@ function esc(s) {
   return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
+function setViewClass(name) {
+  document.body.classList.remove('home-view', 'section-view', 'policy-view');
+  if (name) document.body.classList.add(name);
+}
+
+function renderHome() {
+  activeBank = 'home';
+  setViewClass('home-view');
+  document.getElementById('pageSubtitle').textContent = '选择一个学习模块开始';
+  const objectiveCount = (window.OBJECTIVE_QUESTIONS || []).length;
+  document.getElementById('contentArea').innerHTML =
+    '<section class="home-hero"><div class="home-kicker">ELECTRICITY MARKET LEARNING</div><h2>今天想学习什么？</h2><p>先选择大类，再进入具体题型或政策主题。页面只呈现当前需要的内容，减少来回寻找。</p></section>' +
+    '<section class="home-grid" aria-label="学习模块">' +
+      '<button class="home-entry" onclick="renderQuestionSection()"><span class="entry-icon">选</span><span class="entry-meta">' + objectiveCount + ' 题</span><h3>选择题</h3><p>单选、多选与判断题，按题型进入练习。</p><span class="entry-go">进入练习 →</span></button>' +
+      '<button class="home-entry" onclick="renderWrittenSection()"><span class="entry-icon">答</span><span class="entry-meta">持续整理</span><h3>简答与计算</h3><p>简答题、普通计算题和综合仿真分析。</p><span class="entry-go">选择题型 →</span></button>' +
+      '<button class="home-entry" onclick="switchQuestionType(\'analysis\')"><span class="entry-icon">析</span><span class="entry-meta">14 道大题</span><h3>仿真分析</h3><p>现货出清、节点电价、输电权等完整案例。</p><span class="entry-go">开始学习 →</span></button>' +
+      '<button class="home-entry" onclick="switchQuestionType(\'policy\')"><span class="entry-icon">政</span><span class="entry-meta">' + POLICY_DATA.length + ' 份原文</span><h3>政策学习</h3><p>先选政策主题，再直接阅读无标注 PDF 原件。</p><span class="entry-go">浏览政策 →</span></button>' +
+    '</section>';
+  window.scrollTo(0, 0);
+}
+
+function renderQuestionSection() {
+  setViewClass('section-view');
+  document.getElementById('pageSubtitle').textContent = '选择具体题型';
+  const cards = [
+    ['single','单选题',SAMPLE_BANKS.single.questions.length + ' 题','每题一个正确答案'],
+    ['multiple','多选题',SAMPLE_BANKS.multiple.questions.length + ' 题','少选、多选均不得分'],
+    ['judge','判断题',SAMPLE_BANKS.judge.questions.length + ' 题','判断说法是否正确']
+  ];
+  document.getElementById('contentArea').innerHTML = '<div class="section-shell"><div class="section-intro"><h2>选择题</h2><p>选择一种题型进入，左侧目录用于切换题目。</p></div><div class="section-grid">' + cards.map(x => '<button class="section-entry" onclick="switchQuestionType(\'' + x[0] + '\')"><strong>' + x[1] + '</strong><span>' + x[3] + '</span><em>' + x[2] + ' · 开始练习 →</em></button>').join('') + '</div></div>';
+}
+
+function renderWrittenSection() {
+  setViewClass('section-view');
+  document.getElementById('pageSubtitle').textContent = '选择具体题型';
+  document.getElementById('contentArea').innerHTML = '<div class="section-shell"><div class="section-intro"><h2>简答与计算</h2><p>普通题与综合案例分开，避免不同难度混在一起。</p></div><div class="section-grid">' +
+    '<button class="section-entry" onclick="switchQuestionType(\'short\')"><strong>简答题</strong><span>知识点表述与规则理解</span><em>进入题库 →</em></button>' +
+    '<button class="section-entry" onclick="switchQuestionType(\'calculation\')"><strong>普通计算题</strong><span>独立公式与基础计算</span><em>进入题库 →</em></button>' +
+    '<button class="section-entry" onclick="switchQuestionType(\'analysis\')"><strong>仿真分析大题</strong><span>多步骤综合计算案例</span><em>14 道 · 开始学习 →</em></button>' +
+    '</div></div>';
+}
+
 function switchQuestionType(bank) {
   activeBank = bank;
   currentQ = 0;
-  document.querySelectorAll('.bank-tab').forEach(btn => btn.classList.toggle('active', btn.dataset.bank === bank));
+  setViewClass(bank === 'policy' ? 'policy-view' : '');
   const isAnalysis = bank === 'analysis';
   document.querySelector('.mode-toggle').classList.toggle('hidden', !isAnalysis);
   document.querySelector('.progress').classList.toggle('hidden', !isAnalysis);
@@ -308,9 +384,8 @@ function switchQuestionType(bank) {
     policyQuery = '';
     policyStatus = '全部';
     document.getElementById('sidebarTitle').textContent = '政策分类';
-    document.getElementById('pageSubtitle').textContent = '政策原版 PDF 站内学习 · 共' + POLICY_DATA.length + '份无标注原件';
-    renderPolicyNav();
-    renderPolicyColumn();
+    document.getElementById('pageSubtitle').textContent = POLICY_DATA.length + '份无标注政策原文';
+    renderPolicyCategories();
   } else {
     const bankData = SAMPLE_BANKS[bank];
     document.getElementById('sidebarTitle').textContent = bankData.title;
@@ -363,43 +438,41 @@ function renderPolicyNav() {
   });
 }
 
-function renderPolicyColumn() {
-  const items = filteredPolicies();
-  const readCount = POLICY_DATA.filter(item => policyRead.includes(policyKey(item))).length;
-  const starredCount = POLICY_DATA.filter(item => policyStarred.includes(policyKey(item))).length;
-  let html = '<div class="card"><h3><span class="qnum">政</span>政策法规学习</h3>';
-  html += '<div class="policy-dashboard"><div class="policy-stat"><strong>' + POLICY_DATA.length + '</strong><span>政策总数</span></div><div class="policy-stat"><strong>' + Object.keys(POLICY_PDF_MAP).length + '</strong><span>无标注 PDF</span></div><div class="policy-stat"><strong>' + readCount + '</strong><span>已读政策</span></div><div class="policy-stat"><strong>' + starredCount + '</strong><span>已收藏</span></div></div>';
-  html += '<div class="policy-toolbar"><input id="policySearch" class="policy-search" type="search" value="' + esc(policyQuery) + '" placeholder="搜索政策名称、文号或核心内容" oninput="updatePolicySearch(this.value)"><div class="policy-statuses">';
-  ['全部', '可站内阅读', '未读', '已读', '已收藏'].forEach(status => {
-    html += '<button type="button" class="policy-status ' + (status === policyStatus ? 'active' : '') + '" onclick="setPolicyStatus(\'' + status + '\')">' + status + '</button>';
+function renderPolicyCategories() {
+  policyCategory = '全部';
+  const categories = policyCategories().filter(category => category !== '全部');
+  let html = '<div class="section-shell"><div class="section-intro"><h2>政策学习</h2><p>按主题进入政策清单，点击文件后直接在站内阅读 PDF 原文。</p></div><div class="policy-category-grid">';
+  categories.forEach(category => {
+    const count = POLICY_DATA.filter(item => item.category === category).length;
+    html += '<button class="policy-category-card" onclick="openPolicyCategory(\'' + esc(category) + '\')"><strong>' + esc(category) + '</strong><span>' + count + ' 份政策原文　→</span></button>';
   });
   html += '</div></div>';
-  if (policyCategory !== '全部') {
-    html += '<div class="policy-subtitle">二级分类</div><div class="policy-filters">';
-    policySubcategories().forEach(category => {
-      html += '<button type="button" class="policy-filter ' + (category === policySubcategory ? 'active' : '') + '" onclick="setPolicySubcategory(\'' + category + '\')">' + esc(category) + '</button>';
-    });
-    html += '</div>';
-  }
-  html += '<div class="objective-summary">当前显示 ' + items.length + ' 份 · 一级分类：' + esc(policyCategory) + '</div><div class="policy-list">';
+  document.getElementById('contentArea').innerHTML = html;
+  window.scrollTo(0, 0);
+}
+
+function openPolicyCategory(category) {
+  policyCategory = category;
+  policySubcategory = '全部';
+  renderPolicyColumn();
+}
+
+function renderPolicyColumn() {
+  const items = POLICY_DATA.filter(item => item.category === policyCategory);
+  let html = '<div class="section-shell"><div class="policy-list-head"><div><h2>' + esc(policyCategory) + '</h2><div class="subtitle">共 ' + items.length + ' 份无标注 PDF 原文</div></div><button type="button" onclick="renderPolicyCategories()">← 返回政策主题</button></div><div class="policy-list">';
   items.forEach(item => {
     const key = policyKey(item);
     const isRead = policyRead.includes(key);
-    const isStarred = policyStarred.includes(key);
     html += '<article class="policy-card ' + (isRead ? 'is-read' : '') + '"><span class="policy-category">' + esc(item.subcategory) + '</span><h4>' + esc(item.title) + '</h4>';
     html += '<div class="policy-meta"><span>' + esc(item.doc || '文号未注明') + '</span>' + (isRead ? '<span style="color:#137333">✓ 已读</span>' : '') + '</div>';
-    if (item.summary) html += '<p class="policy-card-summary">' + esc(item.summary) + '</p>';
-    if (item.significance) html += '<details class="policy-details"><summary>展开学习要点</summary><div class="policy-details-body"><strong>主要意义：</strong>' + esc(item.significance) + '</div></details>';
-    html += '<div class="policy-actions"><button class="policy-action" onclick="togglePolicyStarred(\'' + esc(key) + '\')">' + (isStarred ? '★ 已收藏' : '☆ 收藏') + '</button>';
-    html += '<button class="policy-action" onclick="togglePolicyRead(\'' + esc(key) + '\')">' + (isRead ? '标为未读' : '✓ 标记已读') + '</button>';
+    html += '<div class="policy-actions">';
     if (POLICY_PDF_MAP[key]) {
-      html += '<button class="policy-action primary" onclick="openPolicyReader(\'' + esc(key) + '\')">站内阅读全文 →</button>';
+      html += '<button class="policy-action primary" onclick="openPolicyReader(\'' + esc(key) + '\')">阅读原文 →</button>';
     } else {
       html += '<span class="policy-action">暂无 PDF</span>';
     }
     html += '</div></article>';
   });
-  if (!items.length) html += '<div class="placeholder-note">没有找到匹配的政策。</div>';
   html += '</div></div>';
   document.getElementById('contentArea').innerHTML = html;
 }
@@ -546,7 +619,6 @@ function openPolicyReader(key) {
 }
 
 function closePolicyReader() {
-  renderPolicyNav();
   renderPolicyColumn();
   window.scrollTo(0, 0);
 }
@@ -581,7 +653,7 @@ function renderSampleNav(bankData) {
 
 function renderSampleQuestion(q, idx) {
   const bankData = SAMPLE_BANKS[activeBank];
-  let html = '<div class="objective-tools"><input class="objective-search" id="objectiveSearch" type="search" value="' + esc(objectiveQuery) + '" placeholder="搜索当前题型的题干或题号" oninput="filterObjectiveQuestions(this.value)"><button class="btn" onclick="randomObjectiveQuestion()">随机一题</button></div>';
+  let html = '<div class="objective-tools"><button class="btn" onclick="randomObjectiveQuestion()">随机一题</button></div>';
   html += '<div class="objective-summary">当前显示 ' + objectiveFiltered.length + ' / ' + bankData.questions.length + ' 题 · 第 ' + (idx + 1) + ' 题</div>';
   html += '<div class="card sample-card"><h3><span class="qnum">' + (idx + 1) + '</span>' + esc(q.title) + '</h3>';
   html += '<div class="question-meta"><span class="meta-pill">' + esc(bankData.title) + '</span><span class="meta-pill">原题号：' + esc(q.number) + '</span></div>';
@@ -678,9 +750,8 @@ function checkCalculation() {
 
 function init() {
   fixKnownTableData();
-  renderNav();
-  renderQuestion(0);
   updateProgress();
+  renderHome();
   window.addEventListener('scroll', () => {
     document.getElementById('backToTop').classList.toggle('show', window.scrollY > 500);
   }, { passive: true });
