@@ -178,7 +178,9 @@ tr:nth-child(even) { background: #f8f9fa; }
 .reader-note { margin: 14px 0 18px; padding: 12px 14px; border-left: 4px solid #f9ab00; border-radius: 6px; background: #fff8e1; color: #6b5200; line-height: 1.65; font-size: 13px; }
 .reader-body { padding: 26px 34px; border: 1px solid var(--border); border-radius: 12px; background: #fff; font-size: 17px; line-height: 2; }
 .reader-body p { margin: 0 0 14px; text-align: justify; }
-.reader-body .reader-section { margin: 24px 0 12px; color: inherit; font-size: 1.08em; font-weight: 700; }
+.reader-body .reader-chapter { margin: 30px 0 14px; color: inherit; font-size: 1.16em; font-weight: 700; text-align: center; }
+.reader-body .reader-section { margin: 22px 0 10px; color: inherit; font-size: 1.06em; font-weight: 700; }
+.reader-body .reader-article { margin-top: 18px; }
 .reader-footer { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 18px; }
 @media (max-width: 768px) {
   .bank-switcher { grid-template-columns: repeat(3, 1fr); gap: 8px; }
@@ -434,12 +436,83 @@ function togglePolicyStarred(key) {
   renderPolicyColumn();
 }
 
-function policyTextHtml(text) {
-  return String(text).split(/\n+/).map(line => {
-    const value = line.trim();
-    if (!value) return '';
-    const isSection = /^(第[一二三四五六七八九十百]+章|[一二三四五六七八九十]+、)/.test(value) && value.length < 70;
-    return '<p class="' + (isSection ? 'reader-section' : '') + '">' + esc(value) + '</p>';
+function policyTextHtml(text, title) {
+  let lines = String(text).split(/\n+/).map(line => line.trim()).filter(Boolean);
+  const titleAt = lines.findIndex(line => line.replace(/\s/g, '').includes(String(title).replace(/\s/g, '')));
+  if (titleAt >= 0) {
+    const titleLine = lines[titleAt];
+    lines = lines.slice(titleAt + 1);
+    const exactTitleAt = titleLine.indexOf(title);
+    const suffix = exactTitleAt >= 0 ? titleLine.slice(exactTitleAt + title.length).trim() : '';
+    if (suffix) lines.unshift(suffix);
+  }
+  lines = lines.filter((line, index) => {
+    if (/^第?\s*\d+\s*页(\s*共\s*\d+\s*页)?$/.test(line)) return false;
+    if (!/^\d{1,3}$/.test(line)) return true;
+    if (index === 0) return false;
+    const prev = lines[index - 1] || '';
+    const next = lines[index + 1] || '';
+    return /[〔（(第附件]$/.test(prev) || /^(号|年|月|日|条|项|章|附件)/.test(next);
+  });
+  let joined = lines.join('').replace(/\s+/g, ' ').trim();
+  if (joined.includes('目录')) {
+    const firstChapter = joined.indexOf('第一章');
+    const bodyChapter = joined.indexOf('第一章', firstChapter + 3);
+    if (bodyChapter > firstChapter) joined = joined.slice(bodyChapter);
+  }
+  joined = joined
+    .replace(/\s*([，。；：！？、）》〕）])/g, '$1')
+    .replace(/([《〔（])\s*/g, '$1')
+    .replace(/【我要纠错】[\s\S]*$/, '')
+    .replace(/(第[一二三四五六七八九十百零〇0-9]+章.{0,28}?)(?=第[一二三四五六七八九十百零〇0-9]+条)/g, '\n$1\n')
+    .replace(/([。！？])(?=第[一二三四五六七八九十百零〇0-9]+条)/g, '$1\n')
+    .replace(/^(第[一二三四五六七八九十百零〇0-9]+条)/, '\n$1')
+    .replace(/(?=[一二三四五六七八九十]+、)/g, '\n')
+    .replace(/(?=（[一二三四五六七八九十]+）)/g, '\n');
+  const blocks = joined.split(/\n+/).map(value => value.trim()).filter(Boolean).flatMap(value => {
+    if (/^第[一二三四五六七八九十百零〇0-9]+章/.test(value)) {
+      const articleAt = value.search(/第[一二三四五六七八九十百零〇0-9]+条/);
+      if (articleAt > 0) return [value.slice(0, articleAt), value.slice(articleAt)];
+    }
+    return [value];
+  });
+  const paragraphs = [];
+  blocks.forEach(block => {
+    if (/^(第[一二三四五六七八九十百零〇0-9]+章|[一二三四五六七八九十]+、|（[一二三四五六七八九十]+）)/.test(block) || block.length <= 190) {
+      paragraphs.push(block);
+      return;
+    }
+    const sentences = block.match(/[^。！？；]+[。！？；]?/g) || [block];
+    let paragraph = '';
+    sentences.forEach(sentence => {
+      if (paragraph && paragraph.length + sentence.length > 180) {
+        paragraphs.push(paragraph);
+        paragraph = '';
+      }
+      paragraph += sentence;
+    });
+    if (paragraph) paragraphs.push(paragraph);
+  });
+  const mergedParagraphs = [];
+  paragraphs.forEach(value => {
+    const isStructural = /^(第[一二三四五六七八九十百零〇0-9]+[章节]|[一二三四五六七八九十]+、|（[一二三四五六七八九十]+）)/.test(value);
+    const previous = mergedParagraphs[mergedParagraphs.length - 1];
+    if (previous && !/[。！？；：]$/.test(previous) && !isStructural) mergedParagraphs[mergedParagraphs.length - 1] += value;
+    else mergedParagraphs.push(value);
+  });
+  const displayParagraphs = mergedParagraphs.flatMap(value => {
+    if (/^第[一二三四五六七八九十百零〇0-9]+章/.test(value)) {
+      const articleAt = value.search(/第[一二三四五六七八九十百零〇0-9]+条/);
+      if (articleAt > 0) return [value.slice(0, articleAt), value.slice(articleAt)];
+    }
+    return [value];
+  });
+  return displayParagraphs.map(value => {
+    let cls = '';
+    if (/^第[一二三四五六七八九十百零〇0-9]+章/.test(value)) cls = 'reader-chapter';
+    else if (/^([一二三四五六七八九十]+、|（[一二三四五六七八九十]+）)/.test(value)) cls = 'reader-section';
+    else if (/^第[一二三四五六七八九十百零〇0-9]+条/.test(value)) cls = 'reader-article';
+    return '<p class="' + cls + '">' + esc(value) + '</p>';
   }).join('');
 }
 
@@ -455,7 +528,7 @@ function openPolicyReader(key) {
   html += '<a class="policy-action" href="' + esc(item.url) + '" target="_blank" rel="noopener noreferrer">核验官方来源 ↗</a></div>';
   html += '<h2 class="reader-title">' + esc(item.title) + '</h2><div class="reader-doc">' + esc(item.doc || '文号未注明') + ' · ' + esc(item.category) + ' / ' + esc(item.subcategory) + '</div></div>';
   html += '<div class="reader-note">' + sourceLabel + ' PDF转文字可能保留少量分页标记，请以官方原文为准。</div>';
-  html += '<article id="policyReaderBody" class="reader-body">' + policyTextHtml(content.text) + '</article>';
+  html += '<article id="policyReaderBody" class="reader-body">' + policyTextHtml(content.text, item.title) + '</article>';
   html += '<div class="reader-footer"><button class="policy-action" onclick="closePolicyReader()">← 返回列表</button><a class="policy-action primary" href="' + esc(item.url) + '" target="_blank" rel="noopener noreferrer">核验官方来源 ↗</a></div></div>';
   document.getElementById('contentArea').innerHTML = html;
   window.scrollTo(0, 0);
