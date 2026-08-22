@@ -630,6 +630,45 @@ window.POLICY_DATA = [
     "doc": "国发〔2024〕12号",
     "url": "",
     "origin": "原网站"
+  },
+  {
+    "category": "法规", "subcategory": "行政法规", "title": "电力监管条例", "doc": "国务院令第432号", "url": "https://xzfg.moj.gov.cn/front/law/detail?LawID=138", "origin": "司法部"
+  },
+  {
+    "category": "监管规范", "subcategory": "办法", "title": "电网公平开放监管办法", "doc": "国能发监管规〔2021〕49号", "url": "https://zfxxgk.nea.gov.cn/2021-09/29/c_1310219800.htm", "origin": "国家能源局"
+  },
+  {
+    "category": "全国统一电力市场建设", "subcategory": "意见", "title": "关于推进电力交易机构独立规范运行的实施意见", "doc": "发改体改〔2020〕234号", "url": "https://www.ndrc.gov.cn/xxgk/zcfb/tz/202002/t20200225_1221123.html", "origin": "国家发展改革委"
+  },
+  {
+    "category": "新型储能", "subcategory": "通知", "title": "关于进一步推动新型储能参与电力市场和调度运用的通知", "doc": "发改办运行〔2022〕475号", "url": "https://zfxxgk.ndrc.gov.cn/web/iteminfo.jsp?id=18883", "origin": "国家发展改革委"
+  },
+  {
+    "category": "新型储能", "subcategory": "意见", "title": "关于加快推动新型储能发展的指导意见", "doc": "发改能源规〔2021〕1051号", "url": "https://zfxxgk.nea.gov.cn/2021-07/15/c_1310079331.htm", "origin": "国家能源局"
+  },
+  {
+    "category": "分布式新能源", "subcategory": "管理办法", "title": "分布式光伏发电开发建设管理办法", "doc": "国能发新能规〔2025〕7号", "url": "https://www.nea.gov.cn/20250123/112c5b199c5f45dd8e7ac93c9f5e4eaf/c.html", "origin": "国家能源局"
+  },
+  {
+    "category": "电力系统建设", "subcategory": "实施方案", "title": "电力系统调节能力优化专项行动实施方案（2025—2027年）", "doc": "发改能源〔2024〕1803号", "url": "https://www.nea.gov.cn/20250106/6a9d8a6e621d495db0ca2ba14196f00f/c.html", "origin": "国家能源局"
+  },
+  {
+    "category": "增量配电", "subcategory": "管理办法", "title": "增量配电业务配电区域划分实施办法", "doc": "发改能源规〔2024〕317号", "url": "https://www.ndrc.gov.cn/xxgk/zcfb/ghxwj/202404/t20240402_1365404.html", "origin": "国家发展改革委"
+  },
+  {
+    "category": "新能源政策", "subcategory": "指导意见", "title": "关于大力实施可再生能源替代行动的指导意见", "doc": "发改能源〔2024〕1537号", "url": "https://zfxxgk.ndrc.gov.cn/web/iteminfo.jsp?id=20451", "origin": "国家发展改革委"
+  },
+  {
+    "category": "全国统一电力市场建设", "subcategory": "历史基础政策", "title": "关于积极推进电力市场化交易进一步完善交易机制的通知", "doc": "发改运行〔2018〕1027号", "url": "https://www.ndrc.gov.cn/fzggw/jgsj/yxj/sjdt/201807/t20180718_986995.html", "origin": "国家发展改革委"
+  },
+  {
+    "category": "注册、计量规则", "subcategory": "管理规定", "title": "电力业务许可证管理规定", "doc": "电监会令第9号（2024年修订）", "url": "https://zfxxgk.ndrc.gov.cn/web/iteminfo.jsp?id=20324", "origin": "国家发展改革委"
+  },
+  {
+    "category": "法规", "subcategory": "行政法规", "title": "电力供应与使用条例", "doc": "国务院令第196号（2019年修订）", "url": "https://xzfg.moj.gov.cn/front/law/detail?LawID=1149", "origin": "司法部"
+  },
+  {
+    "category": "法规", "subcategory": "行政法规", "title": "电网调度管理条例", "doc": "国务院令第115号（2011年修订）", "url": "https://xzfg.moj.gov.cn/front/law/detail?LawID=1585", "origin": "司法部"
   }
 ];
 window.POLICY_PDF_MAP = {
@@ -711,6 +750,19 @@ window.POLICY_PDF_MAP = {
   "发改经体〔2015〕2752号附件6|关于加强和规范燃煤自备电厂监督管理的指导意见": "policies/library/policy-076.pdf",
   "京电交市〔2024〕59号|北京电力交易中心绿色电力交易实施细则（2024年修订稿）": "policies/library/policy-077.pdf",
   "国发〔2024〕12号|2024—2025年节能降碳行动方案": "policies/library/policy-079.pdf",
-  "发改办能源〔2026〕443号|关于加强电力零售市场管理有关事项的通知": "policies/library/policy-080.pdf"
+  "发改办能源〔2026〕443号|关于加强电力零售市场管理有关事项的通知": "policies/library/policy-080.pdf",
+  "国务院令第432号|电力监管条例": "policies/library/policy-081.pdf",
+  "国能发监管规〔2021〕49号|电网公平开放监管办法": "policies/library/policy-082.pdf",
+  "发改体改〔2020〕234号|关于推进电力交易机构独立规范运行的实施意见": "policies/library/policy-083.pdf",
+  "发改办运行〔2022〕475号|关于进一步推动新型储能参与电力市场和调度运用的通知": "policies/library/policy-084.pdf",
+  "发改能源规〔2021〕1051号|关于加快推动新型储能发展的指导意见": "policies/library/policy-085.pdf",
+  "国能发新能规〔2025〕7号|分布式光伏发电开发建设管理办法": "policies/library/policy-086.pdf",
+  "发改能源〔2024〕1803号|电力系统调节能力优化专项行动实施方案（2025—2027年）": "policies/library/policy-087.pdf",
+  "发改能源规〔2024〕317号|增量配电业务配电区域划分实施办法": "policies/library/policy-088.pdf",
+  "发改能源〔2024〕1537号|关于大力实施可再生能源替代行动的指导意见": "policies/library/policy-089.pdf",
+  "发改运行〔2018〕1027号|关于积极推进电力市场化交易进一步完善交易机制的通知": "policies/library/policy-090.pdf",
+  "电监会令第9号（2024年修订）|电力业务许可证管理规定": "policies/library/policy-091.pdf",
+  "国务院令第196号（2019年修订）|电力供应与使用条例": "policies/library/policy-092.pdf",
+  "国务院令第115号（2011年修订）|电网调度管理条例": "policies/library/policy-093.pdf"
 };
 
