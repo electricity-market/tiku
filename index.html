@@ -189,10 +189,15 @@ tr:nth-child(even) { background: #f8f9fa; }
 .policy-details summary { color: var(--primary); cursor: pointer; font-size: 13px; }
 .policy-details-body { margin-top: 10px; padding: 12px 14px; border-radius: 8px; background: #f8fafc; color: var(--text-sec); line-height: 1.75; }
 .policy-reader { width: 100%; max-width: none; margin: 0; }
-.reader-head { position: sticky; top: 0; z-index: 8; padding: 10px 14px; margin-bottom: 12px; border: 1px solid var(--border); border-radius: 10px; background: rgba(255,255,255,.97); box-shadow: 0 5px 18px rgba(0,0,0,.06); }
-.reader-tools { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-.reader-back { margin-right: auto; }
-.reader-title { margin: 10px 0 4px; color: var(--text); font-size: 21px; line-height: 1.4; }
+.reader-head { position: sticky; top: 0; z-index: 8; padding: 8px 12px; margin-bottom: 8px; border: 1px solid var(--border); border-radius: 10px; background: rgba(255,255,255,.97); box-shadow: 0 4px 14px rgba(0,0,0,.05); }
+.reader-tools { display: flex; align-items: center; gap: 8px 12px; min-width: 0; }
+.reader-back { flex: 0 0 auto; }
+.reader-title { flex: 1 1 auto; min-width: 240px; margin: 0; overflow: hidden; color: var(--text); font-size: 19px; line-height: 1.35; text-overflow: ellipsis; white-space: nowrap; }
+.reader-open { flex: 0 0 auto; }
+.reader-meta-row { display: flex; align-items: center; gap: 6px 16px; flex-wrap: wrap; margin-top: 6px; color: var(--text-sec); }
+.reader-meta-row .reader-doc, .reader-meta-row .policy-date, .reader-meta-row .policy-source-line { margin: 0; }
+.reader-meta-row .policy-source-line { display: contents; }
+.reader-meta-row .policy-badge { padding: 3px 7px; }
 .reader-doc { color: var(--text-sec); font-size: 13px; }
 .reader-note { margin: 14px 0 18px; padding: 12px 14px; border-left: 4px solid #f9ab00; border-radius: 6px; background: #fff8e1; color: #6b5200; line-height: 1.65; font-size: 13px; }
 .reader-body { padding: 26px 34px; border: 1px solid var(--border); border-radius: 12px; background: #fff; font-size: 17px; line-height: 2; }
@@ -201,7 +206,7 @@ tr:nth-child(even) { background: #f8f9fa; }
 .reader-body .reader-section { margin: 22px 0 10px; color: inherit; font-size: 1.06em; font-weight: 700; }
 .reader-body .reader-article { margin-top: 18px; }
 .reader-pdf-wrap { position:relative; overflow: hidden; border: 1px solid var(--border); border-radius: 12px; background: #525659; }
-.reader-pdf { display: block; width: 100%; height: calc(100vh - 185px); min-height: 760px; border: 0; }
+.reader-pdf { display: block; width: 100%; height: calc(100vh - 125px); min-height: 760px; border: 0; }
 .reader-pdf-fallback { padding: 24px; background: #fff; text-align: center; }
 .reader-loading { position:absolute; inset:0; z-index:2; display:grid; place-items:center; align-content:center; gap:14px; color:#475467; background:#f7f8fa; transition:opacity .2s; }
 .reader-loading::before { content:""; width:34px; height:34px; border:4px solid #d7dfed; border-top-color:var(--primary); border-radius:50%; animation:readerSpin .8s linear infinite; }
@@ -283,6 +288,10 @@ tr:nth-child(even) { background: #f8f9fa; }
   .policy-home-search { width:100%; margin-top:18px; }
   .policy-action.primary { margin-left: 0; }
   .reader-head { position: static; }
+  .reader-tools { flex-wrap: wrap; }
+  .reader-title { order: 3; flex-basis: 100%; min-width: 0; white-space: normal; }
+  .reader-open { margin-left: auto; }
+  .reader-meta-row { align-items: flex-start; gap: 5px 10px; }
   .reader-body { padding: 20px 17px; font-size: 16px; }
   .reader-title { font-size: 21px; }
   .reader-pdf { height: 78vh; min-height: 560px; }
@@ -873,11 +882,12 @@ function openPolicyReader(key) {
   markPolicyRead(key);
   let html = '<div class="policy-reader"><div class="reader-head"><div class="reader-tools">';
   html += '<button class="policy-action reader-back" onclick="closePolicyReader()">← 返回政策列表</button>';
+  html += '<h2 class="reader-title" title="' + esc(item.title) + '">' + esc(item.title) + '</h2>';
   if (!pdfUrl) html += '<button class="policy-action" onclick="changeReaderFont(-1)">A−</button><button class="policy-action" onclick="changeReaderFont(1)">A＋</button>';
-  if (pdfUrl) html += '<a class="policy-action" href="' + esc(pdfUrl) + '" target="_blank" rel="noopener">单独打开 PDF ↗</a>';
-  if (item.url) html += '<a class="policy-action" href="' + esc(item.url) + '" target="_blank" rel="noopener noreferrer">核验官方来源 ↗</a>';
+  if (pdfUrl) html += '<a class="policy-action reader-open" href="' + esc(pdfUrl) + '" target="_blank" rel="noopener">单独打开 PDF ↗</a>';
+  if (item.url) html += '<a class="policy-action reader-open" href="' + esc(item.url) + '" target="_blank" rel="noopener noreferrer">核验官方来源 ↗</a>';
   html += '</div>';
-  html += '<h2 class="reader-title">' + esc(item.title) + '</h2><div class="reader-doc">' + esc(item.doc || '文号未注明') + ' · ' + esc(item.category) + ' / ' + esc(item.subcategory) + '</div>' + policyInfoHtml(item) + policyDateHtml(key) + '</div>';
+  html += '<div class="reader-meta-row"><div class="reader-doc">' + esc(item.doc || '文号未注明') + ' · ' + esc(item.category) + ' / ' + esc(item.subcategory) + '</div>' + policyInfoHtml(item) + policyDateHtml(key) + '</div></div>';
   if (pdfUrl) {
     html += '<div class="reader-pdf-wrap"><div class="reader-loading">正在加载 PDF 原文…</div><object class="reader-pdf" data="' + esc(pdfUrl) + '#view=FitH&toolbar=1&navpanes=0" type="application/pdf" onload="policyPdfLoaded(this)"><div class="reader-pdf-fallback">当前浏览器无法内嵌 PDF。<br><a class="policy-action primary" href="' + esc(pdfUrl) + '" target="_blank" rel="noopener">打开 PDF 原件</a></div></object></div>';
   } else {
