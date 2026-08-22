@@ -392,6 +392,14 @@ window.POLICY_DATA = [
     "origin": "分类表"
   },
   {
+    "category": "零售",
+    "subcategory": "通知",
+    "title": "关于加强电力零售市场管理有关事项的通知",
+    "doc": "发改办能源〔2026〕443号",
+    "url": "",
+    "origin": "用户政策原文库"
+  },
+  {
     "category": "并网运行",
     "subcategory": "政策文件",
     "title": "电力并网运行管理规定",
@@ -702,5 +710,7 @@ window.POLICY_PDF_MAP = {
   "发改经体〔2015〕2752号附件4|关于有序放开发用电计划的实施意见": "policies/library/policy-075.pdf",
   "发改经体〔2015〕2752号附件6|关于加强和规范燃煤自备电厂监督管理的指导意见": "policies/library/policy-076.pdf",
   "京电交市〔2024〕59号|北京电力交易中心绿色电力交易实施细则（2024年修订稿）": "policies/library/policy-077.pdf",
-  "国发〔2024〕12号|2024—2025年节能降碳行动方案": "policies/library/policy-079.pdf"
+  "国发〔2024〕12号|2024—2025年节能降碳行动方案": "policies/library/policy-079.pdf",
+  "发改办能源〔2026〕443号|关于加强电力零售市场管理有关事项的通知": "policies/library/policy-080.pdf"
 };
+
