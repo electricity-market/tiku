@@ -395,6 +395,11 @@ tr:nth-child(even) { background: #f8f9fa; }
     <h3>账号管理</h3>
     <p class="admin-note" style="margin:0 0 8px">已注册账号列表（仅主账号可见）。删除账号会同时清除其登录凭证与云端学习进度，不可恢复。</p>
     <div id="adminAccountList" style="min-width:300px">加载中…</div>
+    <div class="admin-tools" style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
+      <button class="policy-action" type="button" onclick="changeRegCode()">设置注册码</button>
+      <button class="policy-action" type="button" onclick="transferAdmin()">移交主账号权限</button>
+    </div>
+    <p class="admin-note">「设置注册码」：新注册码加密存储于云端，网页源码与网络请求中均不出现明文，修改后立即对新注册生效。「移交主账号权限」：移交后当前账号将失去账号管理权限，目标账号刷新页面即可使用。</p>
     <div class="feedback-actions"><button class="policy-action" type="button" onclick="closeAdmin()">关闭</button></div>
   </form>
 </dialog>
@@ -425,8 +430,9 @@ var AUTH_CFG = {
   anonKey: 'sb_publishable_hUrr0npPBmkuSLEiu1aY8w_2aPa4Mxc',
   table: 'progress'
 };
-/* 主账号（唯一能使用账号管理面板的账号） */
+/* 默认主账号（云端 sys_config 未配置时的回退值；实际主账号以云端 policy_read.admin 为准） */
 var MAIN_USER = 'tangjiajun';
+var AdminState = { name: MAIN_USER, loaded: false };
 
 /* ====== 账号系统（复用 progress 表：auth:<用户名> 存密码哈希，prog:<用户名> 存账号进度） ====== */
 var PROGRESS_KEYS = ['huadian_objective_completed','huadian_objective_wrong','huadian_policy_read','huadian_policy_starred','huadian_q10_completed','huadian_q10_review'];
@@ -500,7 +506,7 @@ function setUserChip(username){
   var adminBtn = document.getElementById('adminBtn');
   if (chip) { chip.textContent = username; chip.title = '当前账号：' + username; chip.style.display = ''; }
   if (btn) btn.style.display = '';
-  if (adminBtn) adminBtn.style.display = (username === MAIN_USER) ? '' : 'none';
+  if (adminBtn) adminBtn.style.display = isAdmin() ? '' : 'none';
 }
 function clearLocalProgress(){
   for (var i = 0; i < PROGRESS_KEYS.length; i++) localStorage.removeItem(PROGRESS_KEYS[i]);
@@ -528,6 +534,7 @@ async function completeLogin(username){
   if (adoptable) localStorage.setItem('huadian_adopt_done', '1');
   reloadProgressFromStorage();
   rerenderAllViews();
+  loadAdminName(); // 登录后刷新主账号配置（可能已被移交）
 }
 function logout(){
   if (!confirm('确定要退出当前账号吗？本设备的学习进度缓存将被清除（云端进度不受影响）。')) return;
@@ -537,7 +544,20 @@ function logout(){
   location.reload();
 }
 /* ====== 主账号管理面板 ====== */
-function isAdmin(){ return Auth.user === MAIN_USER; }
+function isAdmin(){ return !!Auth.user && Auth.user === (AdminState.name || MAIN_USER); }
+/* 从云端加载当前主账号（sys_config 行 policy_read.admin），加载完成后刷新界面按钮 */
+async function loadAdminName(){
+  try {
+    var res = await fetch(Auth.apiUrl() + '?slug=eq.sys_config&select=policy_read', {method:'GET', headers:Auth.authHeaders()});
+    if (res.ok) {
+      var rows = await res.json();
+      var n = rows && rows[0] && rows[0].policy_read && rows[0].policy_read.admin;
+      if (n) AdminState.name = String(n);
+    }
+  } catch (e) { /* 网络异常时保持现有值 */ }
+  AdminState.loaded = true;
+  if (Auth.user) setUserChip(Auth.user);
+}
 function openAdmin(){
   if (!isAdmin()) return;
   var dlg = document.getElementById('adminDialog');
@@ -559,7 +579,7 @@ async function loadAdminAccounts(){
     var html = '';
     (rows || []).forEach(function(r){
       var name = r.slug.slice(5);
-      var isMain = name === MAIN_USER;
+      var isMain = name === (AdminState.name || MAIN_USER);
       html += '<div class="admin-row"><span class="admin-name">' + esc(name) + (isMain ? '（主账号）' : '') + '</span>'
         + '<span class="admin-time">最近活跃：' + esc(String(r.updated_at || '').slice(0,10)) + '</span>'
         + (isMain ? '' : '<button class="policy-action" type="button" onclick="deleteAccount(\'' + esc(name) + '\')">删除</button>')
@@ -571,7 +591,7 @@ async function loadAdminAccounts(){
   }
 }
 async function deleteAccount(name){
-  if (!isAdmin() || !name || name === MAIN_USER) return;
+  if (!isAdmin() || !name || name === (AdminState.name || MAIN_USER)) return;
   if (!confirm('确定删除账号「' + name + '」？\n该账号的登录凭证与云端学习进度将一并删除，无法恢复。')) return;
   var base = AUTH_CFG.url.replace(/\/+$/,'') + '/rest/v1/progress?slug=eq.';
   try {
@@ -582,6 +602,59 @@ async function deleteAccount(name){
     loadAdminAccounts();
   } catch (e) {
     alert('删除失败：' + (e.message || e));
+  }
+}
+/* 设置注册码：新码 sha256 后写入云端 sys_config（仅更新注册码字段，不影响其他配置），源码与请求均无明文 */
+async function changeRegCode(){
+  if (!isAdmin()) return;
+  var code = prompt('请输入新的注册码（4-32 个字符，设置后立即对新注册生效）：');
+  if (code === null) return;
+  code = code.trim();
+  if (code.length < 4 || code.length > 32) { alert('注册码需为 4-32 个字符'); return; }
+  if (/[\u4e00-\u9fa5]/.test(code)) { alert('注册码请勿使用中文'); return; }
+  var code2 = prompt('请再次输入新注册码以确认：');
+  if (code2 === null) return;
+  if (code2 !== code) { alert('两次输入不一致，已取消设置。'); return; }
+  try {
+    var hash = await sha256Hex('huadian-reg-code:' + code);
+    var res = await fetch(Auth.apiUrl(), {
+      method:'POST',
+      headers: Auth.authHeaders({'Prefer':'resolution=merge-duplicates,return=minimal'}),
+      body: JSON.stringify([{slug:'sys_config', objective_completed:{code:hash}}])
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    alert('注册码已更新，立即对新注册生效。\n（注册码以加密形式存储于云端，请自行妥善保管。）');
+  } catch (e) {
+    alert('设置失败：' + (e.message || e));
+  }
+}
+/* 移交主账号权限：校验目标账号存在后，把主账号名写入云端 sys_config，当前账号立即失去管理权限 */
+async function transferAdmin(){
+  if (!isAdmin()) return;
+  var name = prompt('请输入要接收主账号权限的账号名（移交后当前账号将失去账号管理权限）：');
+  if (name === null) return;
+  name = name.trim().toLowerCase();
+  if (!name) return;
+  if (name === Auth.user) { alert('您当前就是主账号，无需移交。'); return; }
+  if (name === (AdminState.name || MAIN_USER)) { alert('该账号已经是主账号。'); return; }
+  try {
+    var check = await fetch(Auth.apiUrl() + '?slug=eq.' + encodeURIComponent('auth:' + name) + '&select=slug', {method:'GET', headers:Auth.authHeaders()});
+    if (!check.ok) throw new Error('网络异常，请稍后重试');
+    var rows = await check.json();
+    if (!rows || !rows.length) { alert('账号「' + name + '」不存在，请先让对方注册。'); return; }
+    if (!confirm('确定将主账号权限移交给「' + name + '」？\n移交后您将无法再使用账号管理面板（除非对方再移交给您）。')) return;
+    var res = await fetch(Auth.apiUrl(), {
+      method:'POST',
+      headers: Auth.authHeaders({'Prefer':'resolution=merge-duplicates,return=minimal'}),
+      body: JSON.stringify([{slug:'sys_config', policy_read:{admin:name}}])
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    AdminState.name = name;
+    setUserChip(Auth.user); // 当前账号立即失去管理入口
+    alert('已将主账号权限移交给「' + name + '」。\n该账号刷新页面或重新登录后即可使用账号管理面板。');
+    closeAdmin();
+  } catch (e) {
+    alert('移交失败：' + (e.message || e));
   }
 }
 function switchAuthMode(mode){
@@ -1772,6 +1845,7 @@ function submitFeedback(event) {
   // 会话恢复：已登录过则直接进入并拉取该账号云端进度（登录门未通过时 CloudSync 未配置，不会拉取）
   var savedUser = localStorage.getItem('power_learning_user');
   if (savedUser) { Auth.resumeSession(savedUser); }
+  loadAdminName(); // 后台加载云端主账号配置，完成后刷新管理按钮
   init();
 })();
 
