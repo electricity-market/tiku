@@ -217,10 +217,13 @@ tr:nth-child(even) { background: #f8f9fa; }
 .placeholder-note { margin-top: 18px; padding: 12px 14px; border-left: 4px solid var(--warn); background: #fff8e1; color: #6f5200; font-size: 13px; border-radius: 4px; }
 .objective-tools { display: flex; gap: 10px; margin-bottom: 14px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
 .objective-tools .tools-left { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
-.objective-search-wrap { display: flex; gap: 8px; align-items: center; flex: 0 0 360px; max-width: 100%; min-width: 220px; margin-left: auto; }
-.objective-search { flex: 1; min-width: 180px; padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px; font: inherit; ime-mode: disabled; -webkit-ime-mode: disabled; }
+.objective-search-wrap { position: relative; display: flex; gap: 8px; align-items: center; flex: 0 0 360px; max-width: 100%; min-width: 220px; margin-left: auto; }
+.objective-search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none; font-size: 14px; line-height: 1; color: var(--text-sec); }
+.objective-search { flex: 1; min-width: 180px; padding: 8px 12px 8px 32px; border: 1px solid var(--border); border-radius: 8px; font: inherit; ime-mode: disabled; -webkit-ime-mode: disabled; }
 .objective-search-clear { padding: 6px 12px; background: #fff; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; color: var(--primary); font: inherit; white-space: nowrap; }
 .objective-search-clear:hover { border-color: var(--primary); }
+@keyframes obj-search-flash { 0% { box-shadow: 0 0 0 0 rgba(36,102,178,0.45); border-color: var(--primary); } 100% { box-shadow: 0 0 0 8px rgba(36,102,178,0); border-color: var(--border); } }
+.objective-search.just-searched { animation: obj-search-flash 720ms ease-out; }
 .objective-summary { color: var(--text-sec); font-size: 13px; margin-bottom: 12px; }
 .option-item.selected { border-color: var(--primary); background: var(--primary-light); }
 .option-item.correct-option { border-color: var(--accent); background: #e6f4ea; }
@@ -1852,7 +1855,8 @@ function renderSampleQuestion(q, idx) {
   // 客观题常驻搜索框：题干 + 选项同步匹配（仅在 activeBank 是 single/multiple/judge 时显示）
   if (['single', 'multiple', 'judge'].indexOf(activeBank) >= 0) {
     html += '<div class="objective-search-wrap">'
-      + '<input class="objective-search" id="objectiveSearch" type="search" inputmode="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" value="' + esc(objectiveQuery) + '" placeholder="在「' + esc(bankData.title) + '」里搜索题干或选项" aria-label="搜索题库">'
+      + '<span class="objective-search-icon" aria-hidden="true">🔍</span>'
+      + '<input class="objective-search" id="objectiveSearch" type="text" inputmode="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" value="' + esc(objectiveQuery) + '" placeholder="输入关键词（题干或选项）·回车确认" aria-label="搜索题库">'
       + (objectiveQuery ? '<button class="objective-search-clear" type="button" onclick="var i=document.getElementById(\'objectiveSearch\');if(i){i.value=\'\';filterObjectiveQuestions(\'\');}">清除</button>' : '')
       + '</div>';
   }
@@ -1909,7 +1913,7 @@ function applyObjectiveFilter(keepPos) {
   else currentQ = 0;
   renderSampleNav(SAMPLE_BANKS[activeBank]);
   if (objectiveFiltered.length) renderSampleQuestion(objectiveFiltered[currentQ], currentQ);
-  else document.getElementById('contentArea').innerHTML = '<div class="objective-tools"><div class="objective-search-wrap"><input class="objective-search" id="objectiveSearch" type="search" inputmode="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" value="' + esc(objectiveQuery) + '" placeholder="搜索「' + esc(SAMPLE_BANKS[activeBank].title) + '」里的题干或选项" aria-label="搜索题库" oninput="filterObjectiveQuestions(this.value)">' + (objectiveQuery ? '<button class="objective-search-clear" type="button" onclick="var i=document.getElementById(\'objectiveSearch\');if(i){i.value=\'\';filterObjectiveQuestions(\'\');}">清除</button>' : '') + '</div></div><div class="card">' + (objectiveOnlyWrong ? '错题本是空的——答错的选择题会自动出现在这里，答对后自动移出。' : (objectiveQuery ? '没有找到匹配「' + esc(objectiveQuery) + '」的题目，试试别的关键词。' : '没有找到匹配题目。')) + '</div>';
+  else document.getElementById('contentArea').innerHTML = '<div class="objective-tools"><div class="objective-search-wrap"><span class="objective-search-icon" aria-hidden="true">🔍</span><input class="objective-search" id="objectiveSearch" type="text" inputmode="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" value="' + esc(objectiveQuery) + '" placeholder="搜索「' + esc(SAMPLE_BANKS[activeBank].title) + '」里的题干或选项" aria-label="搜索题库" oninput="filterObjectiveQuestions(this.value)">' + (objectiveQuery ? '<button class="objective-search-clear" type="button" onclick="var i=document.getElementById(\'objectiveSearch\');if(i){i.value=\'\';filterObjectiveQuestions(\'\');}">清除</button>' : '') + '</div></div><div class="card">' + (objectiveOnlyWrong ? '错题本是空的——答错的选择题会自动出现在这里，答对后自动移出。' : (objectiveQuery ? '没有找到匹配「' + esc(objectiveQuery) + '」的题目，试试别的关键词。' : '没有找到匹配题目。')) + '</div>';
   const input = document.getElementById('objectiveSearch');
   if (input) { input.focus(); input.setSelectionRange(input.value.length, input.value.length); }
   bindObjSearchImeGuard(input);
@@ -1961,6 +1965,19 @@ function bindObjSearchImeGuard(input) {
   input.addEventListener('compositionend', function (e) {
     input.__imeComposing = false;
     filterObjectiveQuestions(e.target.value);
+  });
+  // 回车键：阻止默认并给一个视觉闪烁 + 滚动到顶部，作为「确认搜索」反馈
+  input.addEventListener('keydown', function (e) {
+    if (e.key !== 'Enter') return;
+    e.preventDefault();
+    input.classList.remove('just-searched');
+    void input.offsetWidth; // restart animation
+    input.classList.add('just-searched');
+    setTimeout(function(){ input.classList.remove('just-searched'); }, 720);
+    var ca = document.getElementById('contentArea');
+    if (ca && ca.scrollIntoView) {
+      try { ca.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (_) {}
+    }
   });
 }
 
