@@ -180,6 +180,21 @@ tr:nth-child(even) { background: #f8f9fa; }
 .tool-card .tool-text { flex:1; display:flex; flex-direction:column; gap:2px; min-width:0; }
 .tool-card .tool-text strong { font-size:14px; color:#0f172a; }
 .tool-card .tool-text em { font-style:normal; font-size:12px; color:#64748b; }
+
+/* ====== 试题管理对话框（导入+删除合并） ====== */
+.question-manage-dialog { width: min(720px, 96vw); }
+.qm-head { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:14px; }
+.qm-head h3 { margin:0; }
+.qm-stats { font-size:13px; color:#475569; background:#eef2ff; color:#3730a3; padding:4px 10px; border-radius:999px; font-weight:600; }
+.qm-tabs { display:flex; gap:6px; border-bottom:1px solid var(--border); margin-bottom:14px; padding-right:32px; }
+.qm-tab { border:0; background:transparent; padding:9px 16px; font:inherit; font-size:14px; color:#475569; cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-1px; display:inline-flex; align-items:center; gap:5px; }
+.qm-tab:hover { color:#0f172a; }
+.qm-tab.active { color:#1d4ed8; border-bottom-color:#1d4ed8; font-weight:600; }
+.qm-pane { display:block; }
+.qm-pane[hidden] { display:none; }
+.question-manage-dialog .search-view-container { border:1px solid var(--border); border-radius:10px; padding:14px; background:#f8fafc; margin-top:6px; }
+.question-manage-dialog .delete-batch-actions { flex-wrap:wrap; }
+.question-manage-dialog .feedback-actions { margin-top:14px; }
 /* ====== 在线编辑试题对话框 ====== */
 .qedit-block { margin: 4px 0 12px; }
 .qedit-block h4 { font-size: 13px; color: var(--text); margin: 0 0 8px; }
@@ -447,15 +462,21 @@ tr:nth-child(even) { background: #f8f9fa; }
 .policy-source-line { display:flex; gap:6px 16px; flex-wrap:wrap; margin-top:7px; color:#667085; font-size:12px; }
 .policy-source-line a { color:var(--primary); text-decoration:none; }
 .feedback-fab { position:fixed; right:28px; bottom:88px; z-index:30; padding:12px 16px; border:0; border-radius:999px; background:#172033; color:#fff; box-shadow:0 8px 24px rgba(23,32,51,.22); cursor:pointer; font-weight:700; }
-.feedback-dialog { width:min(540px,calc(100vw - 32px)); padding:0; border:0; border-radius:16px; box-shadow:0 24px 70px rgba(15,23,42,.28); }
+.feedback-dialog { width:min(540px,calc(100vw - 32px)); max-height:92vh; padding:0; border:0; border-radius:16px; box-shadow:0 24px 70px rgba(15,23,42,.28); display:flex; flex-direction:column; overflow:hidden; }
 .feedback-dialog::backdrop { background:rgba(15,23,42,.48); }
-.feedback-form { padding:22px; }
-.feedback-form h2 { margin:0 0 6px; }
+.feedback-form { padding:22px 22px 18px; overflow-y:auto; flex:1 1 auto; min-height:0; }
+.feedback-form h2 { margin:0 0 6px; padding-right:32px; }
+.feedback-form h3 { margin:0 0 6px; padding-right:32px; }
 .feedback-form p { margin:0 0 16px; color:#667085; }
 .feedback-form label { display:block; margin-top:12px; color:#344054; font-weight:700; }
 .feedback-form select,.feedback-form textarea,.feedback-form input { width:100%; margin-top:6px; padding:10px 12px; border:1px solid #d0d5dd; border-radius:9px; background:#fff; font:inherit; }
 .feedback-form textarea { min-height:120px; resize:vertical; }
-.feedback-actions { display:flex; justify-content:flex-end; gap:9px; margin-top:18px; }
+.feedback-actions { display:flex; justify-content:flex-end; gap:9px; margin-top:18px; padding-top:14px; border-top:1px solid var(--border); position:sticky; bottom:0; background:#fff; }
+/* 右上角 X 关闭按钮（每个 dialog 都加上） */
+.feedback-form { position:relative; }
+.dialog-close { position:absolute; top:14px; right:14px; width:32px; height:32px; padding:0; border:0; background:#f1f5f9; color:#475569; border-radius:50%; cursor:pointer; font-size:18px; line-height:1; display:flex; align-items:center; justify-content:center; transition:background .15s; }
+.dialog-close:hover { background:#e2e8f0; color:#0f172a; }
+.dialog-close:active { transform:scale(.95); }
 @media (max-width: 768px) {
   .bank-switcher { grid-template-columns: repeat(3, 1fr); gap: 8px; }
   .bank-tab { padding: 10px 5px; font-size: 12px; }
@@ -534,8 +555,7 @@ tr:nth-child(even) { background: #f8f9fa; }
         <span class="sync-badge idle" id="syncBadge" title="学习进度云端同步状态">已就绪</span>
         <span class="user-chip" id="userChip" style="display:none"></span>
         <button class="home-button" type="button" id="adminBtn" style="display:none" onclick="openAdmin()">账号管理</button>
-        <button class="home-button" type="button" id="importTopBtn" style="display:none" onclick="openImportDialog()">📥 导入试题</button>
-        <button class="home-button" type="button" id="deleteTopBtn" style="display:none" onclick="openDeleteDialog()">🗑 删除试题</button>
+        <button class="home-button" type="button" id="manageTopBtn" style="display:none" onclick="openQuestionManageDialog()">📝 试题管理</button>
         <button class="home-button" type="button" id="passwordBtn" style="display:none" onclick="openPasswordDialog()">修改密码</button>
         <button class="home-button danger" type="button" id="logoutBtn" style="display:none" onclick="logout()">↪ 登出</button>
         <button class="home-button" type="button" id="backHomeBtn" onclick="renderHome()">返回首页</button>
@@ -548,6 +568,7 @@ tr:nth-child(even) { background: #f8f9fa; }
 <button class="feedback-fab" type="button" onclick="openFeedback()">问题反馈</button>
 <dialog class="feedback-dialog" id="feedbackDialog">
   <form class="feedback-form" onsubmit="submitFeedback(event)">
+    <button type="button" class="dialog-close" aria-label="关闭" onclick="closeFeedback()">×</button>
     <h2>问题反馈</h2><p>可报告错题、答案错误、政策失效或页面问题。</p>
     <label>问题类型<select id="feedbackType"><option>错题或题干问题</option><option>答案或解析错误</option><option>政策失效或被替代</option><option>页面功能问题</option><option>其他建议</option></select></label>
     <label>问题说明<textarea id="feedbackDetail" required placeholder="请说明题号、政策名称或具体问题"></textarea></label>
@@ -558,6 +579,7 @@ tr:nth-child(even) { background: #f8f9fa; }
 
 <dialog class="feedback-dialog admin-dialog-wide" id="adminDialog">
   <form class="feedback-form" onsubmit="return false">
+    <button type="button" class="dialog-close" aria-label="关闭" onclick="closeAdmin()">×</button>
     <header class="admin-header">
       <div>
         <h3>账号管理</h3>
@@ -589,12 +611,12 @@ tr:nth-child(even) { background: #f8f9fa; }
           <span class="tool-text"><strong>在线编辑试题</strong><em id="qbankEditCount">已编辑 0 题 · 修改题干 / 选项 / 答案</em></span>
           <span class="tool-go">→</span>
         </button>
-        <button class="tool-card" type="button" onclick="openImportDialog()">
-          <span class="tool-icon">📥</span>
-          <span class="tool-text"><strong>导入 / 删除试题</strong><em id="qbankCustomCount">已导入 0 题 · 已删除 0 题</em></span>
+        <button class="tool-card" type="button" onclick="openQuestionManageDialog()">
+          <span class="tool-icon">📝</span>
+          <span class="tool-text"><strong>试题管理</strong><em id="qbankCustomCount">已导入 0 题 · 已删除 0 题</em></span>
           <span class="tool-go">→</span>
         </button>
-        <p class="form-hint" style="margin:6px 0 0;font-size:12px;">导入和删除功能也直接放在主账号首页顶部按钮，无需进入此面板。</p>
+        <p class="form-hint" style="margin:6px 0 0;font-size:12px;">首页顶部按钮「📝 试题管理」也可直接打开。</p>
       </div>
     </section>
 
@@ -604,6 +626,7 @@ tr:nth-child(even) { background: #f8f9fa; }
 
 <dialog class="feedback-dialog" id="regCodeDialog">
   <form class="feedback-form" onsubmit="return false">
+    <button type="button" class="dialog-close" aria-label="关闭" onclick="closeRegCodeDialog()">×</button>
     <h3>设置注册码</h3>
     <p class="form-hint">新注册码加密存储于云端，网页源码与请求中均不出现明文，修改后立即对新注册生效。4-32 个字符，不支持中文。</p>
     <label>新注册码<input type="text" id="newRegCode" autocomplete="off" /></label>
@@ -618,6 +641,7 @@ tr:nth-child(even) { background: #f8f9fa; }
 
 <dialog class="feedback-dialog" id="transferAdminDialog">
   <form class="feedback-form" onsubmit="return false">
+    <button type="button" class="dialog-close" aria-label="关闭" onclick="closeTransferDialog()">×</button>
     <h3>移交主账号权限</h3>
     <p class="form-hint">移交后当前账号立即失去账号管理权限，目标账号刷新页面或重新登录后即可接管。</p>
     <label>当前主账号<input type="text" id="transferCurrent" readonly /></label>
@@ -632,6 +656,7 @@ tr:nth-child(even) { background: #f8f9fa; }
 
 <dialog class="feedback-dialog" id="passwordDialog">
   <form class="feedback-form" onsubmit="return false">
+    <button type="button" class="dialog-close" aria-label="关闭" onclick="closePasswordDialog()">×</button>
     <h3>修改密码</h3>
     <p class="form-hint">请输入当前密码与新密码。修改后下次登录请使用新密码。修改密码不会清空本设备已有的学习进度。</p>
     <label>当前密码<input type="password" id="oldPassword" autocomplete="current-password" /></label>
@@ -647,6 +672,7 @@ tr:nth-child(even) { background: #f8f9fa; }
 
 <dialog class="feedback-dialog admin-dialog-wide" id="qEditDialog">
   <form class="feedback-form" onsubmit="return false">
+    <button type="button" class="dialog-close" aria-label="关闭" onclick="closeQEdit()">×</button>
     <h3>编辑试题</h3>
     <p class="form-hint" id="qEditMeta"></p>
     <label>题干<textarea id="qEditStem" rows="4"></textarea></label>
@@ -665,59 +691,63 @@ tr:nth-child(even) { background: #f8f9fa; }
   </form>
 </dialog>
 
-<dialog class="feedback-dialog admin-dialog-wide" id="importDialog">
+<dialog class="feedback-dialog admin-dialog-wide question-manage-dialog" id="questionManageDialog">
   <form class="feedback-form" onsubmit="return false">
-    <h3>导入试题</h3>
-    <p class="form-hint">支持 单选 / 多选 / 判断 / 简答 四种题型（计算题暂不支持）。先下载模板，按模板格式填写后选择文件，解析无误即可导入。导入结果保存到云端，所有设备同步生效。</p>
-    <div class="qimport-actions">
-      <button class="policy-action primary" type="button" onclick="downloadImportTemplate()">⬇ 下载导入模板（CSV）</button>
-      <label class="policy-action qimport-file-label">📄 选择 CSV 文件<input type="file" id="importFileInput" accept=".csv,text/csv" onchange="handleImportFile(this)"></label>
+    <button type="button" class="dialog-close" aria-label="关闭" onclick="closeQuestionManageDialog()">×</button>
+    <div class="qm-head">
+      <h3>试题管理</h3>
+      <span class="qm-stats" id="qmStats">已导入 0 题 · 已删除 0 题</span>
     </div>
-    <p class="form-hint">答案列填写规则：单选填一个字母（A）；多选填多个字母（ABC 或 A,B）；判断填 正确 或 错误；简答填参考答案全文。</p>
-    <div id="importPreview" class="qimport-preview"></div>
-    <div class="form-error" id="importError"></div>
-    <div id="importRestoreRow" class="qimport-restore" style="display:none"></div>
-    <div class="feedback-actions">
-      <button class="policy-action" type="button" onclick="closeImportDialog()">取消</button>
-      <button class="policy-action primary" type="button" id="importSubmitBtn" onclick="submitImportQuestions()" disabled>确认导入</button>
+    <div class="qm-tabs" id="qmTabs" role="tablist">
+      <button type="button" class="qm-tab active" data-qmtab="import" role="tab" aria-selected="true">📥 导入试题</button>
+      <button type="button" class="qm-tab" data-qmtab="delete" role="tab" aria-selected="false">🗑 删除试题</button>
     </div>
-  </form>
-</dialog>
 
-<dialog class="feedback-dialog admin-dialog-wide" id="deleteDialog">
-  <form class="feedback-form" onsubmit="return false">
-    <h3>删除试题</h3>
-    <p class="form-hint">搜索题库后勾选要删除的题目，可一次删除多道。原始题删除后可在底部恢复；导入题删除后无法恢复。删除操作同步到云端，所有设备立即生效。</p>
-    <div class="search-view-container delete-view">
-      <div class="search-header">
-        <div class="search-bar-big">
-          <span class="search-bar-icon">🔍</span>
-          <input type="text" id="deleteSearchInput" placeholder="输入关键词搜索题干或选项（如「辅助服务」「现货」）" onkeydown="if(event.key==='Enter'){event.preventDefault();runDeleteSearch();}" autocomplete="off">
-          <button class="btn btn-primary" type="button" onclick="runDeleteSearch()">搜索</button>
-        </div>
-        <div class="search-tabs" id="deleteTabs">
-          <button class="search-tab active" type="button" data-type="">全部</button>
-          <button class="search-tab" type="button" data-type="single">单选</button>
-          <button class="search-tab" type="button" data-type="multiple">多选</button>
-          <button class="search-tab" type="button" data-type="judge">判断</button>
-          <button class="search-tab" type="button" data-type="short">简答</button>
-          <button class="search-tab" type="button" data-type="analysis">案例分析</button>
-          <button class="search-tab" type="button" data-type="calculation">计算题</button>
-          <button class="search-tab" type="button" data-type="__deleted__">已删除</button>
-        </div>
-        <div class="delete-batch-actions">
-          <label class="del-check-all"><input type="checkbox" id="delCheckAll" onchange="toggleDeleteAll(this.checked)"> 全选当前结果</label>
-          <span class="del-summary" id="delSummary">已选 0 道</span>
-          <button class="policy-action" type="button" onclick="runDeleteSearch()">刷新</button>
-          <button class="policy-action primary" type="button" id="delConfirmBtn" onclick="confirmDeleteSelected()" disabled>🗑 删除选中</button>
-        </div>
-        <div class="search-summary" id="deleteSummary">输入关键词开始搜索，或直接勾选题目进行批量删除。</div>
+    <div class="qm-pane active" id="qmImportPane" role="tabpanel">
+      <p class="form-hint">支持 单选 / 多选 / 判断 / 简答 四种题型（计算题暂不支持）。先下载模板，按模板格式填写后选择文件，解析无误即可导入。导入结果保存到云端，所有设备同步生效。</p>
+      <div class="qimport-actions">
+        <button class="policy-action primary" type="button" onclick="downloadImportTemplate()">⬇ 下载导入模板（CSV）</button>
+        <label class="policy-action qimport-file-label">📄 选择 CSV 文件<input type="file" id="importFileInput" accept=".csv,text/csv" onchange="handleImportFile(this)"></label>
       </div>
-      <div class="search-results" id="deleteResults"></div>
+      <p class="form-hint">答案列填写规则：单选填一个字母（A）；多选填多个字母（ABC 或 A,B）；判断填 正确 或 错误；简答填参考答案全文。</p>
+      <div id="importPreview" class="qimport-preview"></div>
+      <div class="form-error" id="importError"></div>
+      <div id="importRestoreRow" class="qimport-restore" style="display:none"></div>
+      <div class="feedback-actions">
+        <button class="policy-action primary" type="button" id="importSubmitBtn" onclick="submitImportQuestions()" disabled>确认导入</button>
+      </div>
     </div>
-    <div id="deleteRestoreRow" class="qimport-restore" style="display:none"></div>
-    <div class="feedback-actions">
-      <button class="policy-action" type="button" onclick="closeDeleteDialog()">关闭</button>
+
+    <div class="qm-pane" id="qmDeletePane" role="tabpanel" hidden>
+      <p class="form-hint">搜索题库后勾选要删除的题目，可一次删除多道。原始题删除后可在底部恢复；导入题删除后无法恢复。删除操作同步到云端，所有设备立即生效。</p>
+      <div class="search-view-container delete-view">
+        <div class="search-header">
+          <div class="search-bar-big">
+            <span class="search-bar-icon">🔍</span>
+            <input type="text" id="deleteSearchInput" placeholder="输入关键词搜索题干或选项（如「辅助服务」「现货」）" onkeydown="if(event.key==='Enter'){event.preventDefault();runDeleteSearch();}" autocomplete="off">
+            <button class="btn btn-primary" type="button" onclick="runDeleteSearch()">搜索</button>
+          </div>
+          <div class="search-tabs" id="deleteTabs">
+            <button class="search-tab active" type="button" data-type="">全部</button>
+            <button class="search-tab" type="button" data-type="single">单选</button>
+            <button class="search-tab" type="button" data-type="multiple">多选</button>
+            <button class="search-tab" type="button" data-type="judge">判断</button>
+            <button class="search-tab" type="button" data-type="short">简答</button>
+            <button class="search-tab" type="button" data-type="analysis">案例分析</button>
+            <button class="search-tab" type="button" data-type="calculation">计算题</button>
+            <button class="search-tab" type="button" data-type="__deleted__">已删除</button>
+          </div>
+          <div class="delete-batch-actions">
+            <label class="del-check-all"><input type="checkbox" id="delCheckAll" onchange="toggleDeleteAll(this.checked)"> 全选当前结果</label>
+            <span class="del-summary" id="delSummary">已选 0 道</span>
+            <button class="policy-action" type="button" onclick="runDeleteSearch()">刷新</button>
+            <button class="policy-action primary" type="button" id="delConfirmBtn" onclick="confirmDeleteSelected()" disabled>🗑 删除选中</button>
+          </div>
+          <div class="search-summary" id="deleteSummary">输入关键词开始搜索，或直接勾选题目进行批量删除。</div>
+        </div>
+        <div class="search-results" id="deleteResults"></div>
+      </div>
+      <div id="deleteRestoreRow" class="qimport-restore" style="display:none"></div>
     </div>
   </form>
 </dialog>
@@ -822,15 +852,13 @@ function setUserChip(username){
   var chip = document.getElementById('userChip');
   var btn = document.getElementById('logoutBtn');
   var adminBtn = document.getElementById('adminBtn');
-  var importBtn = document.getElementById('importTopBtn');
-  var deleteBtn = document.getElementById('deleteTopBtn');
+  var manageBtn = document.getElementById('manageTopBtn');
   var pwdBtn = document.getElementById('passwordBtn');
   var admin = isAdmin();
   if (chip) { chip.textContent = username; chip.title = '当前账号：' + username; chip.style.display = ''; }
   if (btn) btn.style.display = '';
   if (adminBtn) adminBtn.style.display = admin ? '' : 'none';
-  if (importBtn) importBtn.style.display = admin ? '' : 'none';
-  if (deleteBtn) deleteBtn.style.display = admin ? '' : 'none';
+  if (manageBtn) manageBtn.style.display = admin ? '' : 'none';
   if (pwdBtn) pwdBtn.style.display = '';
 }
 function clearLocalProgress(){
@@ -1419,10 +1447,15 @@ async function commitQBankCustom(next) {
 
 /* ====== 导入对话框：模板下载 + CSV 解析 + 预览确认 ====== */
 var importPendingRows = []; // 解析成功的行（待确认导入）
-function openImportDialog() {
+
+/* ====== 试题管理对话框（导入 + 删除合并）====== */
+function openQuestionManageDialog(tab) {
   if (!isAdmin()) return;
+  var target = (tab === 'delete') ? 'delete' : 'import';
+  var dlg = document.getElementById('questionManageDialog');
+  if (!dlg) return;
+  // 重置子状态
   importPendingRows = [];
-  var dlg = document.getElementById('importDialog');
   var file = document.getElementById('importFileInput');
   var prev = document.getElementById('importPreview');
   var err = document.getElementById('importError');
@@ -1432,13 +1465,56 @@ function openImportDialog() {
   if (err) err.textContent = '';
   if (btn) btn.disabled = true;
   updateImportRestoreRow();
-  if (dlg && typeof dlg.showModal === 'function') dlg.showModal();
+  // 删除 tab 状态
+  deleteSearchQuery = '';
+  deleteTypeFilter = '';
+  deleteTabMode = 'active';
+  var dInput = document.getElementById('deleteSearchInput');
+  if (dInput) dInput.value = '';
+  document.querySelectorAll('#deleteTabs .search-tab').forEach(function (b) {
+    b.classList.toggle('active', b.getAttribute('data-type') === '');
+  });
+  renderDeleteResults();
+  updateDeleteRestoreRow();
+  // stats & tab
+  updateQuestionManageStats();
+  switchQmTab(null, target);
+  if (typeof dlg.showModal === 'function') dlg.showModal();
+  // 切到删除 tab 时聚焦搜索框；切到导入 tab 时聚焦文件按钮
+  setTimeout(function () {
+    if (target === 'delete' && dInput) dInput.focus();
+  }, 80);
 }
-function closeImportDialog() {
-  var dlg = document.getElementById('importDialog');
+function closeQuestionManageDialog() {
+  var dlg = document.getElementById('questionManageDialog');
   if (dlg) dlg.close();
   importPendingRows = [];
 }
+function switchQmTab(tabBtn, tab) {
+  var tabs = document.querySelectorAll('#qmTabs .qm-tab');
+  tabs.forEach(function (b) {
+    var on = b.getAttribute('data-qmtab') === tab;
+    b.classList.toggle('active', on);
+    b.setAttribute('aria-selected', on ? 'true' : 'false');
+  });
+  var pImp = document.getElementById('qmImportPane');
+  var pDel = document.getElementById('qmDeletePane');
+  if (pImp) { pImp.hidden = (tab !== 'import'); pImp.classList.toggle('active', tab === 'import'); }
+  if (pDel) { pDel.hidden = (tab !== 'delete'); pDel.classList.toggle('active', tab === 'delete'); }
+}
+function updateQuestionManageStats() {
+  var el = document.getElementById('qmStats');
+  if (!el) return;
+  var imp = 0, del = 0;
+  (QBANK_CUSTOM && QBANK_CUSTOM.imports) && ['single', 'multiple', 'judge', 'short'].forEach(function (k) {
+    imp += (QBANK_CUSTOM.imports[k] || []).length;
+  });
+  (QBANK_CUSTOM && QBANK_CUSTOM.deletes) && ['single', 'multiple', 'judge', 'short'].forEach(function (k) {
+    del += (QBANK_CUSTOM.deletes[k] || []).length;
+  });
+  el.textContent = '已导入 ' + imp + ' 题 · 已删除 ' + del + ' 题';
+}
+
 /* 模板：UTF-8 BOM 的 CSV，Excel 双击打开直接可编辑 */
 function downloadImportTemplate() {
   var csv = '\uFEFF题型,题干,选项A,选项B,选项C,选项D,选项E,选项F,选项G,选项H,答案,解析\n'
@@ -1621,7 +1697,7 @@ async function submitImportQuestions() {
     await commitQBankCustom(next);
     rebuildQBankCustom();
     rerenderAfterQBankCustom();
-    closeImportDialog();
+    closeQuestionManageDialog();
     var t = qbankCustomTotals();
     showToast('已导入 ' + importPendingRows.length + ' 题并同步云端，所有设备生效。\n当前累计导入 ' + t.imported + ' 题。');
     importPendingRows = [];
@@ -1709,27 +1785,6 @@ let deleteTypeFilter = '';
 let deleteTabMode = 'active'; // 'active' | 'deleted'
 const DELETE_TYPE_LABEL = { single: '单选', multiple: '多选', judge: '判断', short: '简答', analysis: '案例分析', calculation: '计算题' };
 
-function openDeleteDialog() {
-  if (!isAdmin()) return;
-  deleteSearchQuery = '';
-  deleteTypeFilter = '';
-  deleteTabMode = 'active';
-  var dlg = document.getElementById('deleteDialog');
-  var input = document.getElementById('deleteSearchInput');
-  if (input) input.value = '';
-  // 重置 tab 样式
-  document.querySelectorAll('#deleteTabs .search-tab').forEach(function (b) {
-    b.classList.toggle('active', b.getAttribute('data-type') === '');
-  });
-  renderDeleteResults();
-  updateDeleteRestoreRow();
-  if (dlg && typeof dlg.showModal === 'function') dlg.showModal();
-  setTimeout(function () { if (input) input.focus(); }, 80);
-}
-function closeDeleteDialog() {
-  var dlg = document.getElementById('deleteDialog');
-  if (dlg) dlg.close();
-}
 
 function setDeleteTab(tabBtn, type) {
   // 重置所有 tab 的 active 状态；允许 tabBtn 为 null（程序触发时）
@@ -2769,7 +2824,7 @@ function renderEmptyBank(bankData) {
     message = '题库数据加载失败，请刷新页面重试；如果仍未显示，请清除浏览器缓存后重新打开。';
   } else if (activeBank === 'short') {
     message = '简答题暂未导入。' + (isAdmin() ? '主账号可通过「账号管理 → 导入 / 删除试题」下载模板并导入简答题。' : '请管理员在账号管理中导入简答题。');
-    if (isAdmin()) importBtn = ' <button class="btn btn-primary" type="button" onclick="openImportDialog()">📥 导入试题</button>';
+    if (isAdmin()) importBtn = ' <button class="btn btn-primary" type="button" onclick="openQuestionManageDialog()">📥 导入 / 删除</button>';
   } else {
     message = bankData.subtitle + '。本次只导入单选、多选和判断题。';
   }
