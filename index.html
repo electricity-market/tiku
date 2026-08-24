@@ -203,6 +203,7 @@ tr:nth-child(even) { background: #f8f9fa; }
 .result-box.show { display: block; }
 .result-box.correct { background: #e6f4ea; color: #137333; border: 1px solid #a8dab5; }
 .result-box.wrong { background: #fce8e6; color: #c5221f; border: 1px solid #f6aea9; }
+.auto-next-hint { color: #475569; font-size: 12px; font-style: italic; }
 .placeholder-note { margin-top: 18px; padding: 12px 14px; border-left: 4px solid var(--warn); background: #fff8e1; color: #6f5200; font-size: 13px; border-radius: 4px; }
 .objective-tools { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
 .objective-search { flex: 1; min-width: 220px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font: inherit; }
@@ -1656,12 +1657,26 @@ function checkSampleAnswer() {
       wrongChanged = true;
     }
     syncPushNow();
-    if (objectiveOnlyWrong && wrongChanged) {
-      // 错题模式下答对：该题移出后刷新列表，保持当前位置
-      applyObjectiveFilter(true);
-    } else {
-      renderSampleNav(SAMPLE_BANKS[activeBank]);
+    renderSampleNav(SAMPLE_BANKS[activeBank]); // 同步刷新侧栏 done/wrong 标记
+
+    // 答对自动下一题：1 秒延时让用户看完解析
+    clearTimeout(window.__autoNext);
+    var hasMore = (objectiveOnlyWrong && wrongChanged) ? true : (currentQ + 1 < objectiveFiltered.length);
+    if (hasMore) {
+      var box = document.getElementById('sampleResult');
+      if (box) box.innerHTML += '<br><em class="auto-next-hint">1 秒后自动进入下一题…</em>';
     }
+    window.__autoNext = setTimeout(function(){
+      if (objectiveOnlyWrong && wrongChanged) {
+        // 错题模式答对：刷新列表后 currentQ 被 clamp 到新范围，渲染的即为下一道错题
+        applyObjectiveFilter(true);
+        if (objectiveFiltered.length === 0) {
+          showSampleResult(true, '🎉 全部错题已重做完毕！');
+        }
+      } else if (currentQ + 1 < objectiveFiltered.length) {
+        goObjective(currentQ + 1);
+      }
+    }, 1000);
   } else if (['single', 'multiple', 'judge'].includes(activeBank) && selected.length) {
     // 答错自动收集进错题本
     if (!wrongList.includes(q.id)) {
