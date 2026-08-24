@@ -268,13 +268,13 @@ tr:nth-child(even) { background: #f8f9fa; }
 .home-hero h2 { margin:10px 0 12px; font-size:clamp(32px,4.2vw,56px); line-height:1.15; color:#172033; letter-spacing:-.04em; }
 .home-hero p { max-width:720px; color:#667085; font-size:16px; }
 .home-grid { max-width:1180px; margin:0 auto; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px; }
-.home-entry { position:relative; min-height:210px; padding:28px; border:1px solid #e1e6ef; border-radius:22px; background:#fff; cursor:pointer; text-align:left; transition:.22s; box-shadow:0 8px 30px rgba(31,42,68,.055); overflow:hidden; }
+.home-entry { position:relative; min-height:220px; padding:28px 28px 60px; border:1px solid #e1e6ef; border-radius:22px; background:#fff; cursor:pointer; text-align:left; transition:.22s; box-shadow:0 8px 30px rgba(31,42,68,.055); overflow:hidden; display:flex; flex-direction:column; }
 .home-entry:hover { transform:translateY(-3px); border-color:#a9bce9; box-shadow:0 14px 36px rgba(36,87,197,.11); }
-.home-entry .entry-icon { display:grid; place-items:center; width:48px; height:48px; margin-bottom:30px; border-radius:14px; color:#fff; background:var(--primary); font-size:22px; font-weight:700; }
+.home-entry .entry-icon { display:grid; place-items:center; width:48px; height:48px; margin-bottom:24px; border-radius:14px; color:#fff; background:var(--primary); font-size:22px; font-weight:700; }
 .home-entry h3 { margin:0 0 7px; font-size:24px; color:#172033; }
-.home-entry p { margin:0; color:#667085; font-size:14px; }
+.home-entry p { margin:0; color:#667085; font-size:14px; line-height:1.55; flex:1; }
 .home-entry .entry-meta { position:absolute; right:26px; top:28px; color:#98a2b3; font-size:13px; }
-.home-entry .entry-go { position:absolute; right:26px; bottom:24px; color:var(--primary); font-weight:700; }
+.home-entry .entry-go { position:absolute; right:26px; bottom:22px; color:var(--primary); font-weight:700; }
 /* 首页错题本卡片：红色系视觉区分；空状态灰化（无错题时） */
 .home-entry-wrong .entry-icon { background:#d92d20; }
 .home-entry-wrong:hover { border-color:#f4a09a; box-shadow:0 14px 36px rgba(217,45,32,.10); }
