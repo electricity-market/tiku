@@ -183,7 +183,7 @@ tr:nth-child(even) { background: #f8f9fa; }
 
 /* ====== 试题管理对话框（导入+删除合并） ====== */
 .question-manage-dialog { width: min(720px, 96vw); }
-.qm-head { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:14px; }
+.qm-head { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:14px; padding-right:48px; }
 .qm-head h3 { margin:0; }
 .qm-stats { font-size:13px; color:#475569; background:#eef2ff; color:#3730a3; padding:4px 10px; border-radius:999px; font-weight:600; }
 .qm-tabs { display:flex; gap:6px; border-bottom:1px solid var(--border); margin-bottom:14px; padding-right:32px; }
@@ -633,17 +633,6 @@ tr:nth-child(even) { background: #f8f9fa; }
           <span class="tool-text"><strong>移交主账号</strong><em>把管理权限转给另一个账号</em></span>
           <span class="tool-go">→</span>
         </button>
-        <button class="tool-card" type="button" onclick="openQBankEditorEntry()">
-          <span class="tool-icon">✎</span>
-          <span class="tool-text"><strong>在线编辑试题</strong><em id="qbankEditCount">已编辑 0 题 · 修改题干 / 选项 / 答案</em></span>
-          <span class="tool-go">→</span>
-        </button>
-        <button class="tool-card" type="button" onclick="openQuestionManageDialog()">
-          <span class="tool-icon">📝</span>
-          <span class="tool-text"><strong>试题管理</strong><em id="qbankCustomCount">已导入 0 题 · 已删除 0 题</em></span>
-          <span class="tool-go">→</span>
-        </button>
-        <p class="form-hint" style="margin:6px 0 0;font-size:12px;">首页顶部按钮「📝 试题管理」也可直接打开。</p>
       </div>
     </section>
 
