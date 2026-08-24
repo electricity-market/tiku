@@ -462,8 +462,8 @@ tr:nth-child(even) { background: #f8f9fa; }
 .policy-source-line { display:flex; gap:6px 16px; flex-wrap:wrap; margin-top:7px; color:#667085; font-size:12px; }
 .policy-source-line a { color:var(--primary); text-decoration:none; }
 .feedback-fab { position:fixed; right:28px; bottom:88px; z-index:30; padding:12px 16px; border:0; border-radius:999px; background:#172033; color:#fff; box-shadow:0 8px 24px rgba(23,32,51,.22); cursor:pointer; font-weight:700; }
-.feedback-dialog { width:min(540px,calc(100vw - 32px)); max-height:92vh; padding:0; border:0; border-radius:16px; box-shadow:0 24px 70px rgba(15,23,42,.28); display:flex; flex-direction:column; overflow:hidden; }
-.feedback-dialog::backdrop { background:rgba(15,23,42,.48); }
+.feedback-dialog { width:min(540px,calc(100vw - 32px)); max-height:92vh; margin:auto; padding:0; border:0; border-radius:16px; box-shadow:0 24px 70px rgba(15,23,42,.28); display:flex; flex-direction:column; overflow:hidden; z-index:1000; }
+.feedback-dialog::backdrop { background:rgba(15,23,42,.48); z-index:999; }
 .feedback-form { padding:22px 22px 18px; overflow-y:auto; flex:1 1 auto; min-height:0; }
 .feedback-form h2 { margin:0 0 6px; padding-right:32px; }
 .feedback-form h3 { margin:0 0 6px; padding-right:32px; }
@@ -474,7 +474,7 @@ tr:nth-child(even) { background: #f8f9fa; }
 .feedback-actions { display:flex; justify-content:flex-end; gap:9px; margin-top:18px; padding-top:14px; border-top:1px solid var(--border); position:sticky; bottom:0; background:#fff; }
 /* 右上角 X 关闭按钮（每个 dialog 都加上） */
 .feedback-form { position:relative; }
-.dialog-close { position:absolute; top:14px; right:14px; width:32px; height:32px; padding:0; border:0; background:#f1f5f9; color:#475569; border-radius:50%; cursor:pointer; font-size:18px; line-height:1; display:flex; align-items:center; justify-content:center; transition:background .15s; }
+.dialog-close { position:absolute; top:14px; right:14px; width:32px; height:32px; padding:0; border:0; background:#f1f5f9; color:#475569; border-radius:50%; cursor:pointer; font-size:18px; line-height:1; display:flex; align-items:center; justify-content:center; transition:background .15s; z-index:10; pointer-events:auto; }
 .dialog-close:hover { background:#e2e8f0; color:#0f172a; }
 .dialog-close:active { transform:scale(.95); }
 @media (max-width: 768px) {
@@ -913,8 +913,7 @@ async function loadAdminName(){
 }
 function openAdmin(){
   if (!isAdmin()) return;
-  var dlg = document.getElementById('adminDialog');
-  if (dlg && typeof dlg.showModal === 'function') dlg.showModal();
+  _openDialog('adminDialog');
   var ec = document.getElementById('qbankEditCount');
   if (ec) ec.textContent = '已编辑 ' + Object.keys(QBANK_EDITS).length + ' 题 · 修改题干 / 选项 / 答案';
   var cc = document.getElementById('qbankCustomCount');
@@ -932,7 +931,7 @@ function openQBankEditorEntry(){
 }
 function closeAdmin(){
   var dlg = document.getElementById('adminDialog');
-  if (dlg) dlg.close();
+  _safeClose(dlg);
 }
 async function loadAdminAccounts(){
   var box = document.getElementById('adminAccountList');
@@ -977,15 +976,15 @@ async function deleteAccount(name){
 /* 设置注册码：弹内嵌对话框输入新码 + 确认，sha256 后写入云端 sys_config（只更新注册码字段，不影响其他配置） */
 function openRegCodeDialog(){
   if (!isAdmin()) return;
-  var d = document.getElementById('regCodeDialog');
   document.getElementById('newRegCode').value = '';
   document.getElementById('newRegCode2').value = '';
   document.getElementById('regCodeError').textContent = '';
-  if (d && typeof d.showModal === 'function') d.showModal();
+  _openDialog('regCodeDialog');
   setTimeout(function(){ var el=document.getElementById('newRegCode'); if(el) el.focus(); }, 50);
 }
 function closeRegCodeDialog(){
-  var d = document.getElementById('regCodeDialog'); if (d) d.close();
+  var d = document.getElementById('regCodeDialog');
+  _safeClose(d);
 }
 async function submitChangeRegCode(){
   if (!isAdmin()) return;
@@ -1018,15 +1017,15 @@ async function submitChangeRegCode(){
 /* 移交主账号权限：弹内嵌对话框输入目标账号，校验存在后写入云端，当前账号立即失去管理权限 */
 function openTransferDialog(){
   if (!isAdmin()) return;
-  var d = document.getElementById('transferAdminDialog');
   document.getElementById('transferCurrent').value = AdminState.name || MAIN_USER;
   document.getElementById('transferTarget').value = '';
   document.getElementById('transferError').textContent = '';
-  if (d && typeof d.showModal === 'function') d.showModal();
+  _openDialog('transferAdminDialog');
   setTimeout(function(){ var el=document.getElementById('transferTarget'); if(el) el.focus(); }, 50);
 }
 function closeTransferDialog(){
-  var d = document.getElementById('transferAdminDialog'); if (d) d.close();
+  var d = document.getElementById('transferAdminDialog');
+  _safeClose(d);
 }
 async function submitTransferAdmin(){
   if (!isAdmin()) return;
@@ -1067,16 +1066,16 @@ async function submitTransferAdmin(){
 /* 修改密码：弹内嵌对话框输入旧密码 + 新密码 + 确认，校验旧密码后把新哈希写回 auth:<用户> 行 */
 function openPasswordDialog(){
   if (!Auth.user) return;
-  var d = document.getElementById('passwordDialog');
   document.getElementById('oldPassword').value = '';
   document.getElementById('newPassword').value = '';
   document.getElementById('newPassword2').value = '';
   document.getElementById('passwordError').textContent = '';
-  if (d && typeof d.showModal === 'function') d.showModal();
+  _openDialog('passwordDialog');
   setTimeout(function(){ var el=document.getElementById('oldPassword'); if(el) el.focus(); }, 50);
 }
 function closePasswordDialog(){
-  var d = document.getElementById('passwordDialog'); if (d) d.close();
+  var d = document.getElementById('passwordDialog');
+  _safeClose(d);
 }
 async function submitChangePassword(){
   if (!Auth.user) return;
@@ -1449,11 +1448,33 @@ async function commitQBankCustom(next) {
 var importPendingRows = []; // 解析成功的行（待确认导入）
 
 /* ====== 试题管理对话框（导入 + 删除合并）====== */
+/* helper：打开指定 dialog 前先关闭其它所有 .feedback-dialog，避免多层叠加 */
+function _closeAllFeedbackDialogs(exceptId){
+  document.querySelectorAll('dialog.feedback-dialog[open]').forEach(function(d){
+    if (d.id === exceptId) return;
+    if (typeof d.close === 'function') { try { d.close(); } catch(e){ d.removeAttribute('open'); } }
+    else { d.removeAttribute('open'); }
+  });
+}
+function _safeClose(dlg){
+  if (!dlg) return;
+  try { dlg.close(); }
+  catch(e){
+    try { dlg.removeAttribute('open'); } catch(_){}
+  }
+}
+/* 统一打开 dialog：先关掉其它打开中的 dialog，再 showModal */
+function _openDialog(id){
+  var d = document.getElementById(id);
+  if (!d) return;
+  _closeAllFeedbackDialogs(id);
+  if (typeof d.showModal === 'function') d.showModal();
+  else d.setAttribute('open', '');
+}
 function openQuestionManageDialog(tab) {
   if (!isAdmin()) return;
   var target = (tab === 'delete') ? 'delete' : 'import';
-  var dlg = document.getElementById('questionManageDialog');
-  if (!dlg) return;
+  if (!document.getElementById('questionManageDialog')) return;
   // 重置子状态
   importPendingRows = [];
   var file = document.getElementById('importFileInput');
@@ -1479,7 +1500,8 @@ function openQuestionManageDialog(tab) {
   // stats & tab
   updateQuestionManageStats();
   switchQmTab(null, target);
-  if (typeof dlg.showModal === 'function') dlg.showModal();
+  // 用统一 helper（自动关掉其它已打开的 dialog）
+  _openDialog('questionManageDialog');
   // 切到删除 tab 时聚焦搜索框；切到导入 tab 时聚焦文件按钮
   setTimeout(function () {
     if (target === 'delete' && dInput) dInput.focus();
@@ -1487,7 +1509,7 @@ function openQuestionManageDialog(tab) {
 }
 function closeQuestionManageDialog() {
   var dlg = document.getElementById('questionManageDialog');
-  if (dlg) dlg.close();
+  _safeClose(dlg);
   importPendingRows = [];
 }
 function switchQmTab(tabBtn, tab) {
@@ -2077,12 +2099,11 @@ function openQEdit(idx) {
   document.getElementById('qEditExpl').value = q.explanation || '';
   renderQEditOptions(q);
   document.getElementById('qEditResetBtn').style.display = QBANK_EDITS[q.id] ? '' : 'none';
-  var dlg = document.getElementById('qEditDialog');
-  if (dlg && typeof dlg.showModal === 'function') dlg.showModal();
+  _openDialog('qEditDialog');
 }
 function closeQEdit() {
   var dlg = document.getElementById('qEditDialog');
-  if (dlg) dlg.close();
+  _safeClose(dlg);
   qEditTargetId = null;
 }
 function renderQEditOptions(q) {
@@ -3554,16 +3575,13 @@ function importProgress(event) {
 }
 
 function openFeedback() {
-  const dialog = document.getElementById('feedbackDialog');
-  if (dialog.showModal) dialog.showModal();
-  else dialog.setAttribute('open', '');
+  _openDialog('feedbackDialog');
   setTimeout(() => document.getElementById('feedbackDetail').focus(), 50);
 }
 
 function closeFeedback() {
   const dialog = document.getElementById('feedbackDialog');
-  if (dialog.close) dialog.close();
-  else dialog.removeAttribute('open');
+  _safeClose(dialog);
 }
 
 function submitFeedback(event) {
