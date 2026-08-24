@@ -45,6 +45,8 @@ body.home-view .main, body.policy-view .main, body.section-view .main,
 body.objective-view .main, body.reader-view .main { margin-left: 0; width: 100%; }
 body.reader-view .sidebar, body.reader-view .header { display: none; }
 body.reader-view .main { padding-top: 14px; }
+body.search-view .sidebar { display: none; }
+body.search-view .main { margin-left: 0; width: 100%; }
 
 /* Sidebar */
 .sidebar {
@@ -225,6 +227,34 @@ tr:nth-child(even) { background: #f8f9fa; }
 @keyframes obj-search-flash { 0% { box-shadow: 0 0 0 0 rgba(36,102,178,0.45); border-color: var(--primary); } 100% { box-shadow: 0 0 0 8px rgba(36,102,178,0); border-color: var(--border); } }
 .objective-search.just-searched { animation: obj-search-flash 720ms ease-out; }
 .objective-summary { color: var(--text-sec); font-size: 13px; margin-bottom: 12px; }
+
+/* ===== 独立搜题页面（search view） ===== */
+.search-view-container { display: flex; flex-direction: column; gap: 16px; }
+.search-header { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.search-header .back-btn { padding: 8px 14px; }
+.search-bar-big { flex: 1; display: flex; gap: 8px; min-width: 280px; }
+.search-bar-big input { flex: 1; padding: 10px 14px; border: 1px solid var(--border); border-radius: 10px; font: inherit; ime-mode: disabled; -webkit-ime-mode: disabled; }
+.search-bar-big input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(36,102,178,0.18); }
+.search-bar-big button { padding: 10px 22px; }
+.search-tabs { display: flex; gap: 8px; flex-wrap: wrap; }
+.search-tab { padding: 7px 16px; border-radius: 999px; border: 1px solid var(--border); background: #fff; cursor: pointer; color: var(--text-sec); font: inherit; user-select: none; }
+.search-tab:hover { border-color: var(--primary); color: var(--primary); }
+.search-tab.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+.search-summary { color: var(--text-sec); font-size: 13px; }
+.search-results { display: flex; flex-direction: column; gap: 14px; }
+.search-result-card { background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 16px 20px; transition: box-shadow 0.15s; }
+.search-result-card:hover { box-shadow: 0 4px 14px rgba(36,102,178,0.08); }
+.search-result-card .meta-row { display: flex; gap: 8px; margin-bottom: 8px; }
+.search-result-card .stem { font-size: 15px; line-height: 1.6; color: #1f2937; margin-bottom: 10px; }
+.search-result-card .options { color: #475569; font-size: 13px; line-height: 1.7; }
+.search-result-card .options > div { margin: 2px 0; }
+.search-result-card mark { background: #fff3c4; color: #d97706; padding: 0 2px; border-radius: 3px; font-weight: 600; }
+.search-result-card .answer-row { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; padding-top: 10px; border-top: 1px dashed var(--border); }
+.search-result-card .answer { color: var(--accent); font-weight: 600; font-size: 14px; }
+.search-result-card .copy-btn { padding: 5px 14px; background: #fff; border: 1px solid var(--border); border-radius: 6px; cursor: pointer; color: var(--primary); font: inherit; font-size: 13px; }
+.search-result-card .copy-btn:hover { border-color: var(--primary); background: var(--primary-light); }
+.search-result-card .case-preview { color: #475569; font-size: 13px; line-height: 1.65; max-height: 120px; overflow: hidden; position: relative; }
+.search-empty-tip { padding: 14px 18px; background: #fff8e1; border-left: 4px solid var(--warn); color: #6f5200; font-size: 13px; border-radius: 4px; }
 .option-item.selected { border-color: var(--primary); background: var(--primary-light); }
 .option-item.correct-option { border-color: var(--accent); background: #e6f4ea; }
 .option-item.wrong-option { border-color: var(--danger); background: #fce8e6; }
@@ -1372,7 +1402,7 @@ function showToast(msg){
 }
 
 function setViewClass(name) {
-  document.body.classList.remove('home-view', 'section-view', 'policy-view', 'reader-view', 'analysis-view', 'objective-view');
+  document.body.classList.remove('home-view', 'section-view', 'policy-view', 'reader-view', 'analysis-view', 'objective-view', 'search-view');
   if (name) document.body.classList.add(name);
 }
 
@@ -1852,14 +1882,8 @@ function renderSampleQuestion(q, idx) {
   const bankData = SAMPLE_BANKS[activeBank];
   const wrongCount = Object.keys(objectiveWrong[activeBank] || {}).length;
   let html = '<div class="objective-tools"><div class="tools-left"><button class="btn" onclick="randomObjectiveQuestion()">随机一题</button><button class="btn" onclick="toggleWrongMode()">' + (objectiveOnlyWrong ? '显示全部题目' : '只看错题' + (wrongCount ? '（' + wrongCount + '）' : '')) + '</button>' + (wrongCount ? '<button class="btn btn-wrong-clear" id="clearWrongBtn" type="button" onclick="clearWrong()">清空本题型错题</button>' : '') + (isAdmin() ? '<button class="btn" type="button" onclick="openQEdit(currentQ)">✎ 编辑本题</button>' : '') + '</div>';
-  // 客观题常驻搜索框：题干 + 选项同步匹配（仅在 activeBank 是 single/multiple/judge 时显示）
-  if (['single', 'multiple', 'judge'].indexOf(activeBank) >= 0) {
-    html += '<div class="objective-search-wrap">'
-      + '<span class="objective-search-icon" aria-hidden="true">🔍</span>'
-      + '<input class="objective-search" id="objectiveSearch" type="text" inputmode="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" value="' + esc(objectiveQuery) + '" placeholder="输入关键词（题干或选项）·回车确认" aria-label="搜索题库">'
-      + (objectiveQuery ? '<button class="objective-search-clear" type="button" onclick="var i=document.getElementById(\'objectiveSearch\');if(i){i.value=\'\';filterObjectiveQuestions(\'\');}">清除</button>' : '')
-      + '</div>';
-  }
+  // 搜题入口：跳到独立 search-view 页面（包含全题库 + 案例分析 + 计算题）
+  html += '<button class="btn" type="button" onclick="openSearchView()">🔍 搜索题</button>';
   html += '</div>';
   html += '<div class="objective-summary">当前显示 ' + objectiveFiltered.length + ' / ' + bankData.questions.length + ' 题' + (objectiveQuery ? ' · 搜索：' + esc(objectiveQuery) : '') + ' · 第 ' + (idx + 1) + ' 题</div>';
   html += '<div class="card sample-card"><h3><span class="qnum">' + (idx + 1) + '</span>' + esc(q.title) + '</h3>';
@@ -1913,10 +1937,10 @@ function applyObjectiveFilter(keepPos) {
   else currentQ = 0;
   renderSampleNav(SAMPLE_BANKS[activeBank]);
   if (objectiveFiltered.length) renderSampleQuestion(objectiveFiltered[currentQ], currentQ);
-  else document.getElementById('contentArea').innerHTML = '<div class="objective-tools"><div class="objective-search-wrap"><span class="objective-search-icon" aria-hidden="true">🔍</span><input class="objective-search" id="objectiveSearch" type="text" inputmode="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" value="' + esc(objectiveQuery) + '" placeholder="搜索「' + esc(SAMPLE_BANKS[activeBank].title) + '」里的题干或选项" aria-label="搜索题库" oninput="filterObjectiveQuestions(this.value)">' + (objectiveQuery ? '<button class="objective-search-clear" type="button" onclick="var i=document.getElementById(\'objectiveSearch\');if(i){i.value=\'\';filterObjectiveQuestions(\'\');}">清除</button>' : '') + '</div></div><div class="card">' + (objectiveOnlyWrong ? '错题本是空的——答错的选择题会自动出现在这里，答对后自动移出。' : (objectiveQuery ? '没有找到匹配「' + esc(objectiveQuery) + '」的题目，试试别的关键词。' : '没有找到匹配题目。')) + '</div>';
+  else document.getElementById('contentArea').innerHTML = '<div class="objective-tools"><div class="tools-left"></div><button class="btn" type="button" onclick="openSearchView()">🔍 搜索题</button></div><div class="card">' + (objectiveOnlyWrong ? '错题本是空的——答错的选择题会自动出现在这里，答对后自动移出。' : (objectiveQuery ? '没有找到匹配「' + esc(objectiveQuery) + '」的题目，试试别的关键词。' : '没有找到匹配题目。')) + '</div>';
   const input = document.getElementById('objectiveSearch');
   if (input) { input.focus(); input.setSelectionRange(input.value.length, input.value.length); }
-  bindObjSearchImeGuard(input);
+  if (input) bindObjSearchImeGuard(input);
 }
 
 function toggleWrongMode() {
@@ -1988,6 +2012,191 @@ function goObjective(idx) {
   renderSampleQuestion(objectiveFiltered[idx], idx);
   window.scrollTo(0, 0);
 }
+
+/* ====== 独立搜题视图（search-view）======
+   入口：工具栏「🔍 搜索题」按钮；退出：返回原 activeBank。
+   范围：客观题（single/multiple/judge，2305 道）+ 案例分析 + 计算题（DATA 中按 CALCULATION_IDS 区分）。 */
+let searchQueryText = '';
+let searchTypeFilter = ''; // '' = 全部 / 'single' / 'multiple' / 'judge' / 'analysis' / 'calculation'
+let searchResultsCache = [];
+let searchPrevBank = 'single';
+
+const SEARCH_TYPE_LABEL = {
+  '': '全部', single: '单选', multiple: '多选', judge: '判断',
+  analysis: '案例分析', calculation: '计算题'
+};
+
+function openSearchView() {
+  searchPrevBank = activeBank;
+  setViewClass('search-view');
+  const sub = document.getElementById('pageSubtitle');
+  if (sub) sub.textContent = '全题库搜索 · 共 ' + collectAllSearchableItems().length + ' 道题';
+  renderSearchView();
+  window.scrollTo(0, 0);
+}
+
+function closeSearchView() {
+  if (searchPrevBank === 'analysis') setViewClass('analysis-view');
+  else if (searchPrevBank === 'policy') setViewClass('policy-view');
+  else setViewClass('objective-view');
+  switchQuestionType(searchPrevBank);
+}
+
+function collectAllSearchableItems() {
+  const out = [];
+  (window.OBJECTIVE_QUESTIONS || []).forEach(function (q) {
+    out.push({
+      _type: q.type,
+      _title: q.title,
+      _stem: q.stem,
+      _options: q.options,
+      _answer: q.answerText,
+      _haystack: q.stem + ' ' + (q.options || []).map(function (o) { return o.text; }).join(' '),
+      _casePreview: ''
+    });
+  });
+  try {
+    const dataArr = (typeof DATA !== 'undefined' && DATA) ? DATA : [];
+    const calcIds = (typeof CALCULATION_IDS !== 'undefined' && CALCULATION_IDS) ? CALCULATION_IDS : [];
+    dataArr.forEach(function (q) {
+      const isCalc = calcIds.indexOf(q.id) >= 0;
+      const text = (q.problems || []).map(function (p) { return typeof p === 'string' ? p : ''; }).join(' ');
+      out.push({
+        _type: isCalc ? 'calculation' : 'analysis',
+        _title: q.title,
+        _stem: text.slice(0, 200),
+        _options: [],
+        _answer: '查看原文',
+        _haystack: text,
+        _casePreview: text.slice(0, 200)
+      });
+    });
+  } catch (e) { /* DATA 未就绪时忽略 */ }
+  return out;
+}
+
+function runSearch() {
+  const input = document.getElementById('searchInputBig');
+  searchQueryText = (input ? input.value : '').trim();
+  const all = collectAllSearchableItems();
+  let list = all;
+  if (searchTypeFilter) {
+    list = list.filter(function (it) { return it._type === searchTypeFilter; });
+  }
+  if (searchQueryText) {
+    const q = searchQueryText;
+    list = list.filter(function (it) { return it._haystack && it._haystack.indexOf(q) >= 0; });
+  }
+  searchResultsCache = list.slice(0, 100);
+  renderSearchView();
+}
+
+function highlightText(text, query) {
+  if (!query) return esc(text);
+  const safeText = esc(text);
+  const safeQ = esc(query).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  try {
+    return safeText.replace(new RegExp('(' + safeQ + ')', 'g'), '<mark>$1</mark>');
+  } catch (e) {
+    return safeText;
+  }
+}
+
+function renderSearchView() {
+  const container = document.getElementById('contentArea');
+  if (!container) return;
+  const all = collectAllSearchableItems();
+  let html = '<div class="search-view-container">';
+  html += '<div class="search-header">'
+    + '<button class="btn back-btn" type="button" onclick="closeSearchView()">← 返回</button>'
+    + '<div class="search-bar-big">'
+    + '<input id="searchInputBig" type="text" inputmode="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="输入关键词（题干、选项）" value="' + esc(searchQueryText) + '" onkeydown="if(event.key===\'Enter\'){runSearch();}">'
+    + '<button class="btn btn-primary" type="button" onclick="runSearch()">搜索</button>'
+    + '</div></div>';
+  html += '<div class="search-tabs">';
+  ['all', 'single', 'multiple', 'judge', 'analysis', 'calculation'].forEach(function (k) {
+    const v = (k === 'all') ? '' : k;
+    const cls = (searchTypeFilter === v) ? 'search-tab active' : 'search-tab';
+    html += '<span class="' + cls + '" onclick="searchTypeFilter=\'' + v + '\';runSearch();">' + esc(SEARCH_TYPE_LABEL[v] || '全部') + '</span>';
+  });
+  html += '</div>';
+  if (searchQueryText) {
+    html += '<div class="search-summary">匹配「' + esc(searchQueryText) + '」· 共找到 ' + searchResultsCache.length + ' 道' + (searchResultsCache.length === 100 ? '（最多显示 100 条）' : '') + ' · 题库总数 ' + all.length + '</div>';
+  } else {
+    html += '<div class="search-summary">题库总数 ' + all.length + ' 道 · 选择题型后点击「搜索」或直接回车</div>';
+  }
+  if (searchResultsCache.length === 0) {
+    if (searchQueryText) {
+      html += '<div class="search-empty-tip">没有找到匹配「' + esc(searchQueryText) + '」的题目，试试别的关键词或换个题型。</div>';
+    } else {
+      html += '<div class="search-empty-tip">输入关键词后点击「搜索」开始检索。覆盖全部客观题 + 案例分析 + 计算题。</div>';
+    }
+  } else {
+    html += '<div class="search-results">';
+    searchResultsCache.forEach(function (r, i) { html += renderSearchResultCard(r, i); });
+    html += '</div>';
+  }
+  html += '</div>';
+  container.innerHTML = html;
+  if (!searchQueryText) {
+    const inp = document.getElementById('searchInputBig');
+    if (inp) inp.focus();
+  }
+}
+
+function renderSearchResultCard(r, i) {
+  let html = '<div class="search-result-card">';
+  html += '<div class="meta-row"><span class="meta-pill">' + esc(SEARCH_TYPE_LABEL[r._type] || r._type) + '</span>';
+  if (r._title) html += '<span class="meta-pill">' + esc(r._title) + '</span>';
+  html += '</div>';
+  if (r._casePreview) {
+    html += '<div class="case-preview">' + highlightText(r._stem, searchQueryText) + (r._stem.length >= 200 ? '…' : '') + '</div>';
+  } else {
+    html += '<div class="stem">' + highlightText(r._stem, searchQueryText) + '</div>';
+    if (r._options && r._options.length) {
+      html += '<div class="options">';
+      r._options.forEach(function (o) {
+        html += '<div>' + esc(o.letter) + '. ' + highlightText(o.text, searchQueryText) + '</div>';
+      });
+      html += '</div>';
+    }
+  }
+  html += '<div class="answer-row"><span class="answer">答案 ' + esc(r._answer) + '</span>'
+    + '<button class="copy-btn" type="button" data-idx="' + i + '">复制</button>'
+    + '</div>';
+  html += '</div>';
+  return html;
+}
+
+document.addEventListener('click', function (e) {
+  const btn = e.target.closest && e.target.closest('.search-result-card .copy-btn');
+  if (!btn) return;
+  const idx = parseInt(btn.dataset.idx, 10);
+  const r = searchResultsCache[idx];
+  if (!r) return;
+  const lines = [];
+  lines.push((SEARCH_TYPE_LABEL[r._type] || r._type) + (r._title ? ' · ' + r._title : ''));
+  if (r._casePreview) {
+    lines.push(r._stem);
+  } else {
+    lines.push(r._stem);
+    if (r._options && r._options.length) {
+      r._options.forEach(function (o) { lines.push(o.letter + '. ' + o.text); });
+    }
+  }
+  lines.push('答案：' + r._answer);
+  const text = lines.join('\n');
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(function () { showToast('已复制到剪贴板'); });
+  } else {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); showToast('已复制到剪贴板'); } catch (_) { showToast('复制失败，请手动复制'); }
+    document.body.removeChild(ta);
+  }
+});
 
 function randomObjectiveQuestion() {
   if (!objectiveFiltered.length) return;
