@@ -1131,7 +1131,7 @@ function renderHome() {
     : '<span class="wrong-empty">暂无错题</span>';
   const wrongFirstBank = totalWrong ? (wrongParts[0] || {}).bank : 'single';
   const wrongCard = '<button class="home-entry home-entry-wrong' + (totalWrong ? '' : ' home-entry-empty') + '" onclick="enterWrongBank(\'' + wrongFirstBank + '\')"><span class="entry-icon">错</span><span class="entry-meta">' + (totalWrong ? '共 ' + totalWrong + ' 题待重做' : '随时开始练习') + '</span><h3>错题本</h3><p class="wrong-parts">' + wrongPartsHtml + '</p><span class="entry-go">' + (totalWrong ? '开始重做 →' : '进入错题本 →') + '</span></button>';
-  // 简答与计算：拆成两个独立板块，3×2 网格共 6 个入口
+  // 6 板块 3×2 网格：选择题 / 错题本（常驻，空时显示提示） / 简答题 / 计算题 / 仿真分析 / 政策学习
   document.getElementById('contentArea').innerHTML =
     '<section class="home-hero"><div class="home-kicker">ELECTRICITY MARKET LEARNING</div><h2>今天想学习什么？</h2><p>先选择大类，再进入具体题型或政策主题。页面只呈现当前需要的内容，减少来回寻找。</p></section>' +
     '<section class="home-grid" aria-label="学习模块">' +
@@ -1155,16 +1155,6 @@ function renderQuestionSection() {
     ['judge','判断题',SAMPLE_BANKS.judge.questions.length + ' 题','判断说法是否正确']
   ];
   document.getElementById('contentArea').innerHTML = '<div class="section-shell"><div class="section-intro"><h2>选择题</h2><p>选择一种题型进入，左侧目录用于切换题目。</p></div><div class="section-grid">' + cards.map(x => '<button class="section-entry" onclick="switchQuestionType(\'' + x[0] + '\')"><strong>' + x[1] + '</strong><span>' + x[3] + '</span><em>' + x[2] + ' · 开始练习 →</em></button>').join('') + '</div></div>';
-}
-
-function renderWrittenSection() {
-  recordRoute({view:'written-types'});
-  setViewClass('section-view');
-  document.getElementById('pageSubtitle').textContent = '选择具体题型';
-  document.getElementById('contentArea').innerHTML = '<div class="section-shell"><div class="section-intro"><h2>简答与计算</h2><p>简答题与普通计算题分开练习。</p></div><div class="section-grid">' +
-    '<button class="section-entry" onclick="switchQuestionType(\'short\')"><strong>简答题</strong><span>知识点表述与规则理解</span><em>进入题库 →</em></button>' +
-    '<button class="section-entry" onclick="switchQuestionType(\'calculation\')"><strong>普通计算题</strong><span>独立公式与基础计算</span><em>3 道 · 进入题库 →</em></button>' +
-    '</div></div>';
 }
 
 function switchQuestionType(bank) {
