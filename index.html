@@ -344,6 +344,24 @@ tr:nth-child(even) { background: #f8f9fa; }
 .btn-wrong-clear { color:#b42318; border-color:#fecdca; }
 .btn-wrong-clear:hover { background:#fef3f2; }
 .btn-wrong-clear.confirming { background:#d92d20; color:#fff; border-color:#d92d20; font-weight:600; }
+/* 删除本题按钮（两段式确认，与清空错题同风格） */
+.btn-del { color:#b42318; border-color:#fecdca; }
+.btn-del:hover { background:#fef3f2; }
+.btn-del.confirming { background:#d92d20; color:#fff; border-color:#d92d20; font-weight:600; }
+/* 简答题自评提示 */
+.short-answer-hint p { color:#667085; font-size:13px; }
+/* 导入试题对话框 */
+.qimport-actions { display:flex; gap:10px; flex-wrap:wrap; margin:10px 0 6px; }
+.qimport-file-label { position:relative; overflow:hidden; display:inline-flex; align-items:center; cursor:pointer; }
+.qimport-file-label input[type="file"] { position:absolute; left:0; top:0; width:1px; height:1px; opacity:0; overflow:hidden; }
+.qimport-preview { margin:10px 0; }
+.qimport-summary { font-size:13px; color:#334155; margin-bottom:8px; }
+.qimport-summary strong { color:var(--primary); }
+.qimport-bad { color:#b42318; font-weight:600; }
+.qimport-err-row { font-size:12px; color:#b42318; background:#fef3f2; border:1px solid #fecdca; border-radius:8px; padding:6px 10px; margin-bottom:5px; }
+.qimport-card { display:flex; gap:8px; align-items:flex-start; border:1px solid #e1e6ef; border-radius:10px; padding:8px 10px; margin-bottom:6px; background:#f8fafc; }
+.qimport-stem { font-size:13px; color:#334155; line-height:1.5; }
+.qimport-restore { font-size:13px; color:#667085; border-top:1px dashed #e1e6ef; padding-top:10px; margin-top:6px; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
 .section-shell { max-width:1180px; margin:0 auto; }
 .section-intro { padding:32px 0 24px; }
 .section-intro h2 { font-size:32px; color:#172033; margin-bottom:7px; }
@@ -526,6 +544,11 @@ tr:nth-child(even) { background: #f8f9fa; }
           <span class="tool-text"><strong>在线编辑试题</strong><em id="qbankEditCount">已编辑 0 题 · 修改题干 / 选项 / 答案</em></span>
           <span class="tool-go">→</span>
         </button>
+        <button class="tool-card" type="button" onclick="openImportDialog()">
+          <span class="tool-icon">📥</span>
+          <span class="tool-text"><strong>导入 / 删除试题</strong><em id="qbankCustomCount">已导入 0 题 · 已删除 0 题</em></span>
+          <span class="tool-go">→</span>
+        </button>
       </div>
     </section>
 
@@ -592,6 +615,25 @@ tr:nth-child(even) { background: #f8f9fa; }
       <button class="policy-action" type="button" onclick="closeQEdit()">取消</button>
       <button class="policy-action" type="button" id="qEditResetBtn" style="display:none" onclick="resetQEdit()">恢复原题</button>
       <button class="policy-action primary" type="button" id="qEditSubmitBtn" onclick="submitQEdit()">保存修改</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog class="feedback-dialog admin-dialog-wide" id="importDialog">
+  <form class="feedback-form" onsubmit="return false">
+    <h3>导入试题</h3>
+    <p class="form-hint">支持 单选 / 多选 / 判断 / 简答 四种题型（计算题暂不支持）。先下载模板，按模板格式填写后选择文件，解析无误即可导入。导入结果保存到云端，所有设备同步生效。</p>
+    <div class="qimport-actions">
+      <button class="policy-action primary" type="button" onclick="downloadImportTemplate()">⬇ 下载导入模板（CSV）</button>
+      <label class="policy-action qimport-file-label">📄 选择 CSV 文件<input type="file" id="importFileInput" accept=".csv,text/csv" onchange="handleImportFile(this)"></label>
+    </div>
+    <p class="form-hint">答案列填写规则：单选填一个字母（A）；多选填多个字母（ABC 或 A,B）；判断填 正确 或 错误；简答填参考答案全文。</p>
+    <div id="importPreview" class="qimport-preview"></div>
+    <div class="form-error" id="importError"></div>
+    <div id="importRestoreRow" class="qimport-restore" style="display:none"></div>
+    <div class="feedback-actions">
+      <button class="policy-action" type="button" onclick="closeImportDialog()">取消</button>
+      <button class="policy-action primary" type="button" id="importSubmitBtn" onclick="submitImportQuestions()" disabled>确认导入</button>
     </div>
   </form>
 </dialog>
@@ -758,6 +800,11 @@ function openAdmin(){
   if (dlg && typeof dlg.showModal === 'function') dlg.showModal();
   var ec = document.getElementById('qbankEditCount');
   if (ec) ec.textContent = '已编辑 ' + Object.keys(QBANK_EDITS).length + ' 题 · 修改题干 / 选项 / 答案';
+  var cc = document.getElementById('qbankCustomCount');
+  if (cc) {
+    var t = qbankCustomTotals();
+    cc.textContent = '已导入 ' + t.imported + ' 题 · 已删除 ' + t.deleted + ' 题';
+  }
   loadAdminAccounts();
 }
 /* 题库编辑入口：关闭账号管理，进入选择题板块并提示编辑按钮位置 */
@@ -1156,6 +1203,429 @@ async function commitQBankEdits(nextEdits) {
   localStorage.setItem(QBANK_EDIT_KEY, JSON.stringify(nextEdits));
 }
 
+/* ====== 题库自定义层：导入试题 + 删除试题（主账号专用，云端覆盖层）======
+   方案：progress 表 slug=qbank_custom 行的 objective_completed 字段存
+   { imports: { single:[题], multiple:[题], judge:[题], short:[题] },
+     deletes: { single:[id], multiple:[id], judge:[id], short:[id] } }
+   - imports：主账号通过 CSV 模板导入的题（含简答题），加载时追加进对应题型题库；
+   - deletes：被删除的"原始题" id（原始题不可物理删除，只能拉黑；导入题删除时直接从 imports 移除）；
+   - 所有设备（含普通账号）都会套用导入与删除结果；静态 objective-questions.js 永远不改。 */
+const QBANK_CUSTOM_KEY = 'huadian_qbank_custom';
+const QBANK_CUSTOM_BANKS = ['single', 'multiple', 'judge', 'short'];
+let QBANK_CUSTOM = { imports: {}, deletes: {} };
+try {
+  var __qc = JSON.parse(localStorage.getItem(QBANK_CUSTOM_KEY) || '{}');
+  if (__qc && typeof __qc === 'object') QBANK_CUSTOM = __qc;
+} catch (e) { QBANK_CUSTOM = { imports: {}, deletes: {} }; }
+function emptyQBankCustomShape() { return { imports: {}, deletes: {} }; }
+function normalizeQBankCustom(raw) {
+  var out = emptyQBankCustomShape();
+  if (!raw || typeof raw !== 'object') return out;
+  ['imports', 'deletes'].forEach(function (k) {
+    if (raw[k] && typeof raw[k] === 'object') {
+      QBANK_CUSTOM_BANKS.forEach(function (b) {
+        if (k === 'imports') {
+          var arr = raw[k][b];
+          if (Array.isArray(arr)) {
+            out.imports[b] = arr.filter(function (q) { return q && q.stem; });
+          }
+        } else if (Array.isArray(raw[k][b])) {
+          out.deletes[b] = raw[k][b].map(String);
+        }
+      });
+    }
+  });
+  return out;
+}
+function qbankCustomTotals() {
+  var imported = 0, deleted = 0;
+  QBANK_CUSTOM_BANKS.forEach(function (b) {
+    imported += ((QBANK_CUSTOM.imports || {})[b] || []).length;
+    deleted += ((QBANK_CUSTOM.deletes || {})[b] || []).length;
+  });
+  return { imported: imported, deleted: deleted };
+}
+/* 导入题 raw（云端存储的最小结构）→ 完整题目对象 */
+function buildImportedQuestion(raw, bank, seq) {
+  var q = {
+    id: raw.id || ('u-' + bank + '-' + Date.now() + '-' + seq),
+    type: bank,
+    number: raw.number || ('导' + seq),
+    title: raw.title || (SAMPLE_BANKS[bank].title + ' 第' + seq + '题（导入）'),
+    stem: raw.stem,
+    options: (raw.options || []).map(function (o, i) { return { letter: String.fromCharCode(65 + i), text: o }; }),
+    answer: (raw.answer || []).slice(),
+    answerText: '',
+    explanation: raw.explanation || '',
+    reference: raw.reference || '',
+    order: 900000 + seq
+  };
+  if (bank === 'short') {
+    q.options = [];
+    q.answer = [];
+    q.answerText = raw.reference || '';
+  } else {
+    q.answerText = q.answer.slice().sort(function (a, b) { return a - b; }).map(function (i) { return q.options[i] ? q.options[i].letter : ''; }).join('，');
+  }
+  return q;
+}
+function bankSubtitle(bank, count) {
+  if (count <= 0) return bank === 'short' ? '简答题暂未导入' : '暂无题目';
+  var map = {
+    single: '共' + count + '题 · 每题只有一个正确答案',
+    multiple: '共' + count + '题 · 少选、多选均不得分',
+    judge: '共' + count + '题 · 选择后提交查看结果',
+    short: '共' + count + '题 · 文字作答 · 对照参考答案自评'
+  };
+  return map[bank] || ('共' + count + '题');
+}
+/* 全量重放：移除旧导入 → 按 deletes 过滤原始题 → 追加导入题 → 更新题库数量副标题 */
+function rebuildQBankCustom() {
+  var qs = window.OBJECTIVE_QUESTIONS || [];
+  for (var i = qs.length - 1; i >= 0; i--) { if (qs[i]._isImported) qs.splice(i, 1); }
+  QBANK_CUSTOM_BANKS.forEach(function (b) {
+    var del = ((QBANK_CUSTOM.deletes || {})[b] || []).map(String);
+    var list = qs.filter(function (q) { return q.type === b && del.indexOf(String(q.id)) < 0; });
+    var raws = ((QBANK_CUSTOM.imports || {})[b] || []);
+    raws.forEach(function (raw, j) {
+      var q = buildImportedQuestion(raw, b, j + 1);
+      q._isImported = true;
+      list.push(q);
+      qs.push(q);
+    });
+    SAMPLE_BANKS[b].questions = list;
+    SAMPLE_BANKS[b].subtitle = bankSubtitle(b, list.length);
+  });
+}
+rebuildQBankCustom(); // 启动时立即套用本地缓存（同步，不闪原始内容）
+function rerenderAfterQBankCustom() {
+  try {
+    if (['single', 'multiple', 'judge', 'short'].includes(activeBank)) applyObjectiveFilter(true);
+    else if (activeBank === 'home') renderHome();
+  } catch (e) { /* 视图切换中的渲染异常可忽略 */ }
+}
+async function refreshQBankCustomFromCloud() {
+  try {
+    var res = await fetch(Auth.apiUrl() + '?slug=eq.qbank_custom&select=objective_completed', {method: 'GET', headers: Auth.authHeaders()});
+    if (!res.ok) return;
+    var rows = await res.json();
+    var clean = normalizeQBankCustom(rows && rows[0] && rows[0].objective_completed);
+    if (JSON.stringify(clean) === JSON.stringify(QBANK_CUSTOM)) return;
+    QBANK_CUSTOM = clean;
+    localStorage.setItem(QBANK_CUSTOM_KEY, JSON.stringify(clean));
+    rebuildQBankCustom();
+    rerenderAfterQBankCustom();
+  } catch (e) { /* 离线时保持本地缓存 */ }
+}
+async function commitQBankCustom(next) {
+  var res = await fetch(Auth.apiUrl(), {
+    method: 'POST',
+    headers: Auth.authHeaders({'Prefer': 'resolution=merge-duplicates,return=minimal'}),
+    body: JSON.stringify([{slug: 'qbank_custom', objective_completed: next}])
+  });
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  QBANK_CUSTOM = next;
+  localStorage.setItem(QBANK_CUSTOM_KEY, JSON.stringify(next));
+}
+
+/* ====== 导入对话框：模板下载 + CSV 解析 + 预览确认 ====== */
+var importPendingRows = []; // 解析成功的行（待确认导入）
+function openImportDialog() {
+  if (!isAdmin()) return;
+  importPendingRows = [];
+  var dlg = document.getElementById('importDialog');
+  var file = document.getElementById('importFileInput');
+  var prev = document.getElementById('importPreview');
+  var err = document.getElementById('importError');
+  var btn = document.getElementById('importSubmitBtn');
+  if (file) file.value = '';
+  if (prev) prev.innerHTML = '';
+  if (err) err.textContent = '';
+  if (btn) btn.disabled = true;
+  updateImportRestoreRow();
+  if (dlg && typeof dlg.showModal === 'function') dlg.showModal();
+}
+function closeImportDialog() {
+  var dlg = document.getElementById('importDialog');
+  if (dlg) dlg.close();
+  importPendingRows = [];
+}
+/* 模板：UTF-8 BOM 的 CSV，Excel 双击打开直接可编辑 */
+function downloadImportTemplate() {
+  var csv = '\uFEFF题型,题干,选项A,选项B,选项C,选项D,选项E,选项F,选项G,选项H,答案,解析\n'
+    + '单选,以下哪项不属于电力辅助服务交易品种？,调频,备用,输电权交易,爬坡,,,,,C,输电权不属于辅助服务品种\n'
+    + '多选,下列属于电力辅助服务的有：,调频,备用,无功电压调节,黑启动,,,,,ABC,辅助服务包括调频、备用、无功、黑启动等\n'
+    + '判断,节点电价在任何情况下都等于系统边际电价。,,,,,,,,错误,存在阻塞与网损时节点价格会分化\n'
+    + '简答,请简述节点电价的基本构成。,,,,,,,,,节点电价 = 系统边际电价 + 阻塞分量 + 网损分量。,发电侧节点电价反映该节点增供电能的边际成本\n';
+  var blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = '题库导入模板.csv';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+  showToast('模板已下载。用 Excel 或记事本打开，按示例行的格式填写后保存（保持 CSV 格式）。');
+}
+/* CSV 解析：支持引号包裹的逗号/换行、双引号转义（""）、CRLF、BOM */
+function parseCsv(text) {
+  var rows = [], row = [], field = '', inQuotes = false;
+  if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+  for (var i = 0; i < text.length; i++) {
+    var c = text[i];
+    if (inQuotes) {
+      if (c === '"') {
+        if (text[i + 1] === '"') { field += '"'; i++; }
+        else inQuotes = false;
+      } else field += c;
+    } else {
+      if (c === '"') inQuotes = true;
+      else if (c === ',') { row.push(field); field = ''; }
+      else if (c === '\n') { row.push(field); field = ''; rows.push(row); row = []; }
+      else if (c === '\r') { /* 跳过，等 \n 收行 */ }
+      else field += c;
+    }
+  }
+  if (field !== '' || row.length) { row.push(field); rows.push(row); }
+  return rows.filter(function (r) { return r.some(function (c) { return String(c).trim() !== ''; }); });
+}
+function importTypeLabel(bank) {
+  return { single: '单选', multiple: '多选', judge: '判断', short: '简答' }[bank] || bank;
+}
+function parseImportType(v) {
+  var t = String(v || '').trim().toLowerCase();
+  if (t === '单选' || t === '单选题' || t === 'single') return 'single';
+  if (t === '多选' || t === '多选题' || t === 'multiple') return 'multiple';
+  if (t === '判断' || t === '判断题' || t === 'judge') return 'judge';
+  if (t === '简答' || t === '简答题' || t === 'short') return 'short';
+  return null;
+}
+/* 答案列 → 选项索引数组。支持 "A" "ABC" "A,B" "A、B、C"；判断支持 正确/错误/对/错/√/×/A/B */
+function parseAnswerLetters(v, optCount, bank) {
+  var s = String(v || '').trim();
+  if (!s) return null;
+  if (bank === 'judge') {
+    var t = s.toLowerCase();
+    if (t === '正确' || t === '对' || t === '√' || t === 'a' || t === 't') return [0];
+    if (t === '错误' || t === '错' || t === '×' || t === 'x' || t === 'b' || t === 'f') return [1];
+    return null;
+  }
+  var letters = s.toUpperCase().replace(/[^A-H]/g, '');
+  if (!letters) return null;
+  var used = {};
+  var idx = [];
+  for (var i = 0; i < letters.length; i++) {
+    var n = letters.charCodeAt(i) - 65;
+    if (n < 0 || n >= optCount) return null; // 超出实际选项数
+    if (used[n]) return null; // 重复字母
+    used[n] = true;
+    idx.push(n);
+  }
+  idx.sort(function (a, b) { return a - b; });
+  return idx;
+}
+/* CSV 行 → 待导入题对象；出错返回 {error: 原因} */
+function parseImportRow(cells, rowNo) {
+  var where = '第 ' + rowNo + ' 行：';
+  if (!cells || cells.length < 3) return { error: where + '列数不足（至少需要 题型 / 题干 / 答案 三列），请使用下载的模板。' };
+  var bank = parseImportType(cells[0]);
+  if (!bank) return { error: where + '题型「' + (cells[0] || '(空)') + '」无法识别，请填写 单选 / 多选 / 判断 / 简答。' };
+  var stem = String(cells[1] || '').trim();
+  if (!stem) return { error: where + '题干不能为空。' };
+  var answerCol = String(cells[10] || '').trim();
+  var explanation = String(cells[11] || '').trim();
+  if (bank === 'short') {
+    if (!answerCol) return { error: where + '简答题的「答案」列需填写参考答案。' };
+    return { bank: 'short', stem: stem, options: [], answer: [], reference: answerCol, explanation: explanation };
+  }
+  if (bank === 'judge') {
+    // 判断题选项固定为「正确 / 错误」，模板选项列留空也可导入
+    var jans = parseAnswerLetters(answerCol, 2, 'judge');
+    if (!jans) return { error: where + '判断题答案请填写 正确 或 错误。' };
+    return { bank: 'judge', stem: stem, options: ['正确', '错误'], answer: jans, explanation: explanation };
+  }
+  var optTexts = [];
+  for (var i = 2; i <= 9; i++) {
+    var t = String(cells[i] || '').trim();
+    if (t) optTexts.push(t);
+  }
+  if (optTexts.length < 2) return { error: where + importTypeLabel(bank) + '题至少需要 2 个非空选项。' };
+  if (optTexts.length > 10) return { error: where + '选项最多支持 10 个（模板提供 A-H 共 8 列）。' };
+  var ansIdx = parseAnswerLetters(answerCol, optTexts.length, bank);
+  if (!ansIdx) return { error: where + '答案「' + answerCol + '」无效，请填写选项字母（如 A 或 ABC）。' };
+  if (bank === 'multiple' && ansIdx.length < 2) return { error: where + '多选题答案至少包含 2 个字母（如 AB）。' };
+  if (bank === 'single' && ansIdx.length !== 1) return { error: where + '单选题答案只能是一个字母（如 A）。' };
+  return { bank: bank, stem: stem, options: optTexts, answer: ansIdx, explanation: explanation };
+}
+function handleImportFile(input) {
+  importPendingRows = [];
+  var err = document.getElementById('importError');
+  var btn = document.getElementById('importSubmitBtn');
+  var prev = document.getElementById('importPreview');
+  if (err) err.textContent = '';
+  if (btn) btn.disabled = true;
+  if (prev) prev.innerHTML = '';
+  var file = input.files && input.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function () {
+    try {
+      var rows = parseCsv(String(reader.result));
+      if (!rows.length) throw new Error('文件内容为空');
+      // 第一行是表头则跳过（含"题型"字样）
+      var start = (rows[0][0] && String(rows[0][0]).indexOf('题型') >= 0) ? 1 : 0;
+      var good = [], errors = [];
+      for (var i = start; i < rows.length; i++) {
+        var r = parseImportRow(rows[i], i + 1);
+        if (r.error) errors.push(r.error); else good.push(r);
+      }
+      importPendingRows = good;
+      renderImportPreview(good, errors);
+      if (btn) btn.disabled = !good.length;
+    } catch (e) {
+      if (err) err.textContent = '解析失败：' + (e.message || e);
+    }
+  };
+  reader.onerror = function () { if (err) err.textContent = '读取文件失败，请重试。'; };
+  reader.readAsText(file, 'utf-8');
+}
+function renderImportPreview(good, errors) {
+  var prev = document.getElementById('importPreview');
+  if (!prev) return;
+  var counts = { single: 0, multiple: 0, judge: 0, short: 0 };
+  good.forEach(function (r) { counts[r.bank]++; });
+  var html = '<div class="qimport-summary">解析成功 <strong>' + good.length + '</strong> 题'
+    + '（单选 ' + counts.single + ' / 多选 ' + counts.multiple + ' / 判断 ' + counts.judge + ' / 简答 ' + counts.short + '）';
+  if (errors.length) html += ' · <span class="qimport-bad">失败 ' + errors.length + ' 条（失败行不会导入）</span>';
+  html += '</div>';
+  errors.slice(0, 8).forEach(function (e) { html += '<div class="qimport-err-row">' + esc(e) + '</div>'; });
+  if (errors.length > 8) html += '<div class="qimport-err-row">… 其余 ' + (errors.length - 8) + ' 条错误略</div>';
+  good.slice(0, 3).forEach(function (r, i) {
+    html += '<div class="qimport-card"><span class="meta-pill">' + importTypeLabel(r.bank) + '</span>'
+      + '<div class="qimport-stem">' + esc(r.stem.length > 80 ? r.stem.slice(0, 80) + '…' : r.stem) + '</div></div>';
+  });
+  if (good.length > 3) html += '<div class="qimport-summary">… 其余 ' + (good.length - 3) + ' 题导入后可见</div>';
+  prev.innerHTML = html;
+}
+async function submitImportQuestions() {
+  if (!isAdmin() || !importPendingRows.length) return;
+  var btn = document.getElementById('importSubmitBtn');
+  var err = document.getElementById('importError');
+  btn.disabled = true; btn.textContent = '导入中…';
+  try {
+    var next = JSON.parse(JSON.stringify(QBANK_CUSTOM));
+    next.imports = next.imports || {};
+    var seqBase = Date.now();
+    importPendingRows.forEach(function (r, i) {
+      var bank = r.bank;
+      var raw = {
+        id: 'u-' + bank + '-' + seqBase + '-' + i,
+        stem: r.stem,
+        options: r.options || [],
+        answer: r.answer || [],
+        reference: r.reference || '',
+        explanation: r.explanation || '',
+        ts: seqBase
+      };
+      if (!Array.isArray(next.imports[bank])) next.imports[bank] = [];
+      next.imports[bank].push(raw);
+    });
+    await commitQBankCustom(next);
+    rebuildQBankCustom();
+    rerenderAfterQBankCustom();
+    closeImportDialog();
+    var t = qbankCustomTotals();
+    showToast('已导入 ' + importPendingRows.length + ' 题并同步云端，所有设备生效。\n当前累计导入 ' + t.imported + ' 题。');
+    importPendingRows = [];
+  } catch (e) {
+    if (err) err.textContent = '导入失败：' + (e.message || e) + '，请检查网络后重试。';
+  } finally {
+    btn.disabled = false; btn.textContent = '确认导入';
+  }
+}
+function updateImportRestoreRow() {
+  var box = document.getElementById('importRestoreRow');
+  if (!box) return;
+  var t = qbankCustomTotals();
+  box.style.display = t.deleted ? '' : 'none';
+  box.innerHTML = '已删除原始题 ' + t.deleted + ' 道。<button class="policy-action" type="button" onclick="restoreDeletedQuestions()">全部恢复</button>';
+}
+async function restoreDeletedQuestions() {
+  if (!isAdmin()) return;
+  var t = qbankCustomTotals();
+  if (!t.deleted) return;
+  if (!confirm('确定恢复全部 ' + t.deleted + ' 道已删除的原始题？')) return;
+  try {
+    var next = JSON.parse(JSON.stringify(QBANK_CUSTOM));
+    next.deletes = {};
+    await commitQBankCustom(next);
+    rebuildQBankCustom();
+    rerenderAfterQBankCustom();
+    updateImportRestoreRow();
+    showToast('已恢复全部已删除的原始题。');
+  } catch (e) {
+    showToast('恢复失败：' + (e.message || e));
+  }
+}
+
+/* ====== 删除本题（两段式确认按钮）====== */
+function deleteCurrentQuestion() {
+  if (!isAdmin()) return;
+  var btn = document.getElementById('delQBtn');
+  if (!btn) return;
+  if (btn.dataset.confirm !== '1') {
+    btn.dataset.confirm = '1';
+    btn.classList.add('confirming');
+    btn.textContent = '再次点击确认删除';
+    setTimeout(function () {
+      if (btn.isConnected && btn.dataset.confirm === '1') {
+        btn.dataset.confirm = '';
+        btn.classList.remove('confirming');
+        btn.textContent = '🗑 删除本题';
+      }
+    }, 3000);
+    return;
+  }
+  var q = objectiveFiltered[currentQ];
+  if (!q) return;
+  var bank = activeBank;
+  var isImported = !!q._isImported;
+  deleteCurrentQuestionCommit(q, bank, isImported);
+}
+async function deleteCurrentQuestionCommit(q, bank, isImported) {
+  try {
+    var next = JSON.parse(JSON.stringify(QBANK_CUSTOM));
+    if (isImported) {
+      next.imports = next.imports || {};
+      var arr = (next.imports[bank] || []).filter(function (raw) { return raw.id !== q.id; });
+      next.imports[bank] = arr;
+    } else {
+      next.deletes = next.deletes || {};
+      if (!Array.isArray(next.deletes[bank])) next.deletes[bank] = [];
+      if (next.deletes[bank].map(String).indexOf(String(q.id)) < 0) next.deletes[bank].push(q.id);
+    }
+    await commitQBankCustom(next);
+    rebuildQBankCustom();
+    // 删除后回到本题型列表（自动 clamp 到剩余范围）
+    if (['single', 'multiple', 'judge', 'short'].includes(activeBank)) applyObjectiveFilter(true);
+    else rerenderAfterQBankCustom();
+    showToast(isImported ? '导入题已删除。' : '原始题已删除（可在「账号管理 → 导入试题」里恢复）。');
+  } catch (e) {
+    showToast('删除失败：' + (e.message || e) + '，请检查网络后重试。');
+  }
+}
+/* 简答题：标记完成 */
+function markShortDone() {
+  var q = currentSample();
+  if (!q) return;
+  var done = new Set(objectiveCompleted[activeBank] || []);
+  done.add(q.id);
+  objectiveCompleted[activeBank] = [...done];
+  localStorage.setItem('huadian_objective_completed', JSON.stringify(objectiveCompleted));
+  syncPushNow();
+  renderSampleNav(SAMPLE_BANKS[activeBank]);
+  showToast('已标记完成。');
+}
+
 /* ====== 编辑对话框 ====== */
 var qEditTargetId = null;
 function openQEdit(idx) {
@@ -1434,7 +1904,7 @@ function renderHome() {
     '<section class="home-hero"><h2>今天想学习什么？</h2></section>' +
     '<section class="home-grid" aria-label="学习模块">' +
       '<button class="home-entry" onclick="renderQuestionSection()"><span class="entry-icon">选</span><span class="entry-meta">' + (window.OBJECTIVE_QUESTIONS ? window.OBJECTIVE_QUESTIONS.length : 0) + ' 题</span><h3>选择题</h3><p>单选、多选与判断题，按题型进入练习，错题自动收录。</p><span class="entry-go">进入练习 →</span></button>' +
-      '<button class="home-entry" onclick="switchQuestionType(\'short\')"><span class="entry-icon">简</span><span class="entry-meta">持续整理</span><h3>简答题</h3><p>知识点表述与规则理解，文字作答。</p><span class="entry-go">进入练习 →</span></button>' +
+      '<button class="home-entry" onclick="switchQuestionType(\'short\')"><span class="entry-icon">简</span><span class="entry-meta">' + (SAMPLE_BANKS.short.questions.length ? SAMPLE_BANKS.short.questions.length + ' 题' : '持续整理') + '</span><h3>简答题</h3><p>知识点表述与规则理解，文字作答。</p><span class="entry-go">进入练习 →</span></button>' +
       '<button class="home-entry" onclick="switchQuestionType(\'calculation\')"><span class="entry-icon">算</span><span class="entry-meta">3 道</span><h3>计算题</h3><p>独立公式与基础计算，独立练习。</p><span class="entry-go">进入练习 →</span></button>' +
       '<button class="home-entry" onclick="switchQuestionType(\'analysis\')"><span class="entry-icon">析</span><span class="entry-meta">13 道大题</span><h3>仿真分析</h3><p>现货出清、节点电价、输电权等完整案例。</p><span class="entry-go">开始学习 →</span></button>' +
       '<button class="home-entry" onclick="switchQuestionType(\'policy\')"><span class="entry-icon">政</span><span class="entry-meta">' + POLICY_DATA.length + ' 份原文</span><h3>政策学习</h3><p>先选政策主题，再直接阅读无标注 PDF 原件。</p><span class="entry-go">浏览政策 →</span></button>' +
@@ -1881,7 +2351,7 @@ function renderSampleNav(bankData) {
 function renderSampleQuestion(q, idx) {
   const bankData = SAMPLE_BANKS[activeBank];
   const wrongCount = Object.keys(objectiveWrong[activeBank] || {}).length;
-  let html = '<div class="objective-tools"><div class="tools-left"><button class="btn" onclick="randomObjectiveQuestion()">随机一题</button><button class="btn" onclick="toggleWrongMode()">' + (objectiveOnlyWrong ? '显示全部题目' : '只看错题' + (wrongCount ? '（' + wrongCount + '）' : '')) + '</button>' + (wrongCount ? '<button class="btn btn-wrong-clear" id="clearWrongBtn" type="button" onclick="clearWrong()">清空本题型错题</button>' : '') + (isAdmin() ? '<button class="btn" type="button" onclick="openQEdit(currentQ)">✎ 编辑本题</button>' : '') + '</div>';
+  let html = '<div class="objective-tools"><div class="tools-left"><button class="btn" onclick="randomObjectiveQuestion()">随机一题</button><button class="btn" onclick="toggleWrongMode()">' + (objectiveOnlyWrong ? '显示全部题目' : '只看错题' + (wrongCount ? '（' + wrongCount + '）' : '')) + '</button>' + (wrongCount ? '<button class="btn btn-wrong-clear" id="clearWrongBtn" type="button" onclick="clearWrong()">清空本题型错题</button>' : '') + (isAdmin() ? (q.type !== 'short' ? '<button class="btn" type="button" onclick="openQEdit(currentQ)">✎ 编辑本题</button>' : '') + '<button class="btn btn-del" id="delQBtn" type="button" onclick="deleteCurrentQuestion()">🗑 删除本题</button>' : '') + '</div>';
   // 搜题入口：跳到独立 search-view 页面（包含全题库 + 案例分析 + 计算题）
   html += '<button class="btn" type="button" onclick="openSearchView()">🔍 搜索题</button>';
   html += '</div>';
@@ -1897,6 +2367,10 @@ function renderSampleQuestion(q, idx) {
       html += '<label class="option-item"><input type="' + inputType + '" name="sampleAnswer" value="' + i + '" onchange="this.closest(\'.option-item\').classList.toggle(\'selected\',this.checked)"><span>' + esc(option.letter) + '. ' + esc(option.text) + '</span></label>';
     });
     html += '</div><button class="btn btn-primary" onclick="checkSampleAnswer()">提交答案</button> <button class="btn" onclick="goObjective(' + (idx - 1) + ')" ' + (idx === 0 ? 'disabled' : '') + '>← 上一题</button> <button class="btn" onclick="goObjective(' + (idx + 1) + ')" ' + (idx >= objectiveFiltered.length - 1 ? 'disabled' : '') + '>下一题 →</button>';
+  } else if (q.type === 'short') {
+    // 简答题（导入）：无选项，先自评再对照参考答案
+    html += '<div class="problem-text short-answer-hint"><p>主观题：先在心里或纸上作答，再点击「显示参考答案」对照自评。</p></div>';
+    html += '<button class="btn btn-primary" onclick="showReferenceAnswer()">显示参考答案</button> <button class="btn" onclick="markShortDone()">✓ 标记完成</button> <button class="btn" onclick="goObjective(' + (idx - 1) + ')" ' + (idx === 0 ? 'disabled' : '') + '>← 上一题</button> <button class="btn" onclick="goObjective(' + (idx + 1) + ')" ' + (idx >= objectiveFiltered.length - 1 ? 'disabled' : '') + '>下一题 →</button>';
   }
   html += '<div class="result-box" id="sampleResult" aria-live="polite"></div>';
   html += '</div>';
@@ -1907,10 +2381,16 @@ function renderSampleQuestion(q, idx) {
 function renderEmptyBank(bankData) {
   document.getElementById('navList').innerHTML = '';
   const objectiveType = ['single', 'multiple', 'judge'].includes(activeBank);
-  const message = objectiveType
-    ? '题库数据加载失败，请刷新页面重试；如果仍未显示，请清除浏览器缓存后重新打开。'
-    : bankData.subtitle + '。本次只导入单选、多选和判断题。';
-  document.getElementById('contentArea').innerHTML = '<div class="card"><h3>' + esc(bankData.title) + '</h3><div class="placeholder-note">' + esc(message) + '</div></div>';
+  let message, importBtn = '';
+  if (objectiveType) {
+    message = '题库数据加载失败，请刷新页面重试；如果仍未显示，请清除浏览器缓存后重新打开。';
+  } else if (activeBank === 'short') {
+    message = '简答题暂未导入。' + (isAdmin() ? '主账号可通过「账号管理 → 导入 / 删除试题」下载模板并导入简答题。' : '请管理员在账号管理中导入简答题。');
+    if (isAdmin()) importBtn = ' <button class="btn btn-primary" type="button" onclick="openImportDialog()">📥 导入试题</button>';
+  } else {
+    message = bankData.subtitle + '。本次只导入单选、多选和判断题。';
+  }
+  document.getElementById('contentArea').innerHTML = '<div class="card"><h3>' + esc(bankData.title) + '</h3><div class="placeholder-note">' + esc(message) + '</div>' + importBtn + '</div>';
 }
 
 function applyObjectiveFilter(keepPos) {
@@ -2022,7 +2502,7 @@ let searchResultsCache = [];
 let searchPrevBank = 'single';
 
 const SEARCH_TYPE_LABEL = {
-  '': '全部', single: '单选', multiple: '多选', judge: '判断',
+  '': '全部', single: '单选', multiple: '多选', judge: '判断', short: '简答',
   analysis: '案例分析', calculation: '计算题'
 };
 
@@ -2045,13 +2525,15 @@ function closeSearchView() {
 function collectAllSearchableItems() {
   const out = [];
   (window.OBJECTIVE_QUESTIONS || []).forEach(function (q) {
+    // 已删除的原始题不再进入搜索结果
+    if (((QBANK_CUSTOM.deletes || {})[q.type] || []).indexOf(String(q.id)) >= 0) return;
     out.push({
       _type: q.type,
       _title: q.title,
       _stem: q.stem,
       _options: q.options,
       _answer: q.answerText,
-      _haystack: q.stem + ' ' + (q.options || []).map(function (o) { return o.text; }).join(' '),
+      _haystack: q.stem + ' ' + (q.options || []).map(function (o) { return o.text; }).join(' ') + (q.type === 'short' ? ' ' + (q.answerText || '') : ''),
       _casePreview: ''
     });
   });
@@ -2114,7 +2596,7 @@ function renderSearchView() {
     + '<button class="btn btn-primary" type="button" onclick="runSearch()">搜索</button>'
     + '</div></div>';
   html += '<div class="search-tabs">';
-  ['all', 'single', 'multiple', 'judge', 'analysis', 'calculation'].forEach(function (k) {
+  ['all', 'single', 'multiple', 'judge', 'short', 'analysis', 'calculation'].forEach(function (k) {
     const v = (k === 'all') ? '' : k;
     const cls = (searchTypeFilter === v) ? 'search-tab active' : 'search-tab';
     html += '<span class="' + cls + '" onclick="searchTypeFilter=\'' + v + '\';runSearch();">' + esc(SEARCH_TYPE_LABEL[v] || '全部') + '</span>';
@@ -2129,7 +2611,7 @@ function renderSearchView() {
     if (searchQueryText) {
       html += '<div class="search-empty-tip">没有找到匹配「' + esc(searchQueryText) + '」的题目，试试别的关键词或换个题型。</div>';
     } else {
-      html += '<div class="search-empty-tip">输入关键词后点击「搜索」开始检索。覆盖全部客观题 + 案例分析 + 计算题。</div>';
+      html += '<div class="search-empty-tip">输入关键词后点击「搜索」开始检索。覆盖全部客观题 + 简答题 + 案例分析 + 计算题。</div>';
     }
   } else {
     html += '<div class="search-results">';
@@ -2308,6 +2790,8 @@ function init() {
   cloudPullAndRender();
   // 启动后从云端拉取题库编辑（非阻塞；编辑对所有账号生效）
   refreshQBankEditsFromCloud();
+  // 启动后从云端拉取题库导入/删除（非阻塞；对所有账号生效）
+  refreshQBankCustomFromCloud();
 }
 
 async function cloudPullAndRender(){
