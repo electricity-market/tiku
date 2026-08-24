@@ -193,6 +193,7 @@ tr:nth-child(even) { background: #f8f9fa; }
 .bank-tab span { display: block; font-size: 18px; line-height: 1.2; margin-bottom: 3px; }
 .sample-card .question-meta { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
 .sample-card .meta-pill { padding: 3px 9px; border-radius: 999px; background: var(--primary-light); color: var(--primary); font-size: 12px; }
+.sample-card .meta-pill-wrong { background:#fee4e2; color:#b42318; }
 .option-list { display: grid; gap: 10px; margin: 16px 0; }
 .option-item { display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; background: #fff; }
 .option-item:hover { border-color: #8ab4f8; background: #f8fbff; }
@@ -281,6 +282,18 @@ tr:nth-child(even) { background: #f8f9fa; }
 .home-entry p { margin:0; color:#667085; font-size:14px; }
 .home-entry .entry-meta { position:absolute; right:26px; top:28px; color:#98a2b3; font-size:13px; }
 .home-entry .entry-go { position:absolute; right:26px; bottom:24px; color:var(--primary); font-weight:700; }
+/* 首页错题本卡片：红色系视觉区分 */
+.home-entry-wrong .entry-icon { background:#d92d20; }
+.home-entry-wrong:hover { border-color:#f4a09a; box-shadow:0 14px 36px rgba(217,45,32,.10); }
+.home-entry-wrong .entry-go { color:#d92d20; }
+.home-entry-wrong .wrong-parts { color:#98a2b3; }
+.home-entry-wrong .wrong-parts a { color:#d92d20; font-weight:600; text-decoration:none; }
+.home-entry-wrong .wrong-parts a:hover { text-decoration:underline; }
+.home-entry-wrong .wrong-sep { margin:0 6px; color:#d0d5dd; }
+/* 清空错题按钮（两段式确认） */
+.btn-wrong-clear { color:#b42318; border-color:#fecdca; }
+.btn-wrong-clear:hover { background:#fef3f2; }
+.btn-wrong-clear.confirming { background:#d92d20; color:#fff; border-color:#d92d20; font-weight:600; }
 .section-shell { max-width:1180px; margin:0 auto; }
 .section-intro { padding:32px 0 24px; }
 .section-intro h2 { font-size:32px; color:#172033; margin-bottom:7px; }
@@ -907,10 +920,23 @@ async function handleAuthSubmit(event){
 }
 
 /* ====== 进度聚合/拆分适配层 ====== */
+/* 错题数据规范化：老数据是 [id, id] 数组，新数据是 {id: 错误次数}。此函数做兼容升级。 */
+function normalizeWrong(obj){
+  if (!obj || typeof obj !== 'object') return {};
+  Object.keys(obj).forEach(function(bank){
+    if (Array.isArray(obj[bank])) {
+      var conv = {};
+      obj[bank].forEach(function(id){ conv[id] = 1; });
+      obj[bank] = conv;
+    }
+  });
+  return obj;
+}
 function gatherProgress(){
   var oc = JSON.parse(localStorage.getItem('huadian_objective_completed')||'{}');
-  var wrong = JSON.parse(localStorage.getItem('huadian_objective_wrong')||'{}');
+  var wrong = normalizeWrong(JSON.parse(localStorage.getItem('huadian_objective_wrong')||'{}'));
   if (Object.keys(wrong).length) oc._wrong = wrong; // 错题随客观题进度一起云同步
+  localStorage.setItem('huadian_objective_wrong', JSON.stringify(wrong)); // 顺便持久化升级后的结构
   return {
     objective_completed: oc,
     policy_read: JSON.parse(localStorage.getItem('huadian_policy_read')||'[]'),
@@ -941,7 +967,7 @@ function applyProgress(remote){
 }
 function reloadProgressFromStorage(){
   objectiveCompleted=JSON.parse(localStorage.getItem('huadian_objective_completed')||'{}');
-  objectiveWrong=JSON.parse(localStorage.getItem('huadian_objective_wrong')||'{}');
+  objectiveWrong=normalizeWrong(JSON.parse(localStorage.getItem('huadian_objective_wrong')||'{}'));
   policyRead=JSON.parse(localStorage.getItem('huadian_policy_read')||'[]');
   policyStarred=JSON.parse(localStorage.getItem('huadian_policy_starred')||'[]');
   completed=JSON.parse(localStorage.getItem('huadian_q10_completed')||'[]');
@@ -971,7 +997,7 @@ let activeBank = 'analysis';
 let objectiveQuery = '';
 let objectiveFiltered = [];
 let objectiveCompleted = JSON.parse(localStorage.getItem('huadian_objective_completed') || '{}');
-let objectiveWrong = JSON.parse(localStorage.getItem('huadian_objective_wrong') || '{}');
+let objectiveWrong = normalizeWrong(JSON.parse(localStorage.getItem('huadian_objective_wrong') || '{}'));
 let objectiveOnlyWrong = false;
 let policyCategory = '全部';
 let policySubcategory = '全部';
@@ -1098,8 +1124,18 @@ function renderHome() {
   setViewClass('home-view');
   document.getElementById('pageSubtitle').textContent = '选择一个学习模块开始';
   const objectiveCount = (window.OBJECTIVE_QUESTIONS || []).length;
-  const totalWrong = ['single', 'multiple', 'judge'].reduce((sum, b) => sum + ((objectiveWrong[b] || []).length), 0);
+  const wrongBanks = ['single', 'multiple', 'judge'].map(b => ({ bank: b, count: Object.keys(objectiveWrong[b] || {}).length }));
+  const totalWrong = wrongBanks.reduce((sum, b) => sum + b.count, 0);
   const objectiveMeta = objectiveCount + ' 题' + (totalWrong ? ' · 错题 ' + totalWrong + ' 待重做' : '');
+  // 错题本快捷入口（有错题时才显示）：卡内链接可直达对应题型错题模式
+  var wrongCard = '';
+  if (totalWrong) {
+    const firstBank = (wrongBanks.find(w => w.count > 0) || {}).bank;
+    const parts = wrongBanks.filter(w => w.count > 0)
+      .map(w => '<a href="javascript:void(0)" onclick="event.stopPropagation();enterWrongBank(\'' + w.bank + '\')">' + w.bank.replace('single','单选').replace('multiple','多选').replace('judge','判断') + ' ' + w.count + '</a>')
+      .join('<span class="wrong-sep">/</span>');
+    wrongCard = '<button class="home-entry home-entry-wrong" onclick="enterWrongBank(\'' + firstBank + '\')"><span class="entry-icon">错</span><span class="entry-meta">共 ' + totalWrong + ' 题待重做</span><h3>错题本</h3><p class="wrong-parts">' + parts + '</p><span class="entry-go">开始重做 →</span></button>';
+  }
   var userCard = '';
   if (Auth.user) {
     var initial = esc(Auth.user.charAt(0).toUpperCase());
@@ -1113,6 +1149,7 @@ function renderHome() {
     '<section class="home-hero"><div class="home-kicker">ELECTRICITY MARKET LEARNING</div><h2>今天想学习什么？</h2><p>先选择大类，再进入具体题型或政策主题。页面只呈现当前需要的内容，减少来回寻找。</p></section>' +
     '<section class="home-grid" aria-label="学习模块">' +
       '<button class="home-entry" onclick="renderQuestionSection()"><span class="entry-icon">选</span><span class="entry-meta">' + objectiveMeta + '</span><h3>选择题</h3><p>单选、多选与判断题，按题型进入练习，错题自动收录。</p><span class="entry-go">进入练习 →</span></button>' +
+      wrongCard +
       '<button class="home-entry" onclick="renderWrittenSection()"><span class="entry-icon">答</span><span class="entry-meta">持续整理</span><h3>简答与计算</h3><p>简答题与普通计算题，按难度独立练习。</p><span class="entry-go">选择题型 →</span></button>' +
       '<button class="home-entry" onclick="switchQuestionType(\'analysis\')"><span class="entry-icon">析</span><span class="entry-meta">13 道大题</span><h3>仿真分析</h3><p>现货出清、节点电价、输电权等完整案例。</p><span class="entry-go">开始学习 →</span></button>' +
       '<button class="home-entry" onclick="switchQuestionType(\'policy\')"><span class="entry-icon">政</span><span class="entry-meta">' + POLICY_DATA.length + ' 份原文</span><h3>政策学习</h3><p>先选政策主题，再直接阅读无标注 PDF 原件。</p><span class="entry-go">浏览政策 →</span></button>' +
@@ -1147,8 +1184,7 @@ function switchQuestionType(bank) {
   activeBank = bank;
   currentQ = 0;
   setViewClass(bank === 'policy' ? 'policy-view' : '');
-  const isRich = bank === 'analysis' || bank === 'calculation';
-  document.querySelector('.mode-toggle').classList.toggle('hidden', !isRich);
+  const isRich = bank === 'analysis' || bank === 'calculation';  document.querySelector('.mode-toggle').classList.toggle('hidden', !isRich);
   document.querySelector('.progress').classList.toggle('hidden', !isRich);
   document.querySelector('.progress-tools').classList.toggle('hidden', !isRich);
   document.querySelector('.reset-btn').classList.toggle('hidden', !isRich);
@@ -1180,6 +1216,14 @@ function switchQuestionType(bank) {
     else renderEmptyBank(bankData);
   }
   window.scrollTo(0, 0);
+}
+
+/* 从首页错题本入口进入指定题型的错题模式 */
+function enterWrongBank(bank) {
+  if (!SAMPLE_BANKS[bank]) return;
+  switchQuestionType(bank);
+  objectiveOnlyWrong = true;
+  applyObjectiveFilter(false);
 }
 
 function policyCategories() {
@@ -1546,8 +1590,9 @@ function renderSampleNav(bankData) {
     const li = document.createElement('li');
     li.className = i === currentQ ? 'active' : '';
     if ((objectiveCompleted[activeBank] || []).includes(q.id)) li.classList.add('done');
-    if ((objectiveWrong[activeBank] || []).includes(q.id)) li.classList.add('wrong');
-    li.textContent = (i + 1) + '. ' + q.stem;
+    const wrongTimes = (objectiveWrong[activeBank] || {})[q.id];
+    if (wrongTimes !== undefined) li.classList.add('wrong');
+    li.textContent = (i + 1) + '. ' + q.stem + (wrongTimes > 1 ? '（已错 ' + wrongTimes + ' 次）' : '');
     li.title = q.stem;
     li.onclick = () => { currentQ = i; renderSampleNav(bankData); renderSampleQuestion(q, i); };
     ul.appendChild(li);
@@ -1556,11 +1601,12 @@ function renderSampleNav(bankData) {
 
 function renderSampleQuestion(q, idx) {
   const bankData = SAMPLE_BANKS[activeBank];
-  const wrongCount = (objectiveWrong[activeBank] || []).length;
-  let html = '<div class="objective-tools"><button class="btn" onclick="randomObjectiveQuestion()">随机一题</button><button class="btn" onclick="toggleWrongMode()">' + (objectiveOnlyWrong ? '显示全部题目' : '只看错题' + (wrongCount ? '（' + wrongCount + '）' : '')) + '</button></div>';
+  const wrongCount = Object.keys(objectiveWrong[activeBank] || {}).length;
+  let html = '<div class="objective-tools"><button class="btn" onclick="randomObjectiveQuestion()">随机一题</button><button class="btn" onclick="toggleWrongMode()">' + (objectiveOnlyWrong ? '显示全部题目' : '只看错题' + (wrongCount ? '（' + wrongCount + '）' : '')) + '</button>' + (wrongCount ? '<button class="btn btn-wrong-clear" id="clearWrongBtn" type="button" onclick="clearWrong()">清空本题型错题</button>' : '') + '</div>';
   html += '<div class="objective-summary">当前显示 ' + objectiveFiltered.length + ' / ' + bankData.questions.length + ' 题 · 第 ' + (idx + 1) + ' 题</div>';
   html += '<div class="card sample-card"><h3><span class="qnum">' + (idx + 1) + '</span>' + esc(q.title) + '</h3>';
-  html += '<div class="question-meta"><span class="meta-pill">' + esc(bankData.title) + '</span><span class="meta-pill">原题号：' + esc(q.number) + '</span></div>';
+  const wrongTimes = (objectiveWrong[activeBank] || {})[q.id];
+  html += '<div class="question-meta"><span class="meta-pill">' + esc(bankData.title) + '</span><span class="meta-pill">原题号：' + esc(q.number) + '</span>' + (wrongTimes !== undefined ? '<span class="meta-pill meta-pill-wrong">错题 · 已错 ' + wrongTimes + ' 次</span>' : '') + '</div>';
   html += '<div class="problem-text"><p>' + esc(q.stem) + '</p></div>';
   if (q.type === 'single' || q.type === 'multiple' || q.type === 'judge') {
     const inputType = q.type === 'multiple' ? 'checkbox' : 'radio';
@@ -1586,10 +1632,10 @@ function renderEmptyBank(bankData) {
 
 function applyObjectiveFilter(keepPos) {
   const all = SAMPLE_BANKS[activeBank].questions;
-  const wrongIds = objectiveWrong[activeBank] || [];
+  const wrongMap = objectiveWrong[activeBank] || {};
   let list = all.slice();
   if (objectiveQuery) list = list.filter(q => q.stem.includes(objectiveQuery) || q.number.includes(objectiveQuery));
-  if (objectiveOnlyWrong) list = list.filter(q => wrongIds.includes(q.id));
+  if (objectiveOnlyWrong) list = list.filter(q => wrongMap[q.id] !== undefined);
   objectiveFiltered = list;
   if (keepPos) currentQ = Math.min(currentQ, Math.max(objectiveFiltered.length - 1, 0));
   else currentQ = 0;
@@ -1603,6 +1649,31 @@ function applyObjectiveFilter(keepPos) {
 function toggleWrongMode() {
   objectiveOnlyWrong = !objectiveOnlyWrong;
   applyObjectiveFilter(false);
+}
+
+/* 清空当前题型的错题：两段式按钮确认（第一次点击变成「再次点击确认」，3 秒后恢复） */
+function clearWrong(){
+  var btn = document.getElementById('clearWrongBtn');
+  if (!btn) return;
+  if (btn.dataset.confirm !== '1') {
+    btn.dataset.confirm = '1';
+    btn.classList.add('confirming');
+    btn.textContent = '再次点击确认清空';
+    setTimeout(function(){
+      if (btn.isConnected && btn.dataset.confirm === '1') {
+        btn.dataset.confirm = '';
+        btn.classList.remove('confirming');
+        btn.textContent = '清空本题型错题';
+      }
+    }, 3000);
+    return;
+  }
+  delete objectiveWrong[activeBank];
+  localStorage.setItem('huadian_objective_wrong', JSON.stringify(objectiveWrong));
+  syncPushNow();
+  objectiveOnlyWrong = false; // 清空后回到普通模式
+  applyObjectiveFilter(false);
+  showToast('已清空「' + SAMPLE_BANKS[activeBank].title + '」的全部错题');
 }
 
 function filterObjectiveQuestions(value) {
@@ -1643,7 +1714,7 @@ function checkSampleAnswer() {
   const answerLabel = q.answer.map(i => q.options[i]?.letter).filter(Boolean).join('、');
   const detail = '正确答案：' + answerLabel + (q.explanation ? '\n解析：' + q.explanation : '');
   showSampleResult(correct, detail);
-  var wrongList = objectiveWrong[activeBank] || [];
+  var wrongMap = objectiveWrong[activeBank] || {};
   var wrongChanged = false;
   if (correct) {
     const done = new Set(objectiveCompleted[activeBank] || []);
@@ -1651,8 +1722,9 @@ function checkSampleAnswer() {
     objectiveCompleted[activeBank] = [...done];
     localStorage.setItem('huadian_objective_completed', JSON.stringify(objectiveCompleted));
     // 答对自动移出错题本
-    if (wrongList.includes(q.id)) {
-      objectiveWrong[activeBank] = wrongList.filter(id => id !== q.id);
+    if (wrongMap[q.id] !== undefined) {
+      delete wrongMap[q.id];
+      objectiveWrong[activeBank] = wrongMap;
       localStorage.setItem('huadian_objective_wrong', JSON.stringify(objectiveWrong));
       wrongChanged = true;
     }
@@ -1678,15 +1750,13 @@ function checkSampleAnswer() {
       }
     }, 1000);
   } else if (['single', 'multiple', 'judge'].includes(activeBank) && selected.length) {
-    // 答错自动收集进错题本
-    if (!wrongList.includes(q.id)) {
-      wrongList.push(q.id);
-      objectiveWrong[activeBank] = wrongList;
-      localStorage.setItem('huadian_objective_wrong', JSON.stringify(objectiveWrong));
-      wrongChanged = true;
-      syncPushNow();
-    }
-    if (wrongChanged) renderSampleNav(SAMPLE_BANKS[activeBank]);
+    // 答错自动收集进错题本（累加错误次数）
+    if (wrongMap[q.id] === undefined) wrongChanged = true;
+    wrongMap[q.id] = (wrongMap[q.id] || 0) + 1;
+    objectiveWrong[activeBank] = wrongMap;
+    localStorage.setItem('huadian_objective_wrong', JSON.stringify(objectiveWrong));
+    if (wrongChanged) syncPushNow();
+    renderSampleNav(SAMPLE_BANKS[activeBank]);
   }
 }
 
@@ -2027,7 +2097,7 @@ function importProgress(event) {
       }
       // v3 备份：同步恢复错题本
       if (data.objectiveWrong && typeof data.objectiveWrong === 'object') {
-        objectiveWrong = data.objectiveWrong;
+        objectiveWrong = normalizeWrong(data.objectiveWrong);
         localStorage.setItem('huadian_objective_wrong', JSON.stringify(objectiveWrong));
       }
       if (Array.isArray(data.policyRead)) {
