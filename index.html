@@ -186,9 +186,6 @@ tr:nth-child(even) { background: #f8f9fa; }
 .home-user-card .user-meta .name { font-size:15px; font-weight:600; color:#0f172a; }
 .home-user-card .user-meta .role { font-size:12px; color:#475569; margin-top:2px; }
 .home-user-card .user-meta .role .pill { display:inline-block; background:#1d4ed8; color:#fff; font-size:11px; padding:1px 8px; border-radius:999px; margin-left:6px; }
-.home-user-card .user-actions { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
-.home-user-card .home-user-tip { color:#64748b; font-size:12px; text-decoration:none; cursor:pointer; padding:6px 8px; }
-.home-user-card .home-user-tip:hover { color:#1d4ed8; }
 
 /* Question bank switcher */
 .bank-switcher { display: none; }
@@ -1112,7 +1109,7 @@ function renderHome() {
     userCard = '<section class="home-user-card" aria-label="当前账号">' +
       '<div class="avatar">' + initial + '</div>' +
       '<div class="user-meta"><div class="name">' + esc(Auth.user) + '</div><div class="role">已登录' + rolePill + '</div></div>' +
-      '<div class="user-actions"><a class="home-user-tip" href="javascript:void(0)" onclick="window.scrollTo({top:0,behavior:\'smooth\'})">登录后顶部按钮可管理账号 ↗</a></div></section>';
+      '</section>';
   }
   document.getElementById('contentArea').innerHTML =
     userCard +
