@@ -462,19 +462,45 @@ tr:nth-child(even) { background: #f8f9fa; }
 .policy-source-line { display:flex; gap:6px 16px; flex-wrap:wrap; margin-top:7px; color:#667085; font-size:12px; }
 .policy-source-line a { color:var(--primary); text-decoration:none; }
 .feedback-fab { position:fixed; right:28px; bottom:88px; z-index:30; padding:12px 16px; border:0; border-radius:999px; background:#172033; color:#fff; box-shadow:0 8px 24px rgba(23,32,51,.22); cursor:pointer; font-weight:700; }
-.feedback-dialog { width:min(540px,calc(100vw - 32px)); max-height:92vh; margin:auto; padding:0; border:0; border-radius:16px; box-shadow:0 24px 70px rgba(15,23,42,.28); display:flex; flex-direction:column; overflow:hidden; z-index:1000; }
-.feedback-dialog::backdrop { background:rgba(15,23,42,.48); z-index:999; }
-.feedback-form { padding:22px 22px 18px; overflow-y:auto; flex:1 1 auto; min-height:0; }
+/* ====== 模态对话框系统（纯 div 实现，不再用 <dialog> 元素）====== */
+/* 背景遮罩 */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.48);
+  z-index: 999;
+  display: none;
+}
+.modal-backdrop.active { display: block; }
+/* 对话框本体 */
+.feedback-dialog {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(540px, calc(100vw - 32px));
+  max-height: 92vh;
+  padding: 0;
+  border-radius: 16px;
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.28);
+  display: none;
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 1000;
+  background: #ffffff;
+  /* 关键：仅当 .active 时显示 */
+}
+.feedback-dialog.active { display: flex; }
+.feedback-form { padding: 22px 22px 18px; overflow-y: auto; flex: 1 1 auto; min-height: 0; position: relative; }
 .feedback-form h2 { margin:0 0 6px; padding-right:32px; }
 .feedback-form h3 { margin:0 0 6px; padding-right:32px; }
 .feedback-form p { margin:0 0 16px; color:#667085; }
 .feedback-form label { display:block; margin-top:12px; color:#344054; font-weight:700; }
 .feedback-form select,.feedback-form textarea,.feedback-form input { width:100%; margin-top:6px; padding:10px 12px; border:1px solid #d0d5dd; border-radius:9px; background:#fff; font:inherit; }
 .feedback-form textarea { min-height:120px; resize:vertical; }
-.feedback-actions { display:flex; justify-content:flex-end; gap:9px; margin-top:18px; padding-top:14px; border-top:1px solid var(--border); position:sticky; bottom:0; background:#fff; }
+.feedback-actions { display:flex; justify-content:flex-end; gap:9px; margin-top:18px; padding-top:14px; border-top:1px solid var(--border); position:sticky; bottom:0; background:#fff; min-height:54px; }
 /* 右上角 X 关闭按钮（每个 dialog 都加上） */
-.feedback-form { position:relative; }
-.dialog-close { position:absolute; top:14px; right:14px; width:32px; height:32px; padding:0; border:0; background:#f1f5f9; color:#475569; border-radius:50%; cursor:pointer; font-size:18px; line-height:1; display:flex; align-items:center; justify-content:center; transition:background .15s; z-index:10; pointer-events:auto; }
+.dialog-close { position:absolute; top:14px; right:14px; width:32px; height:32px; padding:0; border:0; background:#f1f5f9; color:#475569; border-radius:50%; cursor:pointer; font-size:18px; line-height:1; display:flex; align-items:center; justify-content:center; transition:background .15s; z-index:20; pointer-events:auto; }
 .dialog-close:hover { background:#e2e8f0; color:#0f172a; }
 .dialog-close:active { transform:scale(.95); }
 @media (max-width: 768px) {
@@ -566,19 +592,20 @@ tr:nth-child(even) { background: #f8f9fa; }
 </div>
 <button class="back-to-top" id="backToTop" type="button" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="回到顶部">↑</button>
 <button class="feedback-fab" type="button" onclick="openFeedback()">问题反馈</button>
-<dialog class="feedback-dialog" id="feedbackDialog">
-  <form class="feedback-form" onsubmit="submitFeedback(event)">
+<div class="modal-backdrop" id="modalBackdrop"></div>
+<div class="feedback-dialog" id="feedbackDialog">
+  <div class="feedback-form">
     <button type="button" class="dialog-close" aria-label="关闭" onclick="closeFeedback()">×</button>
     <h2>问题反馈</h2><p>可报告错题、答案错误、政策失效或页面问题。</p>
     <label>问题类型<select id="feedbackType"><option>错题或题干问题</option><option>答案或解析错误</option><option>政策失效或被替代</option><option>页面功能问题</option><option>其他建议</option></select></label>
     <label>问题说明<textarea id="feedbackDetail" required placeholder="请说明题号、政策名称或具体问题"></textarea></label>
     <label>联系方式（选填）<input id="feedbackContact" placeholder="方便需要时进一步核实"></label>
-    <div class="feedback-actions"><button class="policy-action" type="button" onclick="closeFeedback()">取消</button><button class="policy-action primary" type="submit">提交反馈</button></div>
-  </form>
-</dialog>
+    <div class="feedback-actions"><button class="policy-action primary" type="button" onclick="submitFeedbackDirect()">提交反馈</button></div>
+  </div>
+</div>
 
-<dialog class="feedback-dialog admin-dialog-wide" id="adminDialog">
-  <form class="feedback-form" onsubmit="return false">
+<div class="feedback-dialog admin-dialog-wide" id="adminDialog">
+  <div class="feedback-form">
     <button type="button" class="dialog-close" aria-label="关闭" onclick="closeAdmin()">×</button>
     <header class="admin-header">
       <div>
@@ -620,12 +647,12 @@ tr:nth-child(even) { background: #f8f9fa; }
       </div>
     </section>
 
-    <div class="feedback-actions"><button class="policy-action" type="button" onclick="closeAdmin()">关闭</button></div>
-  </form>
-</dialog>
+    <div class="feedback-actions">&nbsp;</div>
+  </div>
+</div>
 
-<dialog class="feedback-dialog" id="regCodeDialog">
-  <form class="feedback-form" onsubmit="return false">
+<div class="feedback-dialog" id="regCodeDialog">
+  <div class="feedback-form">
     <button type="button" class="dialog-close" aria-label="关闭" onclick="closeRegCodeDialog()">×</button>
     <h3>设置注册码</h3>
     <p class="form-hint">新注册码加密存储于云端，网页源码与请求中均不出现明文，修改后立即对新注册生效。4-32 个字符，不支持中文。</p>
@@ -633,14 +660,13 @@ tr:nth-child(even) { background: #f8f9fa; }
     <label>再次输入<input type="text" id="newRegCode2" autocomplete="off" /></label>
     <div class="form-error" id="regCodeError"></div>
     <div class="feedback-actions">
-      <button class="policy-action" type="button" onclick="closeRegCodeDialog()">取消</button>
       <button class="policy-action primary" type="button" id="regCodeSubmitBtn" onclick="submitChangeRegCode()">保存</button>
     </div>
-  </form>
-</dialog>
+  </div>
+</div>
 
-<dialog class="feedback-dialog" id="transferAdminDialog">
-  <form class="feedback-form" onsubmit="return false">
+<div class="feedback-dialog" id="transferAdminDialog">
+  <div class="feedback-form">
     <button type="button" class="dialog-close" aria-label="关闭" onclick="closeTransferDialog()">×</button>
     <h3>移交主账号权限</h3>
     <p class="form-hint">移交后当前账号立即失去账号管理权限，目标账号刷新页面或重新登录后即可接管。</p>
@@ -648,14 +674,13 @@ tr:nth-child(even) { background: #f8f9fa; }
     <label>目标账号名<input type="text" id="transferTarget" autocomplete="off" placeholder="请输入已注册账号的用户名" /></label>
     <div class="form-error" id="transferError"></div>
     <div class="feedback-actions">
-      <button class="policy-action" type="button" onclick="closeTransferDialog()">取消</button>
       <button class="policy-action primary" type="button" id="transferSubmitBtn" onclick="submitTransferAdmin()">确认移交</button>
     </div>
-  </form>
-</dialog>
+  </div>
+</div>
 
-<dialog class="feedback-dialog" id="passwordDialog">
-  <form class="feedback-form" onsubmit="return false">
+<div class="feedback-dialog" id="passwordDialog">
+  <div class="feedback-form">
     <button type="button" class="dialog-close" aria-label="关闭" onclick="closePasswordDialog()">×</button>
     <h3>修改密码</h3>
     <p class="form-hint">请输入当前密码与新密码。修改后下次登录请使用新密码。修改密码不会清空本设备已有的学习进度。</p>
@@ -664,14 +689,13 @@ tr:nth-child(even) { background: #f8f9fa; }
     <label>确认新密码<input type="password" id="newPassword2" autocomplete="new-password" /></label>
     <div class="form-error" id="passwordError"></div>
     <div class="feedback-actions">
-      <button class="policy-action" type="button" onclick="closePasswordDialog()">取消</button>
       <button class="policy-action primary" type="button" id="passwordSubmitBtn" onclick="submitChangePassword()">确认修改</button>
     </div>
-  </form>
-</dialog>
+  </div>
+</div>
 
-<dialog class="feedback-dialog admin-dialog-wide" id="qEditDialog">
-  <form class="feedback-form" onsubmit="return false">
+<div class="feedback-dialog admin-dialog-wide" id="qEditDialog">
+  <div class="feedback-form">
     <button type="button" class="dialog-close" aria-label="关闭" onclick="closeQEdit()">×</button>
     <h3>编辑试题</h3>
     <p class="form-hint" id="qEditMeta"></p>
@@ -684,15 +708,14 @@ tr:nth-child(even) { background: #f8f9fa; }
     <label>解析（选填）<textarea id="qEditExpl" rows="2" placeholder="保存后将在提交答案时随正确答案一起显示"></textarea></label>
     <div class="form-error" id="qEditError"></div>
     <div class="feedback-actions">
-      <button class="policy-action" type="button" onclick="closeQEdit()">取消</button>
       <button class="policy-action" type="button" id="qEditResetBtn" style="display:none" onclick="resetQEdit()">恢复原题</button>
       <button class="policy-action primary" type="button" id="qEditSubmitBtn" onclick="submitQEdit()">保存修改</button>
     </div>
-  </form>
-</dialog>
+  </div>
+</div>
 
-<dialog class="feedback-dialog admin-dialog-wide question-manage-dialog" id="questionManageDialog">
-  <form class="feedback-form" onsubmit="return false">
+<div class="feedback-dialog admin-dialog-wide question-manage-dialog" id="questionManageDialog">
+  <div class="feedback-form">
     <button type="button" class="dialog-close" aria-label="关闭" onclick="closeQuestionManageDialog()">×</button>
     <div class="qm-head">
       <h3>试题管理</h3>
@@ -749,8 +772,8 @@ tr:nth-child(even) { background: #f8f9fa; }
       </div>
       <div id="deleteRestoreRow" class="qimport-restore" style="display:none"></div>
     </div>
-  </form>
-</dialog>
+  </div>
+</div>
 
 <script src="objective-questions.js?v=20260821-1" onerror="window.OBJECTIVE_LOAD_FAILED=true"></script>
 <script src="policy-library-data.js?v=20260822-2" onerror="window.POLICY_LOAD_FAILED=true"></script>
@@ -913,7 +936,7 @@ async function loadAdminName(){
 }
 function openAdmin(){
   if (!isAdmin()) return;
-  _openDialog('adminDialog');
+  openModal('adminDialog');
   var ec = document.getElementById('qbankEditCount');
   if (ec) ec.textContent = '已编辑 ' + Object.keys(QBANK_EDITS).length + ' 题 · 修改题干 / 选项 / 答案';
   var cc = document.getElementById('qbankCustomCount');
@@ -930,8 +953,7 @@ function openQBankEditorEntry(){
   showToast('已进入选择题板块。任意题型练习页中，每道题的按钮栏都有「✎ 编辑本题」。');
 }
 function closeAdmin(){
-  var dlg = document.getElementById('adminDialog');
-  _safeClose(dlg);
+  closeModal('adminDialog');
 }
 async function loadAdminAccounts(){
   var box = document.getElementById('adminAccountList');
@@ -979,12 +1001,11 @@ function openRegCodeDialog(){
   document.getElementById('newRegCode').value = '';
   document.getElementById('newRegCode2').value = '';
   document.getElementById('regCodeError').textContent = '';
-  _openDialog('regCodeDialog');
+  openModal('regCodeDialog');
   setTimeout(function(){ var el=document.getElementById('newRegCode'); if(el) el.focus(); }, 50);
 }
 function closeRegCodeDialog(){
-  var d = document.getElementById('regCodeDialog');
-  _safeClose(d);
+  closeModal('regCodeDialog');
 }
 async function submitChangeRegCode(){
   if (!isAdmin()) return;
@@ -1020,12 +1041,11 @@ function openTransferDialog(){
   document.getElementById('transferCurrent').value = AdminState.name || MAIN_USER;
   document.getElementById('transferTarget').value = '';
   document.getElementById('transferError').textContent = '';
-  _openDialog('transferAdminDialog');
+  openModal('transferAdminDialog');
   setTimeout(function(){ var el=document.getElementById('transferTarget'); if(el) el.focus(); }, 50);
 }
 function closeTransferDialog(){
-  var d = document.getElementById('transferAdminDialog');
-  _safeClose(d);
+  closeModal('transferAdminDialog');
 }
 async function submitTransferAdmin(){
   if (!isAdmin()) return;
@@ -1070,12 +1090,11 @@ function openPasswordDialog(){
   document.getElementById('newPassword').value = '';
   document.getElementById('newPassword2').value = '';
   document.getElementById('passwordError').textContent = '';
-  _openDialog('passwordDialog');
+  openModal('passwordDialog');
   setTimeout(function(){ var el=document.getElementById('oldPassword'); if(el) el.focus(); }, 50);
 }
 function closePasswordDialog(){
-  var d = document.getElementById('passwordDialog');
-  _safeClose(d);
+  closeModal('passwordDialog');
 }
 async function submitChangePassword(){
   if (!Auth.user) return;
@@ -1448,36 +1467,62 @@ async function commitQBankCustom(next) {
 var importPendingRows = []; // 解析成功的行（待确认导入）
 
 /* ====== 试题管理对话框（导入 + 删除合并）====== */
-/* helper：打开指定 dialog 前先关闭其它所有 .feedback-dialog，避免多层叠加 */
+/* ====== 模态对话框控制层（纯 div + class 切换，零 <dialog> API 依赖）====== */
+/* 同时只允许一个 dialog 打开；点 backdrop 或按 ESC 关闭当前 */
+/* 统一打开：在打开前先关掉其它 dialog，然后给目标和 backdrop 加 .active */
+function openModal(id){
+  var d = document.getElementById(id);
+  if (!d) return;
+  // 关闭所有其它 dialog（保证单层）
+  closeAllModals();
+  // 移除历史 force-hide 标记，确保可见
+  d.classList.remove('dlg-force-closed');
+  d.style.display = '';
+  d.classList.add('active');
+  // 同步显示背景遮罩
+  var backdrop = document.getElementById('modalBackdrop');
+  if (backdrop) backdrop.classList.add('active');
+}
+/* 统一关闭：清除 .active + force-hide，清 backdrop */
+function closeModal(id){
+  var d = document.getElementById(id);
+  if (!d) return;
+  d.classList.remove('active');
+  d.classList.add('dlg-force-closed');
+  d.style.display = 'none';
+  // 没有任何 dialog active 时，关 backdrop
+  var anyOpen = document.querySelector('.feedback-dialog.active');
+  if (!anyOpen){
+    var backdrop = document.getElementById('modalBackdrop');
+    if (backdrop) backdrop.classList.remove('active');
+  }
+}
+/* 关掉所有 dialog（包括目标自身）。用于 openModal 内部、ESC 兜底 */
+function closeAllModals(){
+  var dialogs = document.querySelectorAll('.feedback-dialog');
+  dialogs.forEach(function(d){
+    d.classList.remove('active');
+    d.classList.add('dlg-force-closed');
+    d.style.display = 'none';
+  });
+  var backdrop = document.getElementById('modalBackdrop');
+  if (backdrop) backdrop.classList.remove('active');
+}
+/* 兼容性：保留旧函数名当 stub，方便老代码不爆错 */
 function _closeAllFeedbackDialogs(exceptId){
-  document.querySelectorAll('dialog.feedback-dialog[open]').forEach(function(d){
+  var dialogs = document.querySelectorAll('.feedback-dialog');
+  dialogs.forEach(function(d){
     if (d.id === exceptId) return;
-    if (typeof d.close === 'function') { try { d.close(); } catch(e){ d.removeAttribute('open'); } }
-    else { d.removeAttribute('open'); }
+    d.classList.remove('active');
+    d.classList.add('dlg-force-closed');
+    d.style.display = 'none';
   });
 }
 function _safeClose(dlg){
   if (!dlg) return;
-  // 多重兜底：close() → open=false → removeAttribute('open') → force hide
-  // 已知浏览器边界场景下 close() 在某些 dialog 嵌套/状态异常时静默失败
-  try { dlg.close(); } catch(e) {}
-  try { if (typeof dlg.open === 'boolean') dlg.open = false; } catch(e) {}
-  try { dlg.removeAttribute('open'); } catch(e) {}
-  // 兜底：class + display 隐藏（防止任何残留）
-  try { dlg.classList.add('dlg-force-closed'); } catch(e) {}
-  try { dlg.style.setProperty('display', 'none', 'important'); } catch(e) {}
+  closeModal(dlg.id);
 }
-/* 统一打开 dialog：先关掉其它打开中的 dialog，再 showModal */
-function _openDialog(id){
-  var d = document.getElementById(id);
-  if (!d) return;
-  _closeAllFeedbackDialogs(id);
-  // 重新打开时清掉强制关闭的 class/样式
-  d.classList.remove('dlg-force-closed');
-  d.style.removeProperty('display');
-  if (typeof d.showModal === 'function') d.showModal();
-  else d.setAttribute('open', '');
-}
+function _openDialog(id){ openModal(id); }
 function openQuestionManageDialog(tab) {
   if (!isAdmin()) return;
   var target = (tab === 'delete') ? 'delete' : 'import';
@@ -1508,7 +1553,7 @@ function openQuestionManageDialog(tab) {
   updateQuestionManageStats();
   switchQmTab(null, target);
   // 用统一 helper（自动关掉其它已打开的 dialog）
-  _openDialog('questionManageDialog');
+  openModal('questionManageDialog');
   // 切到删除 tab 时聚焦搜索框；切到导入 tab 时聚焦文件按钮
   setTimeout(function () {
     if (target === 'delete' && dInput) dInput.focus();
@@ -1517,8 +1562,7 @@ function openQuestionManageDialog(tab) {
 function closeQuestionManageDialog() {
   // 先清状态（避免 close 路径抛错导致残留）
   importPendingRows = [];
-  var dlg = document.getElementById('questionManageDialog');
-  _safeClose(dlg);
+  closeModal('questionManageDialog');
 }
 function switchQmTab(tabBtn, tab) {
   var tabs = document.querySelectorAll('#qmTabs .qm-tab');
@@ -2107,11 +2151,10 @@ function openQEdit(idx) {
   document.getElementById('qEditExpl').value = q.explanation || '';
   renderQEditOptions(q);
   document.getElementById('qEditResetBtn').style.display = QBANK_EDITS[q.id] ? '' : 'none';
-  _openDialog('qEditDialog');
+  openModal('qEditDialog');
 }
 function closeQEdit() {
-  var dlg = document.getElementById('qEditDialog');
-  _safeClose(dlg);
+  closeModal('qEditDialog');
   qEditTargetId = null;
 }
 function renderQEditOptions(q) {
@@ -3253,17 +3296,16 @@ function init() {
   window.addEventListener('scroll', () => {
     document.getElementById('backToTop').classList.toggle('show', window.scrollY > 500);
   }, { passive: true });
-  // 兜底：启动时强制关闭所有残留 open dialog（防止刷新后 dialog 还在停留）
-  document.querySelectorAll('dialog.feedback-dialog[open]').forEach(function(d){
-    _safeClose(d);
-  });
+  // 兜底：启动时强制关闭所有残留 dialog（防止刷新后 dialog 还在停留）
+  closeAllModals();
   // ESC 键兜底：任何 dialog open 状态都能强制关闭
   document.addEventListener('keydown', function(e){
     if (e.key !== 'Escape' && e.keyCode !== 27) return;
-    document.querySelectorAll('dialog.feedback-dialog[open]').forEach(function(d){
-      _safeClose(d);
-    });
+    closeAllModals();
   });
+  // 点击 backdrop 关闭当前 dialog
+  var backdrop = document.getElementById('modalBackdrop');
+  if (backdrop) backdrop.addEventListener('click', function(){ closeAllModals(); });
   // 启动后从云端拉取进度（非阻塞，不卡首屏）
   cloudPullAndRender();
   // 启动后从云端拉取题库编辑（非阻塞；编辑对所有账号生效）
@@ -3594,23 +3636,24 @@ function importProgress(event) {
 }
 
 function openFeedback() {
-  _openDialog('feedbackDialog');
+  openModal('feedbackDialog');
   setTimeout(() => document.getElementById('feedbackDetail').focus(), 50);
 }
 
 function closeFeedback() {
-  const dialog = document.getElementById('feedbackDialog');
-  _safeClose(dialog);
+  closeModal('feedbackDialog');
 }
 
-function submitFeedback(event) {
-  event.preventDefault();
-  const type = document.getElementById('feedbackType').value;
-  const detail = document.getElementById('feedbackDetail').value.trim();
-  const contact = document.getElementById('feedbackContact').value.trim();
-  const currentTitle = document.querySelector('.reader-title,.question-title,.section-intro h2,.policy-list-head h2')?.textContent?.trim() || document.title;
-  const body = ['问题类型：' + type, '所在页面：' + currentTitle, '页面地址：' + location.href, '', '问题说明：', detail, '', '联系方式：' + (contact || '未填写'), '', '提交时间：' + new Date().toLocaleString('zh-CN')].join('\n');
-  const url = 'https://github.com/electricity-market/tiku/issues/new?title=' + encodeURIComponent('【反馈】' + type + '：' + currentTitle) + '&body=' + encodeURIComponent(body);
+// div 无 onsubmit；提供一个直调函数（按钮 onclick 用）
+function submitFeedbackDirect() {
+  var detail = document.getElementById('feedbackDetail').value.trim();
+  if (!detail) { alert('请填写问题说明'); return; }
+  var type = document.getElementById('feedbackType').value;
+  var contact = document.getElementById('feedbackContact').value.trim();
+  var currentTitle = document.querySelector('.reader-title,.question-title,.section-intro h2,.policy-list-head h2');
+  currentTitle = currentTitle ? (currentTitle.textContent || '').trim() : document.title;
+  var body = ['问题类型：' + type, '所在页面：' + currentTitle, '页面地址：' + location.href, '', '问题说明：', detail, '', '联系方式：' + (contact || '未填写'), '', '提交时间：' + new Date().toLocaleString('zh-CN')].join('\n');
+  var url = 'https://github.com/electricity-market/tiku/issues/new?title=' + encodeURIComponent('【反馈】' + type + '：' + currentTitle) + '&body=' + encodeURIComponent(body);
   window.open(url, '_blank', 'noopener');
   document.getElementById('feedbackDetail').value = '';
   document.getElementById('feedbackContact').value = '';
