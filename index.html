@@ -156,7 +156,6 @@ tr:nth-child(even) { background: #f8f9fa; }
 .admin-header h3 { margin:0 0 4px; }
 .admin-sub { margin:0; font-size:13px; color:#475569; }
 .admin-sub .badge { display:inline-block; background:#dbeafe; color:#1d4ed8; padding:2px 8px; border-radius:6px; font-weight:600; font-size:12px; }
-.admin-header-actions { display:flex; gap:6px; flex-wrap:wrap; flex-shrink:0; }
 .admin-section { border-top:1px solid var(--border); padding-top:14px; margin-top:14px; }
 .admin-section h4 { margin:0 0 8px; font-size:14px; color:#0f172a; }
 .admin-section .muted { color:#64748b; font-weight:normal; font-size:12px; }
@@ -183,9 +182,8 @@ tr:nth-child(even) { background: #f8f9fa; }
 .home-user-card { display:flex; align-items:center; gap:14px; padding:14px 18px; background:linear-gradient(135deg,#eff6ff 0%,#e0e7ff 100%); border:1px solid #c7d2fe; border-radius:14px; margin-bottom:20px; }
 .home-user-card .avatar { width:44px; height:44px; border-radius:50%; background:#1d4ed8; color:#fff; display:inline-flex; align-items:center; justify-content:center; font-size:18px; font-weight:700; }
 .home-user-card .user-meta { flex:1; min-width:0; }
-.home-user-card .user-meta .name { font-size:15px; font-weight:600; color:#0f172a; }
-.home-user-card .user-meta .role { font-size:12px; color:#475569; margin-top:2px; }
-.home-user-card .user-meta .role .pill { display:inline-block; background:#1d4ed8; color:#fff; font-size:11px; padding:1px 8px; border-radius:999px; margin-left:6px; }
+.home-user-card .user-meta .name { font-size:15px; font-weight:600; color:#0f172a; display:inline-flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.home-user-card .user-meta .name .pill { display:inline-block; background:#1d4ed8; color:#fff; font-size:11px; padding:2px 9px; border-radius:999px; font-weight:500; }
 
 /* Question bank switcher */
 .bank-switcher { display: none; }
@@ -411,6 +409,7 @@ tr:nth-child(even) { background: #f8f9fa; }
         <span class="sync-badge idle" id="syncBadge" title="学习进度云端同步状态">已就绪</span>
         <span class="user-chip" id="userChip" style="display:none"></span>
         <button class="home-button" type="button" id="adminBtn" style="display:none" onclick="openAdmin()">账号管理</button>
+        <button class="home-button" type="button" id="passwordBtn" style="display:none" onclick="openPasswordDialog()">修改密码</button>
         <button class="home-button danger" type="button" id="logoutBtn" style="display:none" onclick="logout()">↪ 登出</button>
         <button class="home-button" type="button" id="backHomeBtn" onclick="renderHome()">返回首页</button>
       </div>
@@ -436,9 +435,6 @@ tr:nth-child(even) { background: #f8f9fa; }
       <div>
         <h3>账号管理</h3>
         <p class="admin-sub">主账号：<span class="badge" id="adminBadge">—</span></p>
-      </div>
-      <div class="admin-header-actions">
-        <button class="home-button" type="button" onclick="openPasswordDialog()">🔒 修改密码</button>
       </div>
     </header>
 
@@ -611,9 +607,11 @@ function setUserChip(username){
   var chip = document.getElementById('userChip');
   var btn = document.getElementById('logoutBtn');
   var adminBtn = document.getElementById('adminBtn');
+  var pwdBtn = document.getElementById('passwordBtn');
   if (chip) { chip.textContent = username; chip.title = '当前账号：' + username; chip.style.display = ''; }
   if (btn) btn.style.display = '';
   if (adminBtn) adminBtn.style.display = isAdmin() ? '' : 'none';
+  if (pwdBtn) pwdBtn.style.display = '';
 }
 function clearLocalProgress(){
   for (var i = 0; i < PROGRESS_KEYS.length; i++) localStorage.removeItem(PROGRESS_KEYS[i]);
@@ -1101,14 +1099,12 @@ function renderHome() {
   const objectiveCount = (window.OBJECTIVE_QUESTIONS || []).length;
   const totalWrong = ['single', 'multiple', 'judge'].reduce((sum, b) => sum + ((objectiveWrong[b] || []).length), 0);
   const objectiveMeta = objectiveCount + ' 题' + (totalWrong ? ' · 错题 ' + totalWrong + ' 待重做' : '');
-  // 当前账号卡片（登录后显示），让首页也能直接看到账号信息和登出入口
   var userCard = '';
   if (Auth.user) {
     var initial = esc(Auth.user.charAt(0).toUpperCase());
-    var rolePill = isAdmin() ? '<span class="pill">主账号</span>' : '<span class="pill" style="background:#e2e8f0;color:#475569">普通账号</span>';
     userCard = '<section class="home-user-card" aria-label="当前账号">' +
       '<div class="avatar">' + initial + '</div>' +
-      '<div class="user-meta"><div class="name">' + esc(Auth.user) + '</div><div class="role">已登录' + rolePill + '</div></div>' +
+      '<div class="user-meta"><div class="name">' + esc(Auth.user) + (isAdmin() ? ' <span class="pill">主账号</span>' : '') + '</div></div>' +
       '</section>';
   }
   document.getElementById('contentArea').innerHTML =
