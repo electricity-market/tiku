@@ -215,9 +215,12 @@ tr:nth-child(even) { background: #f8f9fa; }
 .result-box.wrong { background: #fce8e6; color: #c5221f; border: 1px solid #f6aea9; }
 .auto-next-hint { color: #475569; font-size: 12px; font-style: italic; }
 .placeholder-note { margin-top: 18px; padding: 12px 14px; border-left: 4px solid var(--warn); background: #fff8e1; color: #6f5200; font-size: 13px; border-radius: 4px; }
-.objective-tools { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
-.objective-search { flex: 1; min-width: 220px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font: inherit; }
-.objective-search-wrap { display: flex; gap: 10px; align-items: center; margin: 0 0 14px; flex-wrap: wrap; }
+.objective-tools { display: flex; gap: 10px; margin-bottom: 14px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+.objective-tools .tools-left { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.objective-search-wrap { display: flex; gap: 8px; align-items: center; flex: 0 0 360px; max-width: 100%; min-width: 220px; margin-left: auto; }
+.objective-search { flex: 1; min-width: 180px; padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px; font: inherit; ime-mode: disabled; -webkit-ime-mode: disabled; }
+.objective-search-clear { padding: 6px 12px; background: #fff; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; color: var(--primary); font: inherit; white-space: nowrap; }
+.objective-search-clear:hover { border-color: var(--primary); }
 .objective-summary { color: var(--text-sec); font-size: 13px; margin-bottom: 12px; }
 .option-item.selected { border-color: var(--primary); background: var(--primary-light); }
 .option-item.correct-option { border-color: var(--accent); background: #e6f4ea; }
@@ -1845,14 +1848,15 @@ function renderSampleNav(bankData) {
 function renderSampleQuestion(q, idx) {
   const bankData = SAMPLE_BANKS[activeBank];
   const wrongCount = Object.keys(objectiveWrong[activeBank] || {}).length;
-  let html = '<div class="objective-tools"><button class="btn" onclick="randomObjectiveQuestion()">随机一题</button><button class="btn" onclick="toggleWrongMode()">' + (objectiveOnlyWrong ? '显示全部题目' : '只看错题' + (wrongCount ? '（' + wrongCount + '）' : '')) + '</button>' + (wrongCount ? '<button class="btn btn-wrong-clear" id="clearWrongBtn" type="button" onclick="clearWrong()">清空本题型错题</button>' : '') + (isAdmin() ? '<button class="btn" type="button" onclick="openQEdit(currentQ)">✎ 编辑本题</button>' : '') + '</div>';
-  // 客观题常驻搜索框：题干 + 选项同步匹配（仅在 activeBank 是 single/multiple/judge 时有效，简答/计算不显示）
+  let html = '<div class="objective-tools"><div class="tools-left"><button class="btn" onclick="randomObjectiveQuestion()">随机一题</button><button class="btn" onclick="toggleWrongMode()">' + (objectiveOnlyWrong ? '显示全部题目' : '只看错题' + (wrongCount ? '（' + wrongCount + '）' : '')) + '</button>' + (wrongCount ? '<button class="btn btn-wrong-clear" id="clearWrongBtn" type="button" onclick="clearWrong()">清空本题型错题</button>' : '') + (isAdmin() ? '<button class="btn" type="button" onclick="openQEdit(currentQ)">✎ 编辑本题</button>' : '') + '</div>';
+  // 客观题常驻搜索框：题干 + 选项同步匹配（仅在 activeBank 是 single/multiple/judge 时显示）
   if (['single', 'multiple', 'judge'].indexOf(activeBank) >= 0) {
     html += '<div class="objective-search-wrap">'
-      + '<input class="objective-search" id="objectiveSearch" type="search" autocomplete="off" value="' + esc(objectiveQuery) + '" placeholder="在「' + esc(bankData.title) + '」里搜索题干或选项" oninput="filterObjectiveQuestions(this.value)">'
-      + (objectiveQuery ? '<button class="btn" type="button" onclick="document.getElementById(\'objectiveSearch\').value=\'\';filterObjectiveQuestions(\'\')">清除</button>' : '')
+      + '<input class="objective-search" id="objectiveSearch" type="search" inputmode="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" value="' + esc(objectiveQuery) + '" placeholder="在「' + esc(bankData.title) + '」里搜索题干或选项" aria-label="搜索题库">'
+      + (objectiveQuery ? '<button class="objective-search-clear" type="button" onclick="var i=document.getElementById(\'objectiveSearch\');if(i){i.value=\'\';filterObjectiveQuestions(\'\');}">清除</button>' : '')
       + '</div>';
   }
+  html += '</div>';
   html += '<div class="objective-summary">当前显示 ' + objectiveFiltered.length + ' / ' + bankData.questions.length + ' 题' + (objectiveQuery ? ' · 搜索：' + esc(objectiveQuery) : '') + ' · 第 ' + (idx + 1) + ' 题</div>';
   html += '<div class="card sample-card"><h3><span class="qnum">' + (idx + 1) + '</span>' + esc(q.title) + '</h3>';
   const wrongTimes = (objectiveWrong[activeBank] || {})[q.id];
@@ -1869,6 +1873,7 @@ function renderSampleQuestion(q, idx) {
   html += '<div class="result-box" id="sampleResult" aria-live="polite"></div>';
   html += '</div>';
   document.getElementById('contentArea').innerHTML = html;
+  bindObjSearchImeGuard(document.getElementById('objectiveSearch'));
 }
 
 function renderEmptyBank(bankData) {
@@ -1904,9 +1909,10 @@ function applyObjectiveFilter(keepPos) {
   else currentQ = 0;
   renderSampleNav(SAMPLE_BANKS[activeBank]);
   if (objectiveFiltered.length) renderSampleQuestion(objectiveFiltered[currentQ], currentQ);
-  else document.getElementById('contentArea').innerHTML = '<div class="objective-tools"><input class="objective-search" id="objectiveSearch" type="search" value="' + esc(objectiveQuery) + '" placeholder="搜索「' + esc(SAMPLE_BANKS[activeBank].title) + '」里的题干或选项" oninput="filterObjectiveQuestions(this.value)"></div><div class="card">' + (objectiveOnlyWrong ? '错题本是空的——答错的选择题会自动出现在这里，答对后自动移出。' : (objectiveQuery ? '没有找到匹配「' + esc(objectiveQuery) + '」的题目，试试别的关键词。' : '没有找到匹配题目。')) + '</div>';
+  else document.getElementById('contentArea').innerHTML = '<div class="objective-tools"><div class="objective-search-wrap"><input class="objective-search" id="objectiveSearch" type="search" inputmode="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" value="' + esc(objectiveQuery) + '" placeholder="搜索「' + esc(SAMPLE_BANKS[activeBank].title) + '」里的题干或选项" aria-label="搜索题库" oninput="filterObjectiveQuestions(this.value)">' + (objectiveQuery ? '<button class="objective-search-clear" type="button" onclick="var i=document.getElementById(\'objectiveSearch\');if(i){i.value=\'\';filterObjectiveQuestions(\'\');}">清除</button>' : '') + '</div></div><div class="card">' + (objectiveOnlyWrong ? '错题本是空的——答错的选择题会自动出现在这里，答对后自动移出。' : (objectiveQuery ? '没有找到匹配「' + esc(objectiveQuery) + '」的题目，试试别的关键词。' : '没有找到匹配题目。')) + '</div>';
   const input = document.getElementById('objectiveSearch');
   if (input) { input.focus(); input.setSelectionRange(input.value.length, input.value.length); }
+  bindObjSearchImeGuard(input);
 }
 
 function toggleWrongMode() {
@@ -1940,8 +1946,22 @@ function clearWrong(){
 }
 
 function filterObjectiveQuestions(value) {
-  objectiveQuery = value.trim();
+  // 中文拼音 IME 中段按字母（如 f/fu/fuz/fuzh/fuzhu）不连续触发刷新，避免候选字面板挡到题目
+  // 仅在 compositionend 提交后才真正搜索。
+  var inp = document.getElementById('objectiveSearch');
+  if (inp && inp.__imeComposing) return;
+  objectiveQuery = (value || '').trim();
   applyObjectiveFilter(false);
+}
+/* 给搜索 input 绑定 IME 拼音组合事件守卫（拼音未完成时不触发搜索） */
+function bindObjSearchImeGuard(input) {
+  if (!input || input.__imeBound) return;
+  input.__imeBound = true;
+  input.addEventListener('compositionstart', function () { input.__imeComposing = true; });
+  input.addEventListener('compositionend', function (e) {
+    input.__imeComposing = false;
+    filterObjectiveQuestions(e.target.value);
+  });
 }
 
 function goObjective(idx) {
