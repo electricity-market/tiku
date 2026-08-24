@@ -178,13 +178,6 @@ tr:nth-child(even) { background: #f8f9fa; }
 .form-error { color:#b42318; font-size:13px; min-height:18px; margin:4px 0; }
 .form-hint { color:#64748b; font-size:12px; margin:0 0 8px; }
 
-/* Home page user card */
-.home-user-card { display:flex; align-items:center; gap:14px; padding:14px 18px; background:linear-gradient(135deg,#eff6ff 0%,#e0e7ff 100%); border:1px solid #c7d2fe; border-radius:14px; margin-bottom:20px; }
-.home-user-card .avatar { width:44px; height:44px; border-radius:50%; background:#1d4ed8; color:#fff; display:inline-flex; align-items:center; justify-content:center; font-size:18px; font-weight:700; }
-.home-user-card .user-meta { flex:1; min-width:0; }
-.home-user-card .user-meta .name { font-size:15px; font-weight:600; color:#0f172a; display:inline-flex; align-items:center; gap:8px; flex-wrap:wrap; }
-.home-user-card .user-meta .name .pill { display:inline-block; background:#1d4ed8; color:#fff; font-size:11px; padding:2px 9px; border-radius:999px; font-weight:500; }
-
 /* Question bank switcher */
 .bank-switcher { display: none; }
 .bank-tab { border: 1px solid var(--border); background: #fff; color: var(--text-sec); padding: 12px 8px; border-radius: 10px; cursor: pointer; font-size: 13px; transition: .2s; }
@@ -274,7 +267,7 @@ tr:nth-child(even) { background: #f8f9fa; }
 .home-kicker { color:var(--primary); font-weight:700; letter-spacing:.12em; font-size:13px; }
 .home-hero h2 { margin:10px 0 12px; font-size:clamp(32px,4.2vw,56px); line-height:1.15; color:#172033; letter-spacing:-.04em; }
 .home-hero p { max-width:720px; color:#667085; font-size:16px; }
-.home-grid { max-width:1180px; margin:0 auto; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px; }
+.home-grid { max-width:1180px; margin:0 auto; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px; }
 .home-entry { position:relative; min-height:210px; padding:28px; border:1px solid #e1e6ef; border-radius:22px; background:#fff; cursor:pointer; text-align:left; transition:.22s; box-shadow:0 8px 30px rgba(31,42,68,.055); overflow:hidden; }
 .home-entry:hover { transform:translateY(-3px); border-color:#a9bce9; box-shadow:0 14px 36px rgba(36,87,197,.11); }
 .home-entry .entry-icon { display:grid; place-items:center; width:48px; height:48px; margin-bottom:30px; border-radius:14px; color:#fff; background:var(--primary); font-size:22px; font-weight:700; }
@@ -282,7 +275,7 @@ tr:nth-child(even) { background: #f8f9fa; }
 .home-entry p { margin:0; color:#667085; font-size:14px; }
 .home-entry .entry-meta { position:absolute; right:26px; top:28px; color:#98a2b3; font-size:13px; }
 .home-entry .entry-go { position:absolute; right:26px; bottom:24px; color:var(--primary); font-weight:700; }
-/* 首页错题本卡片：红色系视觉区分 */
+/* 首页错题本卡片：红色系视觉区分；空状态灰化（无错题时） */
 .home-entry-wrong .entry-icon { background:#d92d20; }
 .home-entry-wrong:hover { border-color:#f4a09a; box-shadow:0 14px 36px rgba(217,45,32,.10); }
 .home-entry-wrong .entry-go { color:#d92d20; }
@@ -290,6 +283,10 @@ tr:nth-child(even) { background: #f8f9fa; }
 .home-entry-wrong .wrong-parts a { color:#d92d20; font-weight:600; text-decoration:none; }
 .home-entry-wrong .wrong-parts a:hover { text-decoration:underline; }
 .home-entry-wrong .wrong-sep { margin:0 6px; color:#d0d5dd; }
+.home-entry-empty { opacity:.72; }
+.home-entry-empty .entry-icon { background:#cbd5e1; }
+.home-entry-empty .entry-go { color:#94a3b8; }
+.home-entry-empty .wrong-empty { color:#94a3b8; font-style:italic; }
 /* 清空错题按钮（两段式确认） */
 .btn-wrong-clear { color:#b42318; border-color:#fecdca; }
 .btn-wrong-clear:hover { background:#fef3f2; }
@@ -1123,34 +1120,25 @@ function renderHome() {
   activeBank = 'home';
   setViewClass('home-view');
   document.getElementById('pageSubtitle').textContent = '选择一个学习模块开始';
-  const objectiveCount = (window.OBJECTIVE_QUESTIONS || []).length;
+  // 错题本：首页常驻入口（即便没有错题也显示，方便用户随时进入；空时给提示）
   const wrongBanks = ['single', 'multiple', 'judge'].map(b => ({ bank: b, count: Object.keys(objectiveWrong[b] || {}).length }));
   const totalWrong = wrongBanks.reduce((sum, b) => sum + b.count, 0);
-  const objectiveMeta = objectiveCount + ' 题' + (totalWrong ? ' · 错题 ' + totalWrong + ' 待重做' : '');
-  // 错题本快捷入口（有错题时才显示）：卡内链接可直达对应题型错题模式
-  var wrongCard = '';
-  if (totalWrong) {
-    const firstBank = (wrongBanks.find(w => w.count > 0) || {}).bank;
-    const parts = wrongBanks.filter(w => w.count > 0)
-      .map(w => '<a href="javascript:void(0)" onclick="event.stopPropagation();enterWrongBank(\'' + w.bank + '\')">' + w.bank.replace('single','单选').replace('multiple','多选').replace('judge','判断') + ' ' + w.count + '</a>')
-      .join('<span class="wrong-sep">/</span>');
-    wrongCard = '<button class="home-entry home-entry-wrong" onclick="enterWrongBank(\'' + firstBank + '\')"><span class="entry-icon">错</span><span class="entry-meta">共 ' + totalWrong + ' 题待重做</span><h3>错题本</h3><p class="wrong-parts">' + parts + '</p><span class="entry-go">开始重做 →</span></button>';
-  }
-  var userCard = '';
-  if (Auth.user) {
-    var initial = esc(Auth.user.charAt(0).toUpperCase());
-    userCard = '<section class="home-user-card" aria-label="当前账号">' +
-      '<div class="avatar">' + initial + '</div>' +
-      '<div class="user-meta"><div class="name">' + esc(Auth.user) + (isAdmin() ? ' <span class="pill">主账号</span>' : '') + '</div></div>' +
-      '</section>';
-  }
+  const wrongParts = ['single', 'multiple', 'judge']
+    .map(b => ({ bank: b, count: Object.keys(objectiveWrong[b] || {}).length }))
+    .filter(w => w.count > 0);
+  const wrongPartsHtml = totalWrong
+    ? wrongParts.map(w => '<a href="javascript:void(0)" onclick="event.stopPropagation();enterWrongBank(\'' + w.bank + '\')">' + w.bank.replace('single','单选').replace('multiple','多选').replace('judge','判断') + ' ' + w.count + '</a>').join('<span class="wrong-sep">/</span>')
+    : '<span class="wrong-empty">暂无错题</span>';
+  const wrongFirstBank = totalWrong ? (wrongParts[0] || {}).bank : 'single';
+  const wrongCard = '<button class="home-entry home-entry-wrong' + (totalWrong ? '' : ' home-entry-empty') + '" onclick="enterWrongBank(\'' + wrongFirstBank + '\')"><span class="entry-icon">错</span><span class="entry-meta">' + (totalWrong ? '共 ' + totalWrong + ' 题待重做' : '随时开始练习') + '</span><h3>错题本</h3><p class="wrong-parts">' + wrongPartsHtml + '</p><span class="entry-go">' + (totalWrong ? '开始重做 →' : '进入错题本 →') + '</span></button>';
+  // 简答与计算：拆成两个独立板块，3×2 网格共 6 个入口
   document.getElementById('contentArea').innerHTML =
-    userCard +
     '<section class="home-hero"><div class="home-kicker">ELECTRICITY MARKET LEARNING</div><h2>今天想学习什么？</h2><p>先选择大类，再进入具体题型或政策主题。页面只呈现当前需要的内容，减少来回寻找。</p></section>' +
     '<section class="home-grid" aria-label="学习模块">' +
-      '<button class="home-entry" onclick="renderQuestionSection()"><span class="entry-icon">选</span><span class="entry-meta">' + objectiveMeta + '</span><h3>选择题</h3><p>单选、多选与判断题，按题型进入练习，错题自动收录。</p><span class="entry-go">进入练习 →</span></button>' +
+      '<button class="home-entry" onclick="renderQuestionSection()"><span class="entry-icon">选</span><span class="entry-meta">' + objectiveCount + ' 题</span><h3>选择题</h3><p>单选、多选与判断题，按题型进入练习，错题自动收录。</p><span class="entry-go">进入练习 →</span></button>' +
       wrongCard +
-      '<button class="home-entry" onclick="renderWrittenSection()"><span class="entry-icon">答</span><span class="entry-meta">持续整理</span><h3>简答与计算</h3><p>简答题与普通计算题，按难度独立练习。</p><span class="entry-go">选择题型 →</span></button>' +
+      '<button class="home-entry" onclick="switchQuestionType(\'short\')"><span class="entry-icon">简</span><span class="entry-meta">持续整理</span><h3>简答题</h3><p>知识点表述与规则理解，文字作答。</p><span class="entry-go">进入练习 →</span></button>' +
+      '<button class="home-entry" onclick="switchQuestionType(\'calculation\')"><span class="entry-icon">算</span><span class="entry-meta">3 道</span><h3>计算题</h3><p>独立公式与基础计算，独立练习。</p><span class="entry-go">进入练习 →</span></button>' +
       '<button class="home-entry" onclick="switchQuestionType(\'analysis\')"><span class="entry-icon">析</span><span class="entry-meta">13 道大题</span><h3>仿真分析</h3><p>现货出清、节点电价、输电权等完整案例。</p><span class="entry-go">开始学习 →</span></button>' +
       '<button class="home-entry" onclick="switchQuestionType(\'policy\')"><span class="entry-icon">政</span><span class="entry-meta">' + POLICY_DATA.length + ' 份原文</span><h3>政策学习</h3><p>先选政策主题，再直接阅读无标注 PDF 原件。</p><span class="entry-go">浏览政策 →</span></button>' +
     '</section>';
