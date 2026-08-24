@@ -1458,16 +1458,23 @@ function _closeAllFeedbackDialogs(exceptId){
 }
 function _safeClose(dlg){
   if (!dlg) return;
-  try { dlg.close(); }
-  catch(e){
-    try { dlg.removeAttribute('open'); } catch(_){}
-  }
+  // 多重兜底：close() → open=false → removeAttribute('open') → force hide
+  // 已知浏览器边界场景下 close() 在某些 dialog 嵌套/状态异常时静默失败
+  try { dlg.close(); } catch(e) {}
+  try { if (typeof dlg.open === 'boolean') dlg.open = false; } catch(e) {}
+  try { dlg.removeAttribute('open'); } catch(e) {}
+  // 兜底：class + display 隐藏（防止任何残留）
+  try { dlg.classList.add('dlg-force-closed'); } catch(e) {}
+  try { dlg.style.setProperty('display', 'none', 'important'); } catch(e) {}
 }
 /* 统一打开 dialog：先关掉其它打开中的 dialog，再 showModal */
 function _openDialog(id){
   var d = document.getElementById(id);
   if (!d) return;
   _closeAllFeedbackDialogs(id);
+  // 重新打开时清掉强制关闭的 class/样式
+  d.classList.remove('dlg-force-closed');
+  d.style.removeProperty('display');
   if (typeof d.showModal === 'function') d.showModal();
   else d.setAttribute('open', '');
 }
@@ -1508,9 +1515,10 @@ function openQuestionManageDialog(tab) {
   }, 80);
 }
 function closeQuestionManageDialog() {
+  // 先清状态（避免 close 路径抛错导致残留）
+  importPendingRows = [];
   var dlg = document.getElementById('questionManageDialog');
   _safeClose(dlg);
-  importPendingRows = [];
 }
 function switchQmTab(tabBtn, tab) {
   var tabs = document.querySelectorAll('#qmTabs .qm-tab');
@@ -3245,6 +3253,17 @@ function init() {
   window.addEventListener('scroll', () => {
     document.getElementById('backToTop').classList.toggle('show', window.scrollY > 500);
   }, { passive: true });
+  // 兜底：启动时强制关闭所有残留 open dialog（防止刷新后 dialog 还在停留）
+  document.querySelectorAll('dialog.feedback-dialog[open]').forEach(function(d){
+    _safeClose(d);
+  });
+  // ESC 键兜底：任何 dialog open 状态都能强制关闭
+  document.addEventListener('keydown', function(e){
+    if (e.key !== 'Escape' && e.keyCode !== 27) return;
+    document.querySelectorAll('dialog.feedback-dialog[open]').forEach(function(d){
+      _safeClose(d);
+    });
+  });
   // 启动后从云端拉取进度（非阻塞，不卡首屏）
   cloudPullAndRender();
   // 启动后从云端拉取题库编辑（非阻塞；编辑对所有账号生效）
