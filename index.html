@@ -1119,7 +1119,7 @@ function renderHome() {
   recordRoute({view:'home'});
   activeBank = 'home';
   setViewClass('home-view');
-  document.getElementById('pageSubtitle').textContent = '选择一个学习模块开始';
+  document.getElementById('pageSubtitle').textContent = '';
   // 错题本：首页常驻入口（即便没有错题也显示，方便用户随时进入；空时给提示）
   const wrongBanks = ['single', 'multiple', 'judge'].map(b => ({ bank: b, count: Object.keys(objectiveWrong[b] || {}).length }));
   const totalWrong = wrongBanks.reduce((sum, b) => sum + b.count, 0);
@@ -1131,16 +1131,15 @@ function renderHome() {
     : '<span class="wrong-empty">暂无错题</span>';
   const wrongFirstBank = totalWrong ? (wrongParts[0] || {}).bank : 'single';
   const wrongCard = '<button class="home-entry home-entry-wrong' + (totalWrong ? '' : ' home-entry-empty') + '" onclick="enterWrongBank(\'' + wrongFirstBank + '\')"><span class="entry-icon">错</span><span class="entry-meta">' + (totalWrong ? '共 ' + totalWrong + ' 题待重做' : '随时开始练习') + '</span><h3>错题本</h3><p class="wrong-parts">' + wrongPartsHtml + '</p><span class="entry-go">' + (totalWrong ? '开始重做 →' : '进入错题本 →') + '</span></button>';
-  // 6 板块 3×2 网格：选择题 / 错题本（常驻，空时显示提示） / 简答题 / 计算题 / 仿真分析 / 政策学习
+  // 6 板块 3×2 网格：顺序为 选择题 / 简答题 / 计算题 / 仿真分析 / 政策学习 / 错题本（错题本放最后，常驻）
   document.getElementById('contentArea').innerHTML =
-    '<section class="home-hero"><div class="home-kicker">ELECTRICITY MARKET LEARNING</div><h2>今天想学习什么？</h2><p>先选择大类，再进入具体题型或政策主题。页面只呈现当前需要的内容，减少来回寻找。</p></section>' +
     '<section class="home-grid" aria-label="学习模块">' +
       '<button class="home-entry" onclick="renderQuestionSection()"><span class="entry-icon">选</span><span class="entry-meta">' + (window.OBJECTIVE_QUESTIONS ? window.OBJECTIVE_QUESTIONS.length : 0) + ' 题</span><h3>选择题</h3><p>单选、多选与判断题，按题型进入练习，错题自动收录。</p><span class="entry-go">进入练习 →</span></button>' +
-      wrongCard +
       '<button class="home-entry" onclick="switchQuestionType(\'short\')"><span class="entry-icon">简</span><span class="entry-meta">持续整理</span><h3>简答题</h3><p>知识点表述与规则理解，文字作答。</p><span class="entry-go">进入练习 →</span></button>' +
       '<button class="home-entry" onclick="switchQuestionType(\'calculation\')"><span class="entry-icon">算</span><span class="entry-meta">3 道</span><h3>计算题</h3><p>独立公式与基础计算，独立练习。</p><span class="entry-go">进入练习 →</span></button>' +
       '<button class="home-entry" onclick="switchQuestionType(\'analysis\')"><span class="entry-icon">析</span><span class="entry-meta">13 道大题</span><h3>仿真分析</h3><p>现货出清、节点电价、输电权等完整案例。</p><span class="entry-go">开始学习 →</span></button>' +
       '<button class="home-entry" onclick="switchQuestionType(\'policy\')"><span class="entry-icon">政</span><span class="entry-meta">' + POLICY_DATA.length + ' 份原文</span><h3>政策学习</h3><p>先选政策主题，再直接阅读无标注 PDF 原件。</p><span class="entry-go">浏览政策 →</span></button>' +
+      wrongCard +
     '</section>';
   window.scrollTo(0, 0);
 }
