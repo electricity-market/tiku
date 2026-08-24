@@ -30,6 +30,10 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helv
 .login-field input:focus { border-color:var(--primary); box-shadow:0 0 0 3px rgba(36,87,197,.12); }
 .login-submit { width:100%; margin-top:5px; padding:12px; border:0; border-radius:9px; color:#fff; background:var(--primary); cursor:pointer; font:inherit; font-weight:700; }
 .login-error { min-height:22px; margin-top:12px; color:var(--danger); font-size:13px; }
+.auth-switch { margin-top:14px; color:var(--text-sec); font-size:13px; }
+.auth-switch a { color:var(--primary); font-weight:600; text-decoration:none; }
+.user-chip { display:inline-flex; align-items:center; padding:8px 13px; border:1px solid var(--border); border-radius:10px; background:#fff; color:#344054; font-size:13px; font-weight:600; }
+.user-chip::before { content:"👤"; margin-right:6px; font-size:12px; }
 body.authenticated .login-gate { display:none; }
 body:not(.authenticated) .container, body:not(.authenticated) .back-to-top { display:none; }
 .container { display: flex; min-height: 100vh; }
@@ -69,6 +73,12 @@ body.reader-view .main { margin-left: 0; width: 100%; padding-top: 14px; }
 .header h1 { font-size: 25px; color: #172033; margin-bottom: 4px; letter-spacing:-.02em; }
 .header .subtitle { font-size: 13px; color: var(--text-sec); }
 .home-button { display:none; border:1px solid var(--border); background:#fff; color:#344054; border-radius:10px; padding:9px 14px; cursor:pointer; font-weight:600; }
+.header-right { display:flex; align-items:center; gap:10px; }
+.sync-badge { font-size:12px; padding:4px 10px; border-radius:999px; border:1px solid var(--border); background:#fff; color:#667085; white-space:nowrap; }
+.sync-badge.syncing { color:#1570ef; border-color:#b2ddff; background:#eff8ff; }
+.sync-badge.synced { color:#087443; border-color:#abefc6; background:#ecfdf3; }
+.sync-badge.offline { color:#b54708; border-color:#fec84b; background:#fffaeb; }
+.sync-badge.error { color:#b42318; border-color:#fecdca; background:#fef3f2; }
 body:not(.home-view) .home-button { display:inline-flex; }
 .question-tools { position: sticky; top: 0; z-index: 20; display: flex; align-items: center; gap: 8px; padding: 10px 12px; margin-bottom: 12px; background: rgba(255,255,255,.96); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 2px 8px rgba(60,64,67,.08); }
 .question-tools label { font-size: 12px; color: var(--text-sec); white-space: nowrap; }
@@ -313,13 +323,15 @@ tr:nth-child(even) { background: #f8f9fa; }
 </head>
 <body>
 <div class="login-gate" id="loginGate">
-  <form class="login-panel" onsubmit="return login(event)">
+  <form class="login-panel" onsubmit="return handleAuthSubmit(event)">
     <div class="login-mark">电</div>
     <h1>电力交易学习平台</h1>
-    <p>请登录后进入学习平台</p>
+    <p id="authModeDesc">请登录后进入学习平台</p>
     <label class="login-field">账号<input id="loginUsername" type="text" autocomplete="username" required autofocus></label>
     <label class="login-field">密码<input id="loginPassword" type="password" autocomplete="current-password" required></label>
-    <button class="login-submit" type="submit">登录</button>
+    <label class="login-field" id="regCodeField" style="display:none">注册码<input id="loginRegCode" type="password" placeholder="请输入内部注册码" autocomplete="off"></label>
+    <button class="login-submit" type="submit" id="authSubmitBtn">登录</button>
+    <div class="auth-switch" id="authSwitch">还没有账号？<a href="javascript:void(0)" onclick="switchAuthMode('register')">注册</a></div>
     <div class="login-error" id="loginError" role="alert"></div>
   </form>
 </div>
@@ -348,7 +360,12 @@ tr:nth-child(even) { background: #f8f9fa; }
     <div class="header">
       <div><h1>电力交易学习平台</h1>
       <div class="subtitle" id="pageSubtitle">选择一个学习模块开始</div></div>
-      <button class="home-button" type="button" onclick="renderHome()">返回首页</button>
+      <div class="header-right">
+        <span class="sync-badge idle" id="syncBadge" title="学习进度云端同步状态">已就绪</span>
+        <span class="user-chip" id="userChip" style="display:none"></span>
+        <button class="home-button" type="button" id="logoutBtn" style="display:none" onclick="logout()">登出</button>
+        <button class="home-button" type="button" onclick="renderHome()">返回首页</button>
+      </div>
     </div>
     <div id="contentArea"></div>
   </main>
@@ -368,6 +385,212 @@ tr:nth-child(even) { background: #f8f9fa; }
 <script src="objective-questions.js?v=20260821-1" onerror="window.OBJECTIVE_LOAD_FAILED=true"></script>
 <script src="policy-library-data.js?v=20260822-2" onerror="window.POLICY_LOAD_FAILED=true"></script>
 <script src="policy-dates.js?v=20260822-2"></script>
+<script>
+/* ====== 跨设备进度同步层 (cloud-sync) ====== */
+(function(global){
+  'use strict';
+  var STATE={url:'',anonKey:'',slug:'huadian_exam',table:'progress',status:'idle',lastError:null,statusCbs:[],pushTimer:null,online:true};
+  function setStatus(s,err){STATE.status=s;if(err!==undefined)STATE.lastError=err||null;for(var i=0;i<STATE.statusCbs.length;i++){try{STATE.statusCbs[i](STATE.status,STATE.lastError);}catch(e){}}}
+  function configured(){return !!STATE.url&&!!STATE.anonKey;}
+  function apiUrl(){return STATE.url.replace(/\/+$/,'')+'/rest/v1/'+STATE.table;}
+  function headers(extra){var h={'apikey':STATE.anonKey,'Authorization':'Bearer '+STATE.anonKey,'Content-Type':'application/json'};if(extra){for(var k in extra){if(extra.hasOwnProperty(k))h[k]=extra[k];}}return h;}
+  async function pull(){if(!configured())return null;if(!STATE.online){setStatus('offline');return null;}try{setStatus('syncing');var res=await fetch(apiUrl()+'?slug=eq.'+encodeURIComponent(STATE.slug)+'&select=*',{method:'GET',headers:headers()});if(!res.ok)throw new Error('pull HTTP '+res.status);var rows=await res.json();setStatus('synced');return(rows&&rows[0])?rows[0]:null;}catch(e){setStatus('error',e.message);return null;}}
+  async function push(obj){if(!configured())return false;var payload=Object.assign({slug:STATE.slug,updated_at:new Date().toISOString()},obj||{});if(!STATE.online){setStatus('offline');return false;}try{setStatus('syncing');var res=await fetch(apiUrl(),{method:'POST',headers:headers({'Prefer':'resolution=merge-duplicates,return=minimal'}),body:JSON.stringify([payload])});if(!res.ok)throw new Error('push HTTP '+res.status);setStatus('synced');return true;}catch(e){setStatus('error',e.message);return false;}}
+  function schedulePush(objFactory,delay){if(STATE.pushTimer)clearTimeout(STATE.pushTimer);STATE.pushTimer=setTimeout(function(){STATE.pushTimer=null;try{push(objFactory());}catch(e){setStatus('error',e.message);}},delay||800);}
+  function onStatus(cb){if(typeof cb==='function')STATE.statusCbs.push(cb);}
+  function configure(opts){opts=opts||{};STATE.url=opts.url||'';STATE.anonKey=opts.anonKey||'';STATE.slug=opts.slug||'huadian_exam';STATE.table=opts.table||'progress';STATE.online=(typeof navigator!=='undefined')?navigator.onLine:true;if(typeof window!=='undefined'){window.addEventListener('online',function(){STATE.online=true;setStatus('idle');});window.addEventListener('offline',function(){STATE.online=false;setStatus('offline');});}}
+  global.CloudSync={configure:configure,pull:pull,push:push,schedulePush:schedulePush,onStatus:onStatus,configured:configured,get status(){return STATE.status;}};
+})(typeof window!=='undefined'?window:this);
+
+/* ====== 配置 ====== */
+var AUTH_CFG = {
+  url: 'https://dvtspzucdhohmrtlglcy.supabase.co',
+  anonKey: 'sb_publishable_hUrr0npPBmkuSLEiu1aY8w_2aPa4Mxc',
+  inviteCode: 'fjhd',
+  table: 'progress'
+};
+
+/* ====== 账号系统（复用 progress 表：auth:<用户名> 存密码哈希，prog:<用户名> 存账号进度） ====== */
+var PROGRESS_KEYS = ['huadian_objective_completed','huadian_policy_read','huadian_policy_starred','huadian_q10_completed','huadian_q10_review'];
+async function sha256Hex(text){
+  if (typeof crypto !== 'undefined' && crypto.subtle) {
+    var buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
+    return Array.from(new Uint8Array(buf)).map(function(b){ return b.toString(16).padStart(2,'0'); }).join('');
+  }
+  var h = 0; for (var i = 0; i < text.length; i++) { h = (h * 31 + text.charCodeAt(i)) >>> 0; }
+  return 'x' + h.toString(16);
+}
+var Auth = {
+  user: null,
+  mode: 'login',
+  hashPassword: function(username, password){ return sha256Hex('huadian-salt:' + username + ':' + password); },
+  authHeaders: function(extra){
+    var h = {'apikey':AUTH_CFG.anonKey,'Authorization':'Bearer '+AUTH_CFG.anonKey,'Content-Type':'application/json'};
+    if (extra) { for (var k in extra) { if (extra.hasOwnProperty(k)) h[k] = extra[k]; } }
+    return h;
+  },
+  apiUrl: function(){ return AUTH_CFG.url.replace(/\/+$/,'') + '/rest/v1/' + AUTH_CFG.table; },
+  register: async function(username, password){
+    var hash = await this.hashPassword(username, password);
+    var check = await fetch(this.apiUrl() + '?slug=eq.' + encodeURIComponent('auth:'+username) + '&select=slug', {method:'GET', headers:this.authHeaders()});
+    if (!check.ok) throw new Error('网络异常，请稍后重试');
+    var rows = await check.json();
+    if (rows && rows.length) throw new Error('该账号已被注册');
+    var res = await fetch(this.apiUrl(), {
+      method:'POST',
+      headers:this.authHeaders({'Prefer':'resolution=ignore-duplicates,return=minimal'}),
+      body: JSON.stringify([{slug:'auth:'+username, objective_completed:{h:hash}}])
+    });
+    if (!res.ok) throw new Error('注册失败，请稍后重试');
+    // 防并发注册：写入后回读校验哈希确实是自己的
+    var verify = await fetch(this.apiUrl() + '?slug=eq.' + encodeURIComponent('auth:'+username) + '&select=objective_completed', {method:'GET', headers:this.authHeaders()});
+    var vrows = await verify.json();
+    if (!vrows || !vrows[0] || !vrows[0].objective_completed || vrows[0].objective_completed.h !== hash) {
+      throw new Error('该账号刚被他人注册');
+    }
+  },
+  login: async function(username, password){
+    var hash = await this.hashPassword(username, password);
+    var res = await fetch(this.apiUrl() + '?slug=eq.' + encodeURIComponent('auth:'+username) + '&select=objective_completed', {method:'GET', headers:this.authHeaders()});
+    if (!res.ok) throw new Error('网络异常，请稍后重试');
+    var rows = await res.json();
+    if (!rows || !rows[0] || !rows[0].objective_completed || rows[0].objective_completed.h !== hash) {
+      throw new Error('账号或密码错误');
+    }
+    await completeLogin(username);
+  },
+  resumeSession: function(username){
+    this.user = username;
+    document.body.classList.add('authenticated');
+    setUserChip(username);
+    CloudSync.configure({url:AUTH_CFG.url, anonKey:AUTH_CFG.anonKey, slug:'prog:'+username});
+  }
+};
+function setUserChip(username){
+  var chip = document.getElementById('userChip');
+  var btn = document.getElementById('logoutBtn');
+  if (chip) { chip.textContent = username; chip.title = '当前账号：' + username; chip.style.display = ''; }
+  if (btn) btn.style.display = '';
+}
+function clearLocalProgress(){
+  for (var i = 0; i < PROGRESS_KEYS.length; i++) localStorage.removeItem(PROGRESS_KEYS[i]);
+}
+function hasAnyProgress(p){
+  return !!(p && (Object.keys(p.objective_completed||{}).length || (p.policy_read||[]).length || (p.policy_starred||[]).length || (p.q10_completed||[]).length || (p.q10_review||[]).length));
+}
+async function completeLogin(username){
+  Auth.user = username;
+  localStorage.setItem('power_learning_user', username);
+  document.body.classList.add('authenticated');
+  setUserChip(username);
+  // 首次登录：把本设备已有进度"收编"为该账号云端进度（仅一次，防止换账号串数据）
+  var adoptable = !localStorage.getItem('huadian_adopt_done');
+  var snapshot = adoptable ? gatherProgress() : null;
+  clearLocalProgress(); // 账号数据隔离：先清本地，再拉取该账号云端进度
+  CloudSync.configure({url:AUTH_CFG.url, anonKey:AUTH_CFG.anonKey, slug:'prog:'+username});
+  var remote = await CloudSync.pull();
+  if (remote && (remote.objective_completed || remote.policy_read || remote.policy_starred || remote.q10_completed || remote.q10_review)) {
+    applyProgress(remote);
+  } else if (adoptable && hasAnyProgress(snapshot)) {
+    applyProgress(snapshot);
+    CloudSync.push(snapshot);
+  }
+  if (adoptable) localStorage.setItem('huadian_adopt_done', '1');
+  reloadProgressFromStorage();
+  rerenderAllViews();
+}
+function logout(){
+  if (!confirm('确定要退出当前账号吗？本设备的学习进度缓存将被清除（云端进度不受影响）。')) return;
+  localStorage.removeItem('power_learning_user');
+  sessionStorage.removeItem('power_learning_authenticated');
+  clearLocalProgress();
+  location.reload();
+}
+function switchAuthMode(mode){
+  Auth.mode = mode;
+  var regField = document.getElementById('regCodeField');
+  var desc = document.getElementById('authModeDesc');
+  var btn = document.getElementById('authSubmitBtn');
+  var sw = document.getElementById('authSwitch');
+  var err = document.getElementById('loginError');
+  if (mode === 'register') {
+    regField.style.display = ''; desc.textContent = '注册需输入内部注册码';
+    btn.textContent = '注册并登录'; sw.innerHTML = '已有账号？<a href="javascript:void(0)" onclick="switchAuthMode(\'login\')">登录</a>';
+  } else {
+    regField.style.display = 'none'; desc.textContent = '请登录后进入学习平台';
+    btn.textContent = '登录'; sw.innerHTML = '还没有账号？<a href="javascript:void(0)" onclick="switchAuthMode(\'register\')">注册</a>';
+  }
+  if (err) err.textContent = '';
+}
+async function handleAuthSubmit(event){
+  event.preventDefault();
+  var errEl = document.getElementById('loginError');
+  var btn = document.getElementById('authSubmitBtn');
+  var username = document.getElementById('loginUsername').value.trim().toLowerCase();
+  var password = document.getElementById('loginPassword').value;
+  var regCode = document.getElementById('loginRegCode').value;
+  errEl.textContent = '';
+  if (!/^[a-z0-9_\u4e00-\u9fa5]{2,20}$/.test(username)) { errEl.textContent = '账号需为 2-20 位字母、数字、下划线或中文'; return false; }
+  if (password.length < 4) { errEl.textContent = '密码至少 4 位'; return false; }
+  btn.disabled = true;
+  try {
+    if (Auth.mode === 'register') {
+      if (regCode !== AUTH_CFG.inviteCode) { errEl.textContent = '注册码不正确'; return false; }
+      btn.textContent = '注册中…';
+      await Auth.register(username, password);
+      await Auth.login(username, password);
+    } else {
+      btn.textContent = '登录中…';
+      await Auth.login(username, password);
+    }
+    document.getElementById('loginPassword').value = '';
+    document.getElementById('loginRegCode').value = '';
+  } catch (e) {
+    errEl.textContent = e.message || '操作失败，请重试';
+  } finally {
+    btn.disabled = false;
+    switchAuthMode(Auth.mode);
+  }
+  return false;
+}
+
+/* ====== 进度聚合/拆分适配层 ====== */
+function gatherProgress(){
+  return {
+    objective_completed: JSON.parse(localStorage.getItem('huadian_objective_completed')||'{}'),
+    policy_read: JSON.parse(localStorage.getItem('huadian_policy_read')||'[]'),
+    policy_starred: JSON.parse(localStorage.getItem('huadian_policy_starred')||'[]'),
+    q10_completed: JSON.parse(localStorage.getItem('huadian_q10_completed')||'[]'),
+    q10_review: JSON.parse(localStorage.getItem('huadian_q10_review')||'[]')
+  };
+}
+function applyProgress(remote){
+  if(!remote)return false;
+  var changed=false;
+  if(remote.objective_completed){localStorage.setItem('huadian_objective_completed',JSON.stringify(remote.objective_completed));changed=true;}
+  if(remote.policy_read){localStorage.setItem('huadian_policy_read',JSON.stringify(remote.policy_read));changed=true;}
+  if(remote.policy_starred){localStorage.setItem('huadian_policy_starred',JSON.stringify(remote.policy_starred));changed=true;}
+  if(remote.q10_completed){localStorage.setItem('huadian_q10_completed',JSON.stringify(remote.q10_completed));changed=true;}
+  if(remote.q10_review){localStorage.setItem('huadian_q10_review',JSON.stringify(remote.q10_review));changed=true;}
+  return changed;
+}
+function reloadProgressFromStorage(){
+  objectiveCompleted=JSON.parse(localStorage.getItem('huadian_objective_completed')||'{}');
+  policyRead=JSON.parse(localStorage.getItem('huadian_policy_read')||'[]');
+  policyStarred=JSON.parse(localStorage.getItem('huadian_policy_starred')||'[]');
+  completed=JSON.parse(localStorage.getItem('huadian_q10_completed')||'[]');
+  reviewLater=JSON.parse(localStorage.getItem('huadian_q10_review')||'[]');
+}
+function syncPushNow(){CloudSync.schedulePush(gatherProgress,500);}
+function updateSyncBadge(status){
+  var badge=document.getElementById('syncBadge');
+  if(!badge)return;
+  var map={'idle':'已就绪','syncing':'同步中…','synced':'已同步','offline':'离线','error':'同步失败'};
+  badge.textContent=map[status]||status;
+  badge.className='sync-badge '+status;
+}
+CloudSync.onStatus(updateSyncBadge);
+</script>
 <script>
 
 const SAMPLE_BANKS = {
@@ -777,6 +1000,7 @@ function setPolicyStatus(status) {
 function togglePolicyRead(key) {
   policyRead = policyRead.includes(key) ? policyRead.filter(item => item !== key) : [...policyRead, key];
   localStorage.setItem('huadian_policy_read', JSON.stringify(policyRead));
+  syncPushNow();
   renderPolicyColumn();
 }
 
@@ -784,12 +1008,14 @@ function markPolicyRead(key) {
   if (!policyRead.includes(key)) {
     policyRead.push(key);
     localStorage.setItem('huadian_policy_read', JSON.stringify(policyRead));
+    syncPushNow();
   }
 }
 
 function togglePolicyStarred(key) {
   policyStarred = policyStarred.includes(key) ? policyStarred.filter(item => item !== key) : [...policyStarred, key];
   localStorage.setItem('huadian_policy_starred', JSON.stringify(policyStarred));
+  syncPushNow();
   renderPolicyColumn();
 }
 
@@ -1011,6 +1237,7 @@ function checkSampleAnswer() {
     done.add(q.id);
     objectiveCompleted[activeBank] = [...done];
     localStorage.setItem('huadian_objective_completed', JSON.stringify(objectiveCompleted));
+    syncPushNow();
     renderSampleNav(SAMPLE_BANKS[activeBank]);
   }
 }
@@ -1029,20 +1256,14 @@ function checkCalculation() {
   showSampleResult(Number(input.value) === q.answerValue, q.explanation);
 }
 
-function login(event) {
-  event.preventDefault();
-  const username = document.getElementById('loginUsername').value.trim();
-  const password = document.getElementById('loginPassword').value;
-  if (username === 'fjhd' && password === 'fjhd') {
-    sessionStorage.setItem('power_learning_authenticated', '1');
-    document.body.classList.add('authenticated');
-    document.getElementById('loginError').textContent = '';
-    document.getElementById('loginPassword').value = '';
-    return false;
-  }
-  document.getElementById('loginError').textContent = '账号或密码错误，请重新输入。';
-  document.getElementById('loginPassword').select();
-  return false;
+function rerenderAllViews(){
+  updateProgress();
+  renderNav();
+  try{
+    if(activeBank==='policy')renderPolicyColumn();
+    else if(activeBank==='analysis'||activeBank==='calculation')renderQuestion(currentQ);
+    else if(SAMPLE_BANKS[activeBank])renderSampleNav(SAMPLE_BANKS[activeBank]);
+  }catch(e){}
 }
 
 function init() {
@@ -1056,6 +1277,17 @@ function init() {
   window.addEventListener('scroll', () => {
     document.getElementById('backToTop').classList.toggle('show', window.scrollY > 500);
   }, { passive: true });
+  // 启动后从云端拉取进度（非阻塞，不卡首屏）
+  cloudPullAndRender();
+}
+
+async function cloudPullAndRender(){
+  if(!CloudSync.configured())return;
+  var remote=await CloudSync.pull();
+  if(remote&&applyProgress(remote)){
+    reloadProgressFromStorage();
+    rerenderAllViews();
+  }
 }
 
 function applyRoute(route) {
@@ -1292,6 +1524,7 @@ function markReview(idx) {
 function saveProgress() {
   localStorage.setItem('huadian_q10_completed', JSON.stringify(completed));
   localStorage.setItem('huadian_q10_review', JSON.stringify(reviewLater));
+  syncPushNow();
 }
 
 function updateProgress() {
@@ -1310,6 +1543,7 @@ function resetProgress() {
     reviewLater = [];
     localStorage.removeItem('huadian_q10_completed');
     localStorage.removeItem('huadian_q10_review');
+    syncPushNow();
     updateProgress();
     renderNav();
     renderQuestion(currentQ);
@@ -1317,7 +1551,7 @@ function resetProgress() {
 }
 
 function exportProgress() {
-  const payload = JSON.stringify({ version: 1, exportedAt: new Date().toISOString(), completed, reviewLater }, null, 2);
+  const payload = JSON.stringify({ version: 2, exportedAt: new Date().toISOString(), completed, reviewLater, objectiveCompleted, policyRead, policyStarred }, null, 2);
   const url = URL.createObjectURL(new Blob([payload], { type: 'application/json' }));
   const link = document.createElement('a');
   link.href = url;
@@ -1338,7 +1572,21 @@ function importProgress(event) {
         .filter(Number.isInteger).filter(i => i >= 0 && i < DATA.length)));
       completed = clean(data.completed);
       reviewLater = clean(data.reviewLater).filter(i => !completed.includes(i));
+      // v2 备份：同步恢复客观题进度与政策已读/收藏
+      if (data.objectiveCompleted && typeof data.objectiveCompleted === 'object') {
+        objectiveCompleted = data.objectiveCompleted;
+        localStorage.setItem('huadian_objective_completed', JSON.stringify(objectiveCompleted));
+      }
+      if (Array.isArray(data.policyRead)) {
+        policyRead = data.policyRead;
+        localStorage.setItem('huadian_policy_read', JSON.stringify(policyRead));
+      }
+      if (Array.isArray(data.policyStarred)) {
+        policyStarred = data.policyStarred;
+        localStorage.setItem('huadian_policy_starred', JSON.stringify(policyStarred));
+      }
       saveProgress();
+      syncPushNow();
       updateProgress();
       renderNav();
       renderQuestion(currentQ);
@@ -1377,10 +1625,12 @@ function submitFeedback(event) {
   closeFeedback();
 }
 
-if (sessionStorage.getItem('power_learning_authenticated') === '1') {
-  document.body.classList.add('authenticated');
-}
-init();
+(function(){
+  // 会话恢复：已登录过则直接进入并拉取该账号云端进度（登录门未通过时 CloudSync 未配置，不会拉取）
+  var savedUser = localStorage.getItem('power_learning_user');
+  if (savedUser) { Auth.resumeSession(savedUser); }
+  init();
+})();
 
 </script>
 </body>
