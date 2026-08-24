@@ -174,6 +174,18 @@ tr:nth-child(even) { background: #f8f9fa; }
 .tool-card .tool-text { flex:1; display:flex; flex-direction:column; gap:2px; min-width:0; }
 .tool-card .tool-text strong { font-size:14px; color:#0f172a; }
 .tool-card .tool-text em { font-style:normal; font-size:12px; color:#64748b; }
+/* ====== 在线编辑试题对话框 ====== */
+.qedit-block { margin: 4px 0 12px; }
+.qedit-block h4 { font-size: 13px; color: var(--text); margin: 0 0 8px; }
+.qedit-block h4 .muted { font-weight: 400; color: #94a3b8; font-size: 12px; }
+.qedit-opt { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.qedit-opt input[type="checkbox"], .qedit-opt input[type="radio"] { width: 17px; height: 17px; flex: none; cursor: pointer; }
+.qedit-opt .qedit-letter { width: 22px; text-align: center; font-weight: 700; color: var(--primary); font-size: 13px; flex: none; }
+.qedit-opt input[type="text"] { flex: 1; min-width: 0; }
+.qedit-opt .qedit-del { flex: none; }
+.qedit-add { font-size: 13px; }
+.qedit-judge-hint { font-size: 13px; color: #64748b; padding: 4px 0 2px; }
+.edited-pill { background: #fef3c7 !important; color: #92400e !important; }
 .tool-card .tool-go { color:#3b82f6; font-size:18px; }
 .form-error { color:#b42318; font-size:13px; min-height:18px; margin:4px 0; }
 .form-hint { color:#64748b; font-size:12px; margin:0 0 8px; }
@@ -468,6 +480,11 @@ tr:nth-child(even) { background: #f8f9fa; }
           <span class="tool-text"><strong>移交主账号</strong><em>把管理权限转给另一个账号</em></span>
           <span class="tool-go">→</span>
         </button>
+        <button class="tool-card" type="button" onclick="openQBankEditorEntry()">
+          <span class="tool-icon">✎</span>
+          <span class="tool-text"><strong>在线编辑试题</strong><em id="qbankEditCount">已编辑 0 题 · 修改题干 / 选项 / 答案</em></span>
+          <span class="tool-go">→</span>
+        </button>
       </div>
     </section>
 
@@ -514,6 +531,26 @@ tr:nth-child(even) { background: #f8f9fa; }
     <div class="feedback-actions">
       <button class="policy-action" type="button" onclick="closePasswordDialog()">取消</button>
       <button class="policy-action primary" type="button" id="passwordSubmitBtn" onclick="submitChangePassword()">确认修改</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog class="feedback-dialog admin-dialog-wide" id="qEditDialog">
+  <form class="feedback-form" onsubmit="return false">
+    <h3>编辑试题</h3>
+    <p class="form-hint" id="qEditMeta"></p>
+    <label>题干<textarea id="qEditStem" rows="4"></textarea></label>
+    <div class="qedit-block">
+      <h4>选项 <span class="muted">（勾选左侧标记正确答案；判断题固定为「正确 / 错误」）</span></h4>
+      <div id="qEditOptions"></div>
+      <div id="qEditAddWrap"></div>
+    </div>
+    <label>解析（选填）<textarea id="qEditExpl" rows="2" placeholder="保存后将在提交答案时随正确答案一起显示"></textarea></label>
+    <div class="form-error" id="qEditError"></div>
+    <div class="feedback-actions">
+      <button class="policy-action" type="button" onclick="closeQEdit()">取消</button>
+      <button class="policy-action" type="button" id="qEditResetBtn" style="display:none" onclick="resetQEdit()">恢复原题</button>
+      <button class="policy-action primary" type="button" id="qEditSubmitBtn" onclick="submitQEdit()">保存修改</button>
     </div>
   </form>
 </dialog>
@@ -678,7 +715,15 @@ function openAdmin(){
   if (!isAdmin()) return;
   var dlg = document.getElementById('adminDialog');
   if (dlg && typeof dlg.showModal === 'function') dlg.showModal();
+  var ec = document.getElementById('qbankEditCount');
+  if (ec) ec.textContent = '已编辑 ' + Object.keys(QBANK_EDITS).length + ' 题 · 修改题干 / 选项 / 答案';
   loadAdminAccounts();
+}
+/* 题库编辑入口：关闭账号管理，进入选择题板块并提示编辑按钮位置 */
+function openQBankEditorEntry(){
+  closeAdmin();
+  renderQuestionSection();
+  showToast('已进入选择题板块。任意题型练习页中，每道题的按钮栏都有「✎ 编辑本题」。');
 }
 function closeAdmin(){
   var dlg = document.getElementById('adminDialog');
@@ -989,6 +1034,218 @@ const SAMPLE_BANKS = {
   short: { title: '简答题', subtitle: '简答题暂未导入', questions: [] },
   calculation: { title: '计算题', subtitle: '计算题暂未导入', questions: [] }
 };
+
+/* ====== 题库在线编辑（主账号专用）======
+   方案：编辑结果作为"云端覆盖层"存 progress 表 slug=qbank_edits 行的 objective_completed 字段；
+   页面加载先用本地缓存同步套用，再异步拉云端刷新。静态 objective-questions.js 永远不改，
+   「恢复原题」从启动时的原始快照 QBANK_PRISTINE 还原。所有设备（含普通账号）都会套用编辑。 */
+const QBANK_EDIT_KEY = 'huadian_qbank_edits';
+let QBANK_EDITS = {};
+let QBANK_PRISTINE = [];
+try {
+  QBANK_PRISTINE = JSON.parse(JSON.stringify(window.OBJECTIVE_QUESTIONS || []));
+  QBANK_EDITS = JSON.parse(localStorage.getItem(QBANK_EDIT_KEY) || '{}');
+} catch (e) { QBANK_EDITS = {}; }
+function qesc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); }
+function applyQuestionEdit(q, edit) {
+  q.stem = edit.stem;
+  q.options = edit.options.map(function(o){ return { letter: o.letter, text: o.text }; });
+  q.answer = edit.answer.slice().sort(function(a, b){ return a - b; });
+  q.answerText = edit.answer.slice().sort(function(a, b){ return a - b; }).map(function(i){ return edit.options[i] ? edit.options[i].letter : ''; }).join('，');
+  q.explanation = edit.explanation || '';
+}
+function restoreQuestionPristine(q) {
+  var orig = QBANK_PRISTINE.find(function(p){ return p.id === q.id; });
+  if (!orig) return;
+  q.stem = orig.stem;
+  q.options = orig.options.map(function(o){ return { letter: o.letter, text: o.text }; });
+  q.answer = orig.answer.slice();
+  q.answerText = orig.answerText;
+  q.explanation = orig.explanation;
+}
+/* 全量重放：先全部还原成原始快照，再套用编辑（保证云端删除的编辑也能本地回滚） */
+function applyAllQBankEdits() {
+  var qs = window.OBJECTIVE_QUESTIONS || [];
+  qs.forEach(function(q, i) {
+    var p = QBANK_PRISTINE[i];
+    if (p) {
+      q.stem = p.stem;
+      q.options = p.options.map(function(o){ return { letter: o.letter, text: o.text }; });
+      q.answer = p.answer.slice();
+      q.answerText = p.answerText;
+      q.explanation = p.explanation;
+    }
+    var edit = QBANK_EDITS[q.id];
+    if (edit && edit.stem && Array.isArray(edit.options) && Array.isArray(edit.answer)) applyQuestionEdit(q, edit);
+  });
+}
+applyAllQBankEdits(); // 启动时立即套用本地缓存的编辑（同步，不闪原始内容）
+function rerenderAfterQBankEdits() {
+  try {
+    if (['single', 'multiple', 'judge'].includes(activeBank)) applyObjectiveFilter(true);
+    else if (activeBank === 'home') renderHome();
+  } catch (e) { /* 视图切换中的渲染异常可忽略 */ }
+}
+async function refreshQBankEditsFromCloud() {
+  try {
+    var res = await fetch(Auth.apiUrl() + '?slug=eq.qbank_edits&select=objective_completed', {method: 'GET', headers: Auth.authHeaders()});
+    if (!res.ok) return;
+    var rows = await res.json();
+    var raw = (rows && rows[0] && rows[0].objective_completed && typeof rows[0].objective_completed === 'object') ? rows[0].objective_completed : {};
+    var clean = {};
+    Object.keys(raw).forEach(function(k) {
+      var v = raw[k];
+      if (v && typeof v === 'object' && v.stem && Array.isArray(v.options) && Array.isArray(v.answer)) clean[k] = v;
+    });
+    if (JSON.stringify(clean) === JSON.stringify(QBANK_EDITS)) return;
+    QBANK_EDITS = clean;
+    localStorage.setItem(QBANK_EDIT_KEY, JSON.stringify(QBANK_EDITS));
+    applyAllQBankEdits();
+    rerenderAfterQBankEdits();
+  } catch (e) { /* 离线时保持本地缓存 */ }
+}
+async function commitQBankEdits(nextEdits) {
+  var res = await fetch(Auth.apiUrl(), {
+    method: 'POST',
+    headers: Auth.authHeaders({'Prefer': 'resolution=merge-duplicates,return=minimal'}),
+    body: JSON.stringify([{slug: 'qbank_edits', objective_completed: nextEdits}])
+  });
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  QBANK_EDITS = nextEdits;
+  localStorage.setItem(QBANK_EDIT_KEY, JSON.stringify(nextEdits));
+}
+
+/* ====== 编辑对话框 ====== */
+var qEditTargetId = null;
+function openQEdit(idx) {
+  if (!isAdmin()) return;
+  var q = objectiveFiltered[idx];
+  if (!q) return;
+  qEditTargetId = q.id;
+  document.getElementById('qEditError').textContent = '';
+  document.getElementById('qEditMeta').textContent = SAMPLE_BANKS[activeBank].title + ' · 原题号 ' + q.number + ' · 保存到云端后所有设备生效';
+  document.getElementById('qEditStem').value = q.stem;
+  document.getElementById('qEditExpl').value = q.explanation || '';
+  renderQEditOptions(q);
+  document.getElementById('qEditResetBtn').style.display = QBANK_EDITS[q.id] ? '' : 'none';
+  var dlg = document.getElementById('qEditDialog');
+  if (dlg && typeof dlg.showModal === 'function') dlg.showModal();
+}
+function closeQEdit() {
+  var dlg = document.getElementById('qEditDialog');
+  if (dlg) dlg.close();
+  qEditTargetId = null;
+}
+function renderQEditOptions(q) {
+  var box = document.getElementById('qEditOptions');
+  var addWrap = document.getElementById('qEditAddWrap');
+  var isJudge = q.type === 'judge';
+  var inputType = q.type === 'multiple' ? 'checkbox' : 'radio';
+  var html = '';
+  q.options.forEach(function(opt, i) {
+    html += '<div class="qedit-opt">'
+      + '<input type="' + inputType + '" name="qEditCorrect" value="' + i + '"' + (q.answer.includes(i) ? ' checked' : '') + ' title="标记为正确答案">'
+      + '<span class="qedit-letter">' + qesc(opt.letter) + '</span>'
+      + '<input type="text" value="' + qesc(opt.text) + '"' + (isJudge ? ' readonly' : '') + '>'
+      + (isJudge ? '<span class="qedit-judge-hint">（判断题选项固定）</span>' : '<button class="policy-action qedit-del" type="button" onclick="removeQEditOption(this)">删除</button>')
+      + '</div>';
+  });
+  box.innerHTML = html;
+  addWrap.innerHTML = isJudge ? '' : '<button class="policy-action qedit-add" type="button" onclick="addQEditOption()">＋ 添加选项</button>';
+}
+function relabelQEditOptions() {
+  document.querySelectorAll('#qEditOptions .qedit-opt').forEach(function(r, i) {
+    r.querySelector('.qedit-letter').textContent = String.fromCharCode(65 + i);
+    var c = r.querySelector('input[name="qEditCorrect"]');
+    if (c) c.value = i;
+  });
+}
+function removeQEditOption(btn) {
+  var rows = document.querySelectorAll('#qEditOptions .qedit-opt');
+  if (rows.length <= 2) { showToast('至少需要保留 2 个选项。'); return; }
+  btn.closest('.qedit-opt').remove();
+  relabelQEditOptions();
+}
+function addQEditOption() {
+  var rows = document.querySelectorAll('#qEditOptions .qedit-opt');
+  if (rows.length >= 10) { showToast('最多支持 10 个选项。'); return; }
+  var first = rows[0] && rows[0].querySelector('input[name="qEditCorrect"]');
+  var inputType = first && first.type === 'checkbox' ? 'checkbox' : 'radio';
+  var i = rows.length;
+  var div = document.createElement('div');
+  div.className = 'qedit-opt';
+  div.innerHTML = '<input type="' + inputType + '" name="qEditCorrect" value="' + i + '" title="标记为正确答案">'
+    + '<span class="qedit-letter">' + String.fromCharCode(65 + i) + '</span>'
+    + '<input type="text" value="">'
+    + '<button class="policy-action qedit-del" type="button" onclick="removeQEditOption(this)">删除</button>';
+  document.getElementById('qEditOptions').appendChild(div);
+}
+function readQEditDialog(q) {
+  var errBox = document.getElementById('qEditError');
+  var stem = document.getElementById('qEditStem').value.trim();
+  var expl = document.getElementById('qEditExpl').value.trim();
+  var rows = Array.from(document.querySelectorAll('#qEditOptions .qedit-opt'));
+  var texts = rows.map(function(r){ return r.querySelector('input[type="text"]').value.trim(); });
+  var answers = Array.from(document.querySelectorAll('#qEditOptions input[name="qEditCorrect"]:checked')).map(function(el){ return Number(el.value); }).sort(function(a, b){ return a - b; });
+  if (!stem) { errBox.textContent = '题干不能为空。'; return null; }
+  if (texts.length < 2) { errBox.textContent = '至少需要 2 个选项。'; return null; }
+  for (var i = 0; i < texts.length; i++) { if (!texts[i]) { errBox.textContent = '选项 ' + String.fromCharCode(65 + i) + ' 的内容不能为空。'; return null; } }
+  if (!answers.length) { errBox.textContent = '请至少勾选一个正确答案。'; return null; }
+  if (q.type === 'multiple' && answers.length < 2) { errBox.textContent = '多选题请至少勾选 2 个正确答案。'; return null; }
+  return {
+    stem: stem,
+    options: texts.map(function(t, i){ return { letter: String.fromCharCode(65 + i), text: t }; }),
+    answer: answers,
+    explanation: expl,
+    ts: Date.now()
+  };
+}
+async function submitQEdit() {
+  if (!isAdmin() || !qEditTargetId) return;
+  var q = (window.OBJECTIVE_QUESTIONS || []).find(function(x){ return x.id === qEditTargetId; });
+  if (!q) return;
+  var edit = readQEditDialog(q);
+  if (!edit) return;
+  var btn = document.getElementById('qEditSubmitBtn');
+  var errBox = document.getElementById('qEditError');
+  btn.disabled = true; btn.textContent = '保存中…';
+  try {
+    var next = Object.assign({}, QBANK_EDITS);
+    next[qEditTargetId] = edit;
+    await commitQBankEdits(next);
+    applyQuestionEdit(q, edit);
+    var id = qEditTargetId;
+    closeQEdit();
+    rerenderAfterQBankEdits();
+    showToast('试题「' + id + '」已更新并同步云端，所有设备生效。');
+  } catch (e) {
+    errBox.textContent = '保存失败：' + (e.message || e) + '，请检查网络后重试。';
+  } finally {
+    btn.disabled = false; btn.textContent = '保存修改';
+  }
+}
+async function resetQEdit() {
+  if (!isAdmin() || !qEditTargetId) return;
+  var q = (window.OBJECTIVE_QUESTIONS || []).find(function(x){ return x.id === qEditTargetId; });
+  if (!q || !QBANK_EDITS[qEditTargetId]) return;
+  if (!confirm('确定恢复这道题为原始内容？\n云端保存的修改将被删除，所有设备同步恢复。')) return;
+  var btn = document.getElementById('qEditResetBtn');
+  var errBox = document.getElementById('qEditError');
+  btn.disabled = true;
+  try {
+    var next = Object.assign({}, QBANK_EDITS);
+    delete next[qEditTargetId];
+    await commitQBankEdits(next);
+    restoreQuestionPristine(q);
+    closeQEdit();
+    rerenderAfterQBankEdits();
+    showToast('已恢复原题。');
+  } catch (e) {
+    errBox.textContent = '恢复失败：' + (e.message || e) + '，请检查网络后重试。';
+  } finally {
+    btn.disabled = false;
+  }
+}
 
 let activeBank = 'analysis';
 let objectiveQuery = '';
@@ -1570,7 +1827,7 @@ function renderSampleNav(bankData) {
     if ((objectiveCompleted[activeBank] || []).includes(q.id)) li.classList.add('done');
     const wrongTimes = (objectiveWrong[activeBank] || {})[q.id];
     if (wrongTimes !== undefined) li.classList.add('wrong');
-    li.textContent = (i + 1) + '. ' + q.stem + (wrongTimes > 1 ? '（已错 ' + wrongTimes + ' 次）' : '');
+    li.textContent = (i + 1) + '. ' + (QBANK_EDITS[q.id] ? '✎ ' : '') + q.stem + (wrongTimes > 1 ? '（已错 ' + wrongTimes + ' 次）' : '');
     li.title = q.stem;
     li.onclick = () => { currentQ = i; renderSampleNav(bankData); renderSampleQuestion(q, i); };
     ul.appendChild(li);
@@ -1580,11 +1837,11 @@ function renderSampleNav(bankData) {
 function renderSampleQuestion(q, idx) {
   const bankData = SAMPLE_BANKS[activeBank];
   const wrongCount = Object.keys(objectiveWrong[activeBank] || {}).length;
-  let html = '<div class="objective-tools"><button class="btn" onclick="randomObjectiveQuestion()">随机一题</button><button class="btn" onclick="toggleWrongMode()">' + (objectiveOnlyWrong ? '显示全部题目' : '只看错题' + (wrongCount ? '（' + wrongCount + '）' : '')) + '</button>' + (wrongCount ? '<button class="btn btn-wrong-clear" id="clearWrongBtn" type="button" onclick="clearWrong()">清空本题型错题</button>' : '') + '</div>';
+  let html = '<div class="objective-tools"><button class="btn" onclick="randomObjectiveQuestion()">随机一题</button><button class="btn" onclick="toggleWrongMode()">' + (objectiveOnlyWrong ? '显示全部题目' : '只看错题' + (wrongCount ? '（' + wrongCount + '）' : '')) + '</button>' + (wrongCount ? '<button class="btn btn-wrong-clear" id="clearWrongBtn" type="button" onclick="clearWrong()">清空本题型错题</button>' : '') + (isAdmin() ? '<button class="btn" type="button" onclick="openQEdit(currentQ)">✎ 编辑本题</button>' : '') + '</div>';
   html += '<div class="objective-summary">当前显示 ' + objectiveFiltered.length + ' / ' + bankData.questions.length + ' 题 · 第 ' + (idx + 1) + ' 题</div>';
   html += '<div class="card sample-card"><h3><span class="qnum">' + (idx + 1) + '</span>' + esc(q.title) + '</h3>';
   const wrongTimes = (objectiveWrong[activeBank] || {})[q.id];
-  html += '<div class="question-meta"><span class="meta-pill">' + esc(bankData.title) + '</span><span class="meta-pill">原题号：' + esc(q.number) + '</span>' + (wrongTimes !== undefined ? '<span class="meta-pill meta-pill-wrong">错题 · 已错 ' + wrongTimes + ' 次</span>' : '') + '</div>';
+  html += '<div class="question-meta"><span class="meta-pill">' + esc(bankData.title) + '</span><span class="meta-pill">原题号：' + esc(q.number) + '</span>' + (QBANK_EDITS[q.id] ? '<span class="meta-pill edited-pill">✎ 已编辑</span>' : '') + (wrongTimes !== undefined ? '<span class="meta-pill meta-pill-wrong">错题 · 已错 ' + wrongTimes + ' 次</span>' : '') + '</div>';
   html += '<div class="problem-text"><p>' + esc(q.stem) + '</p></div>';
   if (q.type === 'single' || q.type === 'multiple' || q.type === 'judge') {
     const inputType = q.type === 'multiple' ? 'checkbox' : 'radio';
@@ -1775,6 +2032,8 @@ function init() {
   }, { passive: true });
   // 启动后从云端拉取进度（非阻塞，不卡首屏）
   cloudPullAndRender();
+  // 启动后从云端拉取题库编辑（非阻塞；编辑对所有账号生效）
+  refreshQBankEditsFromCloud();
 }
 
 async function cloudPullAndRender(){
