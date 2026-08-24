@@ -79,14 +79,17 @@ body.reader-view .main { margin-left: 0; width: 100%; padding-top: 14px; }
 .header { margin-bottom: 24px; display:flex; align-items:flex-end; justify-content:space-between; gap:20px; }
 .header h1 { font-size: 25px; color: #172033; margin-bottom: 4px; letter-spacing:-.02em; }
 .header .subtitle { font-size: 13px; color: var(--text-sec); }
-.home-button { display:none; border:1px solid var(--border); background:#fff; color:#344054; border-radius:10px; padding:9px 14px; cursor:pointer; font-weight:600; }
+.home-button { display:none; border:1px solid var(--border); background:#fff; color:#344054; border-radius:10px; padding:9px 14px; cursor:pointer; font-weight:600; align-items:center; gap:6px; }
+.home-button.danger { color:#b42318; border-color:#fecdca; background:#fff; }
+.home-button.danger:hover { background:#fef3f2; }
 .header-right { display:flex; align-items:center; gap:10px; }
+body.authenticated .home-button { display:inline-flex; }
+body.authenticated.home-view .home-button#backHomeBtn { display:none; }
 .sync-badge { font-size:12px; padding:4px 10px; border-radius:999px; border:1px solid var(--border); background:#fff; color:#667085; white-space:nowrap; }
 .sync-badge.syncing { color:#1570ef; border-color:#b2ddff; background:#eff8ff; }
 .sync-badge.synced { color:#087443; border-color:#abefc6; background:#ecfdf3; }
 .sync-badge.offline { color:#b54708; border-color:#fec84b; background:#fffaeb; }
 .sync-badge.error { color:#b42318; border-color:#fecdca; background:#fef3f2; }
-body:not(.home-view) .home-button { display:inline-flex; }
 .question-tools { position: sticky; top: 0; z-index: 20; display: flex; align-items: center; gap: 8px; padding: 10px 12px; margin-bottom: 12px; background: rgba(255,255,255,.96); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 2px 8px rgba(60,64,67,.08); }
 .question-tools label { font-size: 12px; color: var(--text-sec); white-space: nowrap; }
 .question-tools select { min-width: 0; flex: 1; padding: 7px 8px; border: 1px solid var(--border); border-radius: 5px; background: #fff; }
@@ -146,6 +149,44 @@ tr:nth-child(even) { background: #f8f9fa; }
   .back-to-top { right: 14px; bottom: 14px; }
 }
 .hidden { display: none !important; }
+
+/* Admin dialog redesign */
+.admin-dialog-wide { width: min(580px, 94vw); }
+.admin-header { display:flex; align-items:flex-start; justify-content:space-between; gap:14px; padding-bottom:6px; }
+.admin-header h3 { margin:0 0 4px; }
+.admin-sub { margin:0; font-size:13px; color:#475569; }
+.admin-sub .badge { display:inline-block; background:#dbeafe; color:#1d4ed8; padding:2px 8px; border-radius:6px; font-weight:600; font-size:12px; }
+.admin-header-actions { display:flex; gap:6px; flex-wrap:wrap; flex-shrink:0; }
+.admin-section { border-top:1px solid var(--border); padding-top:14px; margin-top:14px; }
+.admin-section h4 { margin:0 0 8px; font-size:14px; color:#0f172a; }
+.admin-section .muted { color:#64748b; font-weight:normal; font-size:12px; }
+.admin-list { max-height:220px; overflow-y:auto; border:1px solid var(--border); border-radius:8px; padding:2px 6px; }
+.admin-list .admin-row { display:flex; align-items:center; gap:10px; padding:10px 8px; border-radius:6px; font-size:14px; }
+.admin-list .admin-row:hover { background:#f8fafc; }
+.admin-list .admin-name { font-weight:600; }
+.admin-list .admin-time { color:#64748b; font-size:12px; margin-left:auto; }
+.admin-list .admin-tag { background:#dbeafe; color:#1d4ed8; font-size:11px; padding:2px 6px; border-radius:4px; margin-left:4px; }
+.admin-list .admin-row .policy-action { padding:4px 10px; font-size:12px; }
+.admin-tools-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+@media (max-width:480px) { .admin-tools-grid { grid-template-columns:1fr; } }
+.tool-card { display:flex; align-items:center; gap:10px; padding:12px; border:1px solid var(--border); border-radius:10px; background:#fff; cursor:pointer; text-align:left; font-family:inherit; }
+.tool-card:hover { border-color:#93c5fd; background:#f0f9ff; }
+.tool-card .tool-icon { font-size:18px; width:36px; height:36px; display:inline-flex; align-items:center; justify-content:center; background:#eff6ff; border-radius:8px; }
+.tool-card .tool-text { flex:1; display:flex; flex-direction:column; gap:2px; min-width:0; }
+.tool-card .tool-text strong { font-size:14px; color:#0f172a; }
+.tool-card .tool-text em { font-style:normal; font-size:12px; color:#64748b; }
+.tool-card .tool-go { color:#3b82f6; font-size:18px; }
+.form-error { color:#b42318; font-size:13px; min-height:18px; margin:4px 0; }
+.form-hint { color:#64748b; font-size:12px; margin:0 0 8px; }
+
+/* Home page user card */
+.home-user-card { display:flex; align-items:center; gap:14px; padding:14px 18px; background:linear-gradient(135deg,#eff6ff 0%,#e0e7ff 100%); border:1px solid #c7d2fe; border-radius:14px; margin-bottom:20px; }
+.home-user-card .avatar { width:44px; height:44px; border-radius:50%; background:#1d4ed8; color:#fff; display:inline-flex; align-items:center; justify-content:center; font-size:18px; font-weight:700; }
+.home-user-card .user-meta { flex:1; min-width:0; }
+.home-user-card .user-meta .name { font-size:15px; font-weight:600; color:#0f172a; }
+.home-user-card .user-meta .role { font-size:12px; color:#475569; margin-top:2px; }
+.home-user-card .user-meta .role .pill { display:inline-block; background:#1d4ed8; color:#fff; font-size:11px; padding:1px 8px; border-radius:999px; margin-left:6px; }
+.home-user-card .user-actions { display:flex; gap:8px; flex-wrap:wrap; }
 
 /* Question bank switcher */
 .bank-switcher { display: none; }
@@ -371,8 +412,8 @@ tr:nth-child(even) { background: #f8f9fa; }
         <span class="sync-badge idle" id="syncBadge" title="学习进度云端同步状态">已就绪</span>
         <span class="user-chip" id="userChip" style="display:none"></span>
         <button class="home-button" type="button" id="adminBtn" style="display:none" onclick="openAdmin()">账号管理</button>
-        <button class="home-button" type="button" id="logoutBtn" style="display:none" onclick="logout()">登出</button>
-        <button class="home-button" type="button" onclick="renderHome()">返回首页</button>
+        <button class="home-button danger" type="button" id="logoutBtn" style="display:none" onclick="logout()">↪ 登出</button>
+        <button class="home-button" type="button" id="backHomeBtn" onclick="renderHome()">返回首页</button>
       </div>
     </div>
     <div id="contentArea"></div>
@@ -390,17 +431,85 @@ tr:nth-child(even) { background: #f8f9fa; }
   </form>
 </dialog>
 
-<dialog class="feedback-dialog" id="adminDialog">
+<dialog class="feedback-dialog admin-dialog-wide" id="adminDialog">
   <form class="feedback-form" onsubmit="return false">
-    <h3>账号管理</h3>
-    <p class="admin-note" style="margin:0 0 8px">已注册账号列表（仅主账号可见）。删除账号会同时清除其登录凭证与云端学习进度，不可恢复。</p>
-    <div id="adminAccountList" style="min-width:300px">加载中…</div>
-    <div class="admin-tools" style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
-      <button class="policy-action" type="button" onclick="changeRegCode()">设置注册码</button>
-      <button class="policy-action" type="button" onclick="transferAdmin()">移交主账号权限</button>
-    </div>
-    <p class="admin-note">「设置注册码」：新注册码加密存储于云端，网页源码与网络请求中均不出现明文，修改后立即对新注册生效。「移交主账号权限」：移交后当前账号将失去账号管理权限，目标账号刷新页面即可使用。</p>
+    <header class="admin-header">
+      <div>
+        <h3>账号管理</h3>
+        <p class="admin-sub">主账号：<span class="badge" id="adminBadge">—</span></p>
+      </div>
+      <div class="admin-header-actions">
+        <button class="home-button" type="button" onclick="openPasswordDialog()">🔒 修改密码</button>
+        <button class="home-button danger" type="button" onclick="logout()">↪ 退出登录</button>
+      </div>
+    </header>
+
+    <section class="admin-section">
+      <h4>已注册账号 <span class="muted">（共 <span id="adminCount">0</span> 个）</span></h4>
+      <p class="form-hint">删除账号会同时清除其登录凭证与云端学习进度，不可恢复。</p>
+      <div id="adminAccountList" class="admin-list">加载中…</div>
+    </section>
+
+    <section class="admin-section">
+      <h4>系统设置</h4>
+      <div class="admin-tools-grid">
+        <button class="tool-card" type="button" onclick="openRegCodeDialog()">
+          <span class="tool-icon">🔑</span>
+          <span class="tool-text"><strong>设置注册码</strong><em>修改新用户注册时需要的邀请码</em></span>
+          <span class="tool-go">→</span>
+        </button>
+        <button class="tool-card" type="button" onclick="openTransferDialog()">
+          <span class="tool-icon">👑</span>
+          <span class="tool-text"><strong>移交主账号</strong><em>把管理权限转给另一个账号</em></span>
+          <span class="tool-go">→</span>
+        </button>
+      </div>
+    </section>
+
     <div class="feedback-actions"><button class="policy-action" type="button" onclick="closeAdmin()">关闭</button></div>
+  </form>
+</dialog>
+
+<dialog class="feedback-dialog" id="regCodeDialog">
+  <form class="feedback-form" onsubmit="return false">
+    <h3>设置注册码</h3>
+    <p class="form-hint">新注册码加密存储于云端，网页源码与请求中均不出现明文，修改后立即对新注册生效。4-32 个字符，不支持中文。</p>
+    <label>新注册码<input type="text" id="newRegCode" autocomplete="off" /></label>
+    <label>再次输入<input type="text" id="newRegCode2" autocomplete="off" /></label>
+    <div class="form-error" id="regCodeError"></div>
+    <div class="feedback-actions">
+      <button class="policy-action" type="button" onclick="closeRegCodeDialog()">取消</button>
+      <button class="policy-action primary" type="button" id="regCodeSubmitBtn" onclick="submitChangeRegCode()">保存</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog class="feedback-dialog" id="transferAdminDialog">
+  <form class="feedback-form" onsubmit="return false">
+    <h3>移交主账号权限</h3>
+    <p class="form-hint">移交后当前账号立即失去账号管理权限，目标账号刷新页面或重新登录后即可接管。</p>
+    <label>当前主账号<input type="text" id="transferCurrent" readonly /></label>
+    <label>目标账号名<input type="text" id="transferTarget" autocomplete="off" placeholder="请输入已注册账号的用户名" /></label>
+    <div class="form-error" id="transferError"></div>
+    <div class="feedback-actions">
+      <button class="policy-action" type="button" onclick="closeTransferDialog()">取消</button>
+      <button class="policy-action primary" type="button" id="transferSubmitBtn" onclick="submitTransferAdmin()">确认移交</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog class="feedback-dialog" id="passwordDialog">
+  <form class="feedback-form" onsubmit="return false">
+    <h3>修改密码</h3>
+    <p class="form-hint">请输入当前密码与新密码。修改后下次登录请使用新密码。修改密码不会清空本设备已有的学习进度。</p>
+    <label>当前密码<input type="password" id="oldPassword" autocomplete="current-password" /></label>
+    <label>新密码（至少 4 位）<input type="password" id="newPassword" autocomplete="new-password" /></label>
+    <label>确认新密码<input type="password" id="newPassword2" autocomplete="new-password" /></label>
+    <div class="form-error" id="passwordError"></div>
+    <div class="feedback-actions">
+      <button class="policy-action" type="button" onclick="closePasswordDialog()">取消</button>
+      <button class="policy-action primary" type="button" id="passwordSubmitBtn" onclick="submitChangePassword()">确认修改</button>
+    </div>
   </form>
 </dialog>
 
@@ -570,6 +679,9 @@ function closeAdmin(){
 }
 async function loadAdminAccounts(){
   var box = document.getElementById('adminAccountList');
+  var badge = document.getElementById('adminBadge');
+  var count = document.getElementById('adminCount');
+  if (badge) badge.textContent = AdminState.name || MAIN_USER;
   if (!box) return;
   box.textContent = '加载中…';
   try {
@@ -580,12 +692,13 @@ async function loadAdminAccounts(){
     (rows || []).forEach(function(r){
       var name = r.slug.slice(5);
       var isMain = name === (AdminState.name || MAIN_USER);
-      html += '<div class="admin-row"><span class="admin-name">' + esc(name) + (isMain ? '（主账号）' : '') + '</span>'
+      html += '<div class="admin-row"><span class="admin-name">' + esc(name) + (isMain ? '<span class="admin-tag">主账号</span>' : '') + '</span>'
         + '<span class="admin-time">最近活跃：' + esc(String(r.updated_at || '').slice(0,10)) + '</span>'
         + (isMain ? '' : '<button class="policy-action" type="button" onclick="deleteAccount(\'' + esc(name) + '\')">删除</button>')
         + '</div>';
     });
-    box.innerHTML = html || '暂无注册账号。';
+    box.innerHTML = html || '<div style="padding:14px;text-align:center;color:#94a3b8;font-size:13px">暂无注册账号</div>';
+    if (count) count.textContent = (rows || []).length;
   } catch (e) {
     box.textContent = '加载失败：' + (e.message || e);
   }
@@ -598,23 +711,37 @@ async function deleteAccount(name){
     var r1 = await fetch(base + encodeURIComponent('auth:' + name), {method:'DELETE', headers:Auth.authHeaders()});
     var r2 = await fetch(base + encodeURIComponent('prog:' + name), {method:'DELETE', headers:Auth.authHeaders()});
     if (!r1.ok || !r2.ok) throw new Error('HTTP ' + (r1.ok ? r2.status : r1.status));
-    alert('账号「' + name + '」已删除。');
+    showToast('账号「' + name + '」已删除。');
     loadAdminAccounts();
   } catch (e) {
-    alert('删除失败：' + (e.message || e));
+    showToast('删除失败：' + (e.message || e));
   }
 }
-/* 设置注册码：新码 sha256 后写入云端 sys_config（仅更新注册码字段，不影响其他配置），源码与请求均无明文 */
-async function changeRegCode(){
+/* 设置注册码：弹内嵌对话框输入新码 + 确认，sha256 后写入云端 sys_config（只更新注册码字段，不影响其他配置） */
+function openRegCodeDialog(){
   if (!isAdmin()) return;
-  var code = prompt('请输入新的注册码（4-32 个字符，设置后立即对新注册生效）：');
-  if (code === null) return;
-  code = code.trim();
-  if (code.length < 4 || code.length > 32) { alert('注册码需为 4-32 个字符'); return; }
-  if (/[\u4e00-\u9fa5]/.test(code)) { alert('注册码请勿使用中文'); return; }
-  var code2 = prompt('请再次输入新注册码以确认：');
-  if (code2 === null) return;
-  if (code2 !== code) { alert('两次输入不一致，已取消设置。'); return; }
+  var d = document.getElementById('regCodeDialog');
+  document.getElementById('newRegCode').value = '';
+  document.getElementById('newRegCode2').value = '';
+  document.getElementById('regCodeError').textContent = '';
+  if (d && typeof d.showModal === 'function') d.showModal();
+  setTimeout(function(){ var el=document.getElementById('newRegCode'); if(el) el.focus(); }, 50);
+}
+function closeRegCodeDialog(){
+  var d = document.getElementById('regCodeDialog'); if (d) d.close();
+}
+async function submitChangeRegCode(){
+  if (!isAdmin()) return;
+  var code = (document.getElementById('newRegCode').value || '').trim();
+  var code2 = (document.getElementById('newRegCode2').value || '').trim();
+  var errEl = document.getElementById('regCodeError');
+  var btn = document.getElementById('regCodeSubmitBtn');
+  errEl.textContent = '';
+  if (!code || !code2) { errEl.textContent = '请填写两次新注册码'; return; }
+  if (code.length < 4 || code.length > 32) { errEl.textContent = '注册码需为 4-32 个字符'; return; }
+  if (/[\u4e00-\u9fa5]/.test(code)) { errEl.textContent = '注册码请勿使用中文'; return; }
+  if (code !== code2) { errEl.textContent = '两次输入不一致，请重新输入'; return; }
+  btn.disabled = true; btn.textContent = '保存中…';
   try {
     var hash = await sha256Hex('huadian-reg-code:' + code);
     var res = await fetch(Auth.apiUrl(), {
@@ -623,26 +750,45 @@ async function changeRegCode(){
       body: JSON.stringify([{slug:'sys_config', objective_completed:{code:hash}}])
     });
     if (!res.ok) throw new Error('HTTP ' + res.status);
-    alert('注册码已更新，立即对新注册生效。\n（注册码以加密形式存储于云端，请自行妥善保管。）');
+    closeRegCodeDialog();
+    showToast('注册码已更新，立即对新注册生效。\n（注册码以加密形式存储于云端，请自行妥善保管。）');
   } catch (e) {
-    alert('设置失败：' + (e.message || e));
+    errEl.textContent = '设置失败：' + (e.message || e);
+  } finally {
+    btn.disabled = false; btn.textContent = '保存';
   }
 }
-/* 移交主账号权限：校验目标账号存在后，把主账号名写入云端 sys_config，当前账号立即失去管理权限 */
-async function transferAdmin(){
+/* 移交主账号权限：弹内嵌对话框输入目标账号，校验存在后写入云端，当前账号立即失去管理权限 */
+function openTransferDialog(){
   if (!isAdmin()) return;
-  var name = prompt('请输入要接收主账号权限的账号名（移交后当前账号将失去账号管理权限）：');
-  if (name === null) return;
-  name = name.trim().toLowerCase();
-  if (!name) return;
-  if (name === Auth.user) { alert('您当前就是主账号，无需移交。'); return; }
-  if (name === (AdminState.name || MAIN_USER)) { alert('该账号已经是主账号。'); return; }
+  var d = document.getElementById('transferAdminDialog');
+  document.getElementById('transferCurrent').value = AdminState.name || MAIN_USER;
+  document.getElementById('transferTarget').value = '';
+  document.getElementById('transferError').textContent = '';
+  if (d && typeof d.showModal === 'function') d.showModal();
+  setTimeout(function(){ var el=document.getElementById('transferTarget'); if(el) el.focus(); }, 50);
+}
+function closeTransferDialog(){
+  var d = document.getElementById('transferAdminDialog'); if (d) d.close();
+}
+async function submitTransferAdmin(){
+  if (!isAdmin()) return;
+  var name = (document.getElementById('transferTarget').value || '').trim().toLowerCase();
+  var errEl = document.getElementById('transferError');
+  var btn = document.getElementById('transferSubmitBtn');
+  errEl.textContent = '';
+  if (!name) { errEl.textContent = '请输入目标账号名'; return; }
+  if (name === Auth.user) { errEl.textContent = '您当前就是主账号，无需移交'; return; }
+  if (name === (AdminState.name || MAIN_USER)) { errEl.textContent = '该账号已经是主账号'; return; }
+  if (!/^[a-z0-9_\u4e00-\u9fa5]{2,20}$/.test(name)) { errEl.textContent = '账号名格式不正确'; return; }
+  btn.disabled = true; btn.textContent = '校验中…';
   try {
     var check = await fetch(Auth.apiUrl() + '?slug=eq.' + encodeURIComponent('auth:' + name) + '&select=slug', {method:'GET', headers:Auth.authHeaders()});
     if (!check.ok) throw new Error('网络异常，请稍后重试');
     var rows = await check.json();
-    if (!rows || !rows.length) { alert('账号「' + name + '」不存在，请先让对方注册。'); return; }
-    if (!confirm('确定将主账号权限移交给「' + name + '」？\n移交后您将无法再使用账号管理面板（除非对方再移交给您）。')) return;
+    if (!rows || !rows.length) { errEl.textContent = '账号「' + name + '」不存在，请先让对方注册'; btn.textContent='确认移交'; btn.disabled=false; return; }
+    if (!confirm('确定将主账号权限移交给「' + name + '」？\n移交后您将无法再使用账号管理面板。')) { btn.textContent='确认移交'; btn.disabled=false; return; }
+    btn.textContent = '移交中…';
     var res = await fetch(Auth.apiUrl(), {
       method:'POST',
       headers: Auth.authHeaders({'Prefer':'resolution=merge-duplicates,return=minimal'}),
@@ -651,10 +797,66 @@ async function transferAdmin(){
     if (!res.ok) throw new Error('HTTP ' + res.status);
     AdminState.name = name;
     setUserChip(Auth.user); // 当前账号立即失去管理入口
-    alert('已将主账号权限移交给「' + name + '」。\n该账号刷新页面或重新登录后即可使用账号管理面板。');
+    closeTransferDialog();
     closeAdmin();
+    showToast('已将主账号权限移交给「' + name + '」。\n该账号刷新页面或重新登录后即可使用账号管理面板。');
   } catch (e) {
-    alert('移交失败：' + (e.message || e));
+    errEl.textContent = '移交失败：' + (e.message || e);
+    btn.textContent='确认移交';
+  } finally {
+    btn.disabled = false;
+  }
+}
+/* 修改密码：弹内嵌对话框输入旧密码 + 新密码 + 确认，校验旧密码后把新哈希写回 auth:<用户> 行 */
+function openPasswordDialog(){
+  if (!Auth.user) return;
+  var d = document.getElementById('passwordDialog');
+  document.getElementById('oldPassword').value = '';
+  document.getElementById('newPassword').value = '';
+  document.getElementById('newPassword2').value = '';
+  document.getElementById('passwordError').textContent = '';
+  if (d && typeof d.showModal === 'function') d.showModal();
+  setTimeout(function(){ var el=document.getElementById('oldPassword'); if(el) el.focus(); }, 50);
+}
+function closePasswordDialog(){
+  var d = document.getElementById('passwordDialog'); if (d) d.close();
+}
+async function submitChangePassword(){
+  if (!Auth.user) return;
+  var oldP = document.getElementById('oldPassword').value;
+  var newP = document.getElementById('newPassword').value;
+  var newP2 = document.getElementById('newPassword2').value;
+  var errEl = document.getElementById('passwordError');
+  var btn = document.getElementById('passwordSubmitBtn');
+  errEl.textContent = '';
+  if (!oldP) { errEl.textContent = '请输入当前密码'; return; }
+  if (!newP) { errEl.textContent = '请输入新密码'; return; }
+  if (newP.length < 4) { errEl.textContent = '新密码至少 4 位'; return; }
+  if (newP !== newP2) { errEl.textContent = '两次新密码输入不一致'; return; }
+  if (newP === oldP) { errEl.textContent = '新密码不能与当前密码相同'; return; }
+  btn.disabled = true; btn.textContent = '校验中…';
+  try {
+    var oldHash = await sha256Hex('huadian-salt:' + Auth.user + ':' + oldP);
+    var check = await fetch(Auth.apiUrl() + '?slug=eq.' + encodeURIComponent('auth:' + Auth.user) + '&select=objective_completed', {method:'GET', headers:Auth.authHeaders()});
+    if (!check.ok) throw new Error('网络异常，请稍后重试');
+    var rows = await check.json();
+    if (!rows || !rows[0] || !rows[0].objective_completed || rows[0].objective_completed.h !== oldHash) {
+      throw new Error('当前密码错误');
+    }
+    var newHash = await sha256Hex('huadian-salt:' + Auth.user + ':' + newP);
+    btn.textContent = '保存中…';
+    var res = await fetch(Auth.apiUrl(), {
+      method:'POST',
+      headers: Auth.authHeaders({'Prefer':'resolution=merge-duplicates,return=minimal'}),
+      body: JSON.stringify([{slug:'auth:' + Auth.user, objective_completed:{h:newHash}}])
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    closePasswordDialog();
+    showToast('密码已修改，下次登录请使用新密码。');
+  } catch (e) {
+    errEl.textContent = e.message || '修改失败，请重试';
+  } finally {
+    btn.disabled = false; btn.textContent = '确认修改';
   }
 }
 function switchAuthMode(mode){
@@ -866,6 +1068,21 @@ function esc(s) {
   return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
+/* 简易 toast：顶部居中悬浮提示，3 秒后自动消失；用于替换 alert 风格的丑陋弹窗 */
+function showToast(msg){
+  var t = document.getElementById('toastBox');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'toastBox';
+    t.style.cssText = 'position:fixed;left:50%;top:24px;transform:translateX(-50%);z-index:9999;max-width:min(480px,92vw);background:#0f172a;color:#fff;padding:12px 18px;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.25);font-size:14px;line-height:1.6;white-space:pre-line;opacity:0;transition:opacity .2s;pointer-events:none;';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.style.opacity = '1';
+  clearTimeout(t._timer);
+  t._timer = setTimeout(function(){ t.style.opacity = '0'; }, 3000);
+}
+
 function setViewClass(name) {
   document.body.classList.remove('home-view', 'section-view', 'policy-view', 'reader-view');
   if (name) document.body.classList.add(name);
@@ -886,7 +1103,21 @@ function renderHome() {
   const objectiveCount = (window.OBJECTIVE_QUESTIONS || []).length;
   const totalWrong = ['single', 'multiple', 'judge'].reduce((sum, b) => sum + ((objectiveWrong[b] || []).length), 0);
   const objectiveMeta = objectiveCount + ' 题' + (totalWrong ? ' · 错题 ' + totalWrong + ' 待重做' : '');
+  // 当前账号卡片（登录后显示），让首页也能直接看到账号信息和登出入口
+  var userCard = '';
+  if (Auth.user) {
+    var initial = esc(Auth.user.charAt(0).toUpperCase());
+    var rolePill = isAdmin() ? '<span class="pill">主账号</span>' : '<span class="pill" style="background:#e2e8f0;color:#475569">普通账号</span>';
+    userCard = '<section class="home-user-card" aria-label="当前账号">' +
+      '<div class="avatar">' + initial + '</div>' +
+      '<div class="user-meta"><div class="name">' + esc(Auth.user) + '</div><div class="role">已登录' + rolePill + '</div></div>' +
+      '<div class="user-actions">' +
+        '<button class="home-button" type="button" onclick="openPasswordDialog()">🔒 修改密码</button>' +
+        '<button class="home-button danger" type="button" onclick="logout()">↪ 退出登录</button>' +
+      '</div></section>';
+  }
   document.getElementById('contentArea').innerHTML =
+    userCard +
     '<section class="home-hero"><div class="home-kicker">ELECTRICITY MARKET LEARNING</div><h2>今天想学习什么？</h2><p>先选择大类，再进入具体题型或政策主题。页面只呈现当前需要的内容，减少来回寻找。</p></section>' +
     '<section class="home-grid" aria-label="学习模块">' +
       '<button class="home-entry" onclick="renderQuestionSection()"><span class="entry-icon">选</span><span class="entry-meta">' + objectiveMeta + '</span><h3>选择题</h3><p>单选、多选与判断题，按题型进入练习，错题自动收录。</p><span class="entry-go">进入练习 →</span></button>' +
