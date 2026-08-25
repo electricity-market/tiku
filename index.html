@@ -711,8 +711,8 @@ tr:nth-child(even) { background: #f8f9fa; }
       <span class="qm-stats" id="qmStats">已导入 0 题 · 已删除 0 题</span>
     </div>
     <div class="qm-tabs" id="qmTabs" role="tablist">
-      <button type="button" class="qm-tab active" data-qmtab="import" role="tab" aria-selected="true">📥 导入试题</button>
-      <button type="button" class="qm-tab" data-qmtab="delete" role="tab" aria-selected="false">🗑 删除试题</button>
+      <button type="button" class="qm-tab active" data-qmtab="import" role="tab" aria-selected="true" onclick="switchQmTab(this,'import')">📥 导入试题</button>
+      <button type="button" class="qm-tab" data-qmtab="delete" role="tab" aria-selected="false" onclick="switchQmTab(this,'delete')">🗑 删除试题</button>
     </div>
 
     <div class="qm-pane active" id="qmImportPane" role="tabpanel">
