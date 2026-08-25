@@ -887,7 +887,7 @@ body { background: var(--bg-grad); background-attachment: fixed; }
   </div>
 </div>
 
-<script src="objective-questions.js?v=20260825-9" onerror="window.OBJECTIVE_LOAD_FAILED=true"></script>
+<script src="objective-questions.js?v=20260825-10" onerror="window.OBJECTIVE_LOAD_FAILED=true"></script>
 <script src="policy-library-data.js?v=20260822-2" onerror="window.POLICY_LOAD_FAILED=true"></script>
 <script src="policy-dates.js?v=20260822-2"></script>
 <script>
@@ -2895,7 +2895,7 @@ DATA.push({
   ]
 });
 
-const CALCULATION_IDS = [10, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42];
+const CALCULATION_IDS = [10, 14, 15, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42];
 function richQuestions() {
   return activeBank === 'calculation'
     ? DATA.filter(q => CALCULATION_IDS.includes(q.id))
