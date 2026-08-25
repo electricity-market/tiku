@@ -539,6 +539,126 @@ tr:nth-child(even) { background: #f8f9fa; }
 .ans-body p.sub-item { padding-left: 20px; }
 .ans-body p.sub-item::before { content: "•"; color: var(--primary); margin-right: 8px; }
 .ans-body table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 12px; }
+
+/* ============================================================
+   美化增强层 UI-KIT（设计 token + 动效 + 微交互）
+   整块可删除以回退到原始风格；不改动任何 JS 逻辑
+   注意：fadeInUp / popIn 故意不用 fill:both，否则会锁定 transform 导致 hover 抬升失效
+   ============================================================ */
+:root {
+  --primary-grad: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  --primary-grad-soft: linear-gradient(135deg, #60a5fa 0%, #2563eb 100%);
+  --bg-grad: linear-gradient(160deg, #eef2fb 0%, #f4f6fa 42%, #eaf0fb 100%);
+  --shadow-sm: 0 1px 2px rgba(15,23,42,.06), 0 2px 6px rgba(15,23,42,.05);
+  --shadow-md: 0 8px 24px rgba(30,64,175,.10), 0 2px 8px rgba(15,23,42,.06);
+  --shadow-lg: 0 22px 56px rgba(30,64,175,.16), 0 8px 22px rgba(15,23,42,.08);
+  --radius: 16px;
+  --radius-sm: 11px;
+  --ring: 0 0 0 4px rgba(59,130,246,.18);
+  --ease: cubic-bezier(.2,.8,.2,1);
+}
+
+/* ---- 全局基础 ---- */
+html { scroll-behavior: smooth; }
+body { background: var(--bg-grad); background-attachment: fixed; }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(100,116,139,.28); border-radius: 999px; border: 2px solid transparent; background-clip: padding-box; }
+::-webkit-scrollbar-thumb:hover { background: rgba(100,116,139,.5); background-clip: padding-box; }
+
+/* ---- 关键帧 ---- */
+@keyframes fadeInUp { from { opacity:0; transform: translateY(10px); } to { opacity:1; transform: translateY(0); } }
+@keyframes popIn { from { opacity:0; transform: translate(-50%,-50%) scale(.94); } to { opacity:1; transform: translate(-50%,-50%) scale(1); } }
+@keyframes backdropIn { from { opacity:0; } to { opacity:1; } }
+
+/* ---- 按钮体系 ---- */
+.btn {
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  transition: transform .18s var(--ease), box-shadow .18s var(--ease), background .18s, border-color .18s, color .18s;
+  will-change: transform;
+}
+.btn:hover { transform: translateY(-1px); box-shadow: var(--shadow-sm); border-color: #c7d2fe; }
+.btn:active { transform: translateY(0) scale(.97); }
+.btn:focus-visible { outline: none; box-shadow: var(--ring); }
+.btn-primary, .login-submit, .answer-toggle {
+  background: var(--primary-grad);
+  border: none;
+  color: #fff;
+  box-shadow: 0 6px 16px rgba(29,78,216,.28);
+}
+.btn-primary:hover, .login-submit:hover, .answer-toggle:hover {
+  background: var(--primary-grad);
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(29,78,216,.36);
+  filter: brightness(1.05);
+}
+.btn-primary:active, .login-submit:active, .answer-toggle:active { transform: translateY(0) scale(.97); }
+
+/* ---- Logo / 标题渐变 ---- */
+.login-mark { background: var(--primary-grad); box-shadow: 0 8px 20px rgba(29,78,216,.32); }
+.header h1 {
+  background: linear-gradient(120deg, #1e40af, #3b82f6 55%, #06b6d4);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+
+/* ---- 卡片 ---- */
+.contentArea > .card {
+  border-radius: var(--radius);
+  border: 1px solid rgba(226,232,240,.9);
+  box-shadow: var(--shadow-md);
+  animation: fadeInUp .42s var(--ease);
+  transition: box-shadow .28s var(--ease), transform .28s var(--ease);
+}
+.contentArea > .card:hover { box-shadow: var(--shadow-lg); transform: translateY(-2px); }
+.card .category {
+  background: var(--primary-grad-soft); color: #fff; font-weight: 600;
+  box-shadow: 0 2px 6px rgba(37,99,235,.25);
+}
+.card .qnum { box-shadow: 0 4px 10px rgba(29,78,216,.35); }
+
+/* ---- 选项 ---- */
+.option-item {
+  border-radius: var(--radius-sm);
+  transition: transform .18s var(--ease), box-shadow .18s var(--ease), border-color .18s, background .18s;
+}
+.option-item:hover { transform: translateY(-2px); box-shadow: var(--shadow-sm); border-color: #c7d2fe; }
+.option-item.selected {
+  border-color: var(--primary); background: var(--primary-light);
+  box-shadow: 0 6px 18px rgba(29,78,216,.18); transform: translateY(-1px);
+}
+.option-item:active { transform: scale(.99); }
+
+/* ---- 侧边栏 ---- */
+.sidebar li { border-radius: 0 var(--radius-sm) var(--radius-sm) 0; position: relative; overflow: hidden; }
+.sidebar li::before {
+  content:""; position:absolute; left:0; top:50%; transform: translateY(-50%) scaleY(0);
+  width:3px; height:62%; background: var(--primary-grad);
+  border-radius: 0 3px 3px 0; transition: transform .22s var(--ease);
+}
+.sidebar li:hover { transform: translateX(2px); }
+.sidebar li.active { background: var(--primary-light); color: var(--primary); font-weight: 700; }
+.sidebar li.active::before { transform: translateY(-50%) scaleY(1); }
+.sidebar h2 { letter-spacing:.02em; }
+
+/* ---- 导航 tab ---- */
+.search-tab { border-radius: 999px; transition: transform .18s var(--ease), background .18s, color .18s, box-shadow .18s; }
+.search-tab.active {
+  background: var(--primary-grad); border-color: transparent; color: #fff;
+  box-shadow: 0 6px 16px rgba(29,78,216,.3); transform: translateY(-1px);
+}
+.search-tab:hover:not(.active) { transform: translateY(-1px); }
+
+/* ---- 模态框动画 ---- */
+.modal-backdrop { transition: opacity .2s ease; }
+.modal-backdrop.active { animation: backdropIn .22s ease; }
+.feedback-dialog { border-radius: var(--radius); }
+.feedback-dialog.active { animation: popIn .3s var(--ease); }
+
+/* ---- 进度条 / 返回顶部 ---- */
+.sidebar .progress-bar > div { border-radius: 999px; }
+.back-to-top { transition: opacity .25s var(--ease), transform .25s var(--ease), box-shadow .25s var(--ease); }
+.back-to-top:hover { transform: translateY(-2px) scale(1.06); box-shadow: 0 6px 18px rgba(29,78,216,.4); }
 </style>
 </head>
 <body>
@@ -767,7 +887,7 @@ tr:nth-child(even) { background: #f8f9fa; }
   </div>
 </div>
 
-<script src="objective-questions.js?v=20260825-5" onerror="window.OBJECTIVE_LOAD_FAILED=true"></script>
+<script src="objective-questions.js?v=20260825-6" onerror="window.OBJECTIVE_LOAD_FAILED=true"></script>
 <script src="policy-library-data.js?v=20260822-2" onerror="window.POLICY_LOAD_FAILED=true"></script>
 <script src="policy-dates.js?v=20260822-2"></script>
 <script>
