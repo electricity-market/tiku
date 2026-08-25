@@ -19,7 +19,7 @@
   --warn: #fbbc04;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+body { --qfont-size: 14px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
 .login-gate { position:fixed; inset:0; z-index:9999; display:grid; place-items:center; padding:22px; background:linear-gradient(145deg,#edf3ff 0%,#f7f9fc 52%,#eef6ff 100%); }
 .login-panel { width:min(420px,100%); padding:38px 34px; border:1px solid #dfe5ef; border-radius:22px; background:#fff; box-shadow:0 24px 70px rgba(31,42,68,.14); }
 .login-mark { display:grid; place-items:center; width:52px; height:52px; margin-bottom:22px; border-radius:15px; color:#fff; background:var(--primary); font-size:23px; font-weight:800; }
@@ -107,7 +107,7 @@ body.authenticated.home-view .home-button#backHomeBtn { display:none; }
 .card h3 { font-size: 16px; margin-bottom: 12px; color: var(--primary); display: flex; align-items: center; gap: 8px; }
 .card h3 .qnum { background: var(--primary); color: #fff; width: 28px; height: 28px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; }
 .card .category { font-size: 12px; color: var(--text-sec); margin-bottom: 16px; padding: 4px 10px; background: var(--primary-light); border-radius: 12px; display: inline-block; }
-.card .problem-text { font-size: 14px; line-height: 1.8; color: var(--text); margin-bottom: 16px; }
+.card .problem-text { font-size: var(--qfont-size, 14px); line-height: 1.8; color: var(--text); margin-bottom: 16px; }
 .card .problem-text p { margin-bottom: 8px; }
 .card .problem-text p.sub-item { padding-left: 20px; text-indent: 0; margin-top: 4px; }
 .card .problem-text p.sub-item::before { content: "•"; color: var(--primary); margin-right: 8px; }
@@ -221,12 +221,12 @@ tr:nth-child(even) { background: #f8f9fa; }
 .sample-card .meta-pill { padding: 3px 9px; border-radius: 999px; background: var(--primary-light); color: var(--primary); font-size: 12px; }
 .sample-card .meta-pill-wrong { background:#fee4e2; color:#b42318; }
 .option-list { display: grid; gap: 10px; margin: 16px 0; }
-.option-item { display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; background: #fff; }
+.option-item { display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; background: #fff; font-size: var(--qfont-size, 14px); }
 .option-item:hover { border-color: #8ab4f8; background: #f8fbff; }
 .option-item input { margin-top: 5px; }
 .answer-input { width: 100%; min-height: 120px; resize: vertical; padding: 12px; border: 1px solid var(--border); border-radius: 8px; font: inherit; margin: 12px 0; }
 .calc-input { width: min(320px,100%); padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; margin: 12px 0; }
-.result-box { display: none; margin-top: 14px; padding: 12px 14px; border-radius: 8px; font-size: 13px; white-space: pre-line; }
+.result-box { display: none; margin-top: 14px; padding: 12px 14px; border-radius: 8px; font-size: var(--qfont-size, 13px); white-space: pre-line; }
 .result-box.show { display: block; }
 .result-box.correct { background: #e6f4ea; color: #137333; border: 1px solid #a8dab5; }
 .result-box.wrong { background: #fce8e6; color: #c5221f; border: 1px solid #f6aea9; }
@@ -314,6 +314,9 @@ tr:nth-child(even) { background: #f8f9fa; }
 .delete-pill.analysis { background: #ffe4e6; color: #be123c; }
 .delete-pill.calculation { background: #cffafe; color: #155e75; }
 .option-item.selected { border-color: var(--primary); background: var(--primary-light); }
+.qfont-sel { margin-left: 8px; padding: 6px 10px; border: 1px solid var(--border); border-radius: 8px; background: #fff; font-size: 13px; color: var(--text); cursor: pointer; font-family: inherit; }
+.qfont-sel:hover { border-color: var(--primary); }
+.qfont-sel:focus { outline: 2px solid var(--primary-light); border-color: var(--primary); }
 .option-item.correct-option { border-color: var(--accent); background: #e6f4ea; }
 .option-item.wrong-option { border-color: var(--danger); background: #fce8e6; }
 .policy-toolbar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
@@ -764,7 +767,7 @@ tr:nth-child(even) { background: #f8f9fa; }
   </div>
 </div>
 
-<script src="objective-questions.js?v=20260825-2" onerror="window.OBJECTIVE_LOAD_FAILED=true"></script>
+<script src="objective-questions.js?v=20260825-3" onerror="window.OBJECTIVE_LOAD_FAILED=true"></script>
 <script src="policy-library-data.js?v=20260822-2" onerror="window.POLICY_LOAD_FAILED=true"></script>
 <script src="policy-dates.js?v=20260822-2"></script>
 <script>
@@ -2853,6 +2856,7 @@ function renderSampleQuestion(q, idx) {
   let html = '<div class="objective-tools"><div class="tools-left"><button class="btn" onclick="randomObjectiveQuestion()">随机一题</button><button class="btn" onclick="toggleWrongMode()">' + (objectiveOnlyWrong ? '显示全部题目' : '只看错题' + (wrongCount ? '（' + wrongCount + '）' : '')) + '</button>' + (wrongCount ? '<button class="btn btn-wrong-clear" id="clearWrongBtn" type="button" onclick="clearWrong()">清空本题型错题</button>' : '') + (isAdmin() ? (q.type !== 'short' ? '<button class="btn" type="button" onclick="openQEdit(currentQ)">✎ 编辑本题</button>' : '') + '<button class="btn btn-del" id="delQBtn" type="button" onclick="deleteCurrentQuestion()">🗑 删除本题</button>' : '') + '</div>';
   // 搜题入口：跳到独立 search-view 页面（包含全题库 + 案例分析 + 计算题）
   html += '<button class="btn" type="button" onclick="openSearchView()">🔍 搜索题</button>';
+  html += '<select id="qfontSizeSel" class="qfont-sel" onchange="setQuestionFontSize(this.value)" title="调整题目、选项、答案的字号"><option value="14">字号 14</option><option value="16">字号 16</option><option value="18">字号 18</option><option value="22">字号 22</option></select>';
   html += '</div>';
   html += '<div class="objective-summary">当前显示 ' + objectiveFiltered.length + ' / ' + bankData.questions.length + ' 题' + (objectiveQuery ? ' · 搜索：' + esc(objectiveQuery) : '') + ' · 第 ' + (idx + 1) + ' 题</div>';
   html += '<div class="card sample-card"><h3><span class="qnum">' + (idx + 1) + '</span>' + esc(q.title) + '</h3>';
@@ -3274,8 +3278,26 @@ function rerenderAllViews(){
   }catch(e){}
 }
 
+function applyQFontSizeFromStorage(){
+  var v = parseInt(localStorage.getItem('huadian_qfont_size') || '14', 10);
+  if (![14,16,18,22].includes(v)) v = 14;
+  document.body.style.setProperty('--qfont-size', v + 'px');
+  var sel = document.getElementById('qfontSizeSel');
+  if (sel) sel.value = String(v);
+}
+
+function setQuestionFontSize(px){
+  px = parseInt(px, 10);
+  if (![14,16,18,22].includes(px)) px = 14;
+  document.body.style.setProperty('--qfont-size', px + 'px');
+  try { localStorage.setItem('huadian_qfont_size', String(px)); } catch (e) {}
+  var sel = document.getElementById('qfontSizeSel');
+  if (sel) sel.value = String(px);
+}
+
 function init() {
   fixKnownTableData();
+  applyQFontSizeFromStorage();
   updateProgress();
   restoringHistory = true;
   renderHome();
