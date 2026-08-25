@@ -37,14 +37,15 @@ body { --qfont-size: 14px; font-family: -apple-system, BlinkMacSystemFont, "Sego
 body.authenticated .login-gate { display:none; }
 body:not(.authenticated) .container, body:not(.authenticated) .back-to-top { display:none; }
 .container { display: flex; min-height: 100vh; }
-/* Sidebar：只对仿真分析视图（analysis-view）开放；其他题型都不再展示左侧导航 */
+/* Sidebar：只对仿真分析/计算题视图开放；其他题型都不再展示左侧导航 */
 .sidebar { display: none; }
-body.analysis-view .sidebar { display: block; }
-body.analysis-view .main { margin-left: var(--sidebar-w); width: calc(100% - var(--sidebar-w)); }
+body.analysis-view .sidebar, body.calculation-view .sidebar { display: block; }
+body.analysis-view .main, body.calculation-view .main { margin-left: var(--sidebar-w); width: calc(100% - var(--sidebar-w)); }
 body.home-view .main, body.policy-view .main, body.section-view .main,
 body.objective-view .main, body.reader-view .main { margin-left: 0; width: 100%; }
 body.reader-view .sidebar, body.reader-view .header { display: none; }
 body.reader-view .main { padding-top: 14px; }
+#navList { max-height: calc(100vh - 320px); overflow-y: auto; padding-right: 4px; }
 body.search-view .sidebar { display: none; }
 body.search-view .main { margin-left: 0; width: 100%; }
 
@@ -886,7 +887,7 @@ body { background: var(--bg-grad); background-attachment: fixed; }
   </div>
 </div>
 
-<script src="objective-questions.js?v=20260825-8" onerror="window.OBJECTIVE_LOAD_FAILED=true"></script>
+<script src="objective-questions.js?v=20260825-9" onerror="window.OBJECTIVE_LOAD_FAILED=true"></script>
 <script src="policy-library-data.js?v=20260822-2" onerror="window.POLICY_LOAD_FAILED=true"></script>
 <script src="policy-dates.js?v=20260822-2"></script>
 <script>
@@ -2926,7 +2927,7 @@ function showToast(msg){
 }
 
 function setViewClass(name) {
-  document.body.classList.remove('home-view', 'section-view', 'policy-view', 'reader-view', 'analysis-view', 'objective-view', 'search-view');
+  document.body.classList.remove('home-view', 'section-view', 'policy-view', 'reader-view', 'analysis-view', 'calculation-view', 'objective-view', 'search-view');
   if (name) document.body.classList.add(name);
 }
 
@@ -2959,7 +2960,7 @@ function renderHome() {
     '<section class="home-grid" aria-label="学习模块">' +
       '<button class="home-entry" onclick="renderQuestionSection()"><span class="entry-icon">选</span><span class="entry-meta">' + (window.OBJECTIVE_QUESTIONS ? window.OBJECTIVE_QUESTIONS.length : 0) + ' 题</span><h3>选择题</h3><p>单选、多选与判断题，按题型进入练习，错题自动收录。</p><span class="entry-go">进入练习 →</span></button>' +
       '<button class="home-entry" onclick="switchQuestionType(\'short\')"><span class="entry-icon">简</span><span class="entry-meta">' + (SAMPLE_BANKS.short.questions.length ? SAMPLE_BANKS.short.questions.length + ' 题' : '持续整理') + '</span><h3>简答题</h3><p>知识点表述与规则理解，文字作答。</p><span class="entry-go">进入练习 →</span></button>' +
-      '<button class="home-entry" onclick="switchQuestionType(\'calculation\')"><span class="entry-icon">算</span><span class="entry-meta">3 道</span><h3>计算题</h3><p>独立公式与基础计算，独立练习。</p><span class="entry-go">进入练习 →</span></button>' +
+      '<button class="home-entry" onclick="switchQuestionType(\'calculation\')"><span class="entry-icon">算</span><span class="entry-meta">' + DATA.filter(q => CALCULATION_IDS.includes(q.id)).length + ' 道</span><h3>计算题</h3><p>独立公式与基础计算，独立练习。</p><span class="entry-go">进入练习 →</span></button>' +
       '<button class="home-entry" onclick="switchQuestionType(\'analysis\')"><span class="entry-icon">析</span><span class="entry-meta">13 道大题</span><h3>仿真分析</h3><p>现货出清、节点电价、输电权等完整案例。</p><span class="entry-go">开始学习 →</span></button>' +
       '<button class="home-entry" onclick="switchQuestionType(\'policy\')"><span class="entry-icon">政</span><span class="entry-meta">' + POLICY_DATA.length + ' 份原文</span><h3>政策学习</h3><p>先选政策主题，再直接阅读无标注 PDF 原件。</p><span class="entry-go">浏览政策 →</span></button>' +
       wrongCard +
@@ -2986,6 +2987,7 @@ function switchQuestionType(bank) {
   // 视图类：analysis-view 才有左侧导航；其他客观题 + 简答 + 计算题统一 objective-view
   if (bank === 'policy') setViewClass('policy-view');
   else if (bank === 'analysis') setViewClass('analysis-view');
+  else if (bank === 'calculation') setViewClass('calculation-view');
   else setViewClass('objective-view');
   const isRich = bank === 'analysis' || bank === 'calculation';  document.querySelector('.mode-toggle').classList.toggle('hidden', !isRich);
   document.querySelector('.progress').classList.toggle('hidden', !isRich);
@@ -2995,7 +2997,7 @@ function switchQuestionType(bank) {
     document.getElementById('sidebarTitle').textContent = bank === 'analysis' ? '仿真分析大题' : '普通计算题';
     document.getElementById('pageSubtitle').textContent = bank === 'analysis'
       ? '13道仿真分析大题 · 涵盖现货出清、节点电价、阻塞盈余、差价合约、输电权等核心考点'
-      : '第10、14、15题 · 3道普通计算题';
+      : DATA.filter(q => CALCULATION_IDS.includes(q.id)).length + '道普通计算题 · 涵盖节点电价、双偏差结算、容量电费、输配电、机组组合等核心考点';
     renderNav();
     renderQuestion(0);
     updateProgress();
