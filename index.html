@@ -767,7 +767,7 @@ tr:nth-child(even) { background: #f8f9fa; }
   </div>
 </div>
 
-<script src="objective-questions.js?v=20260825-4" onerror="window.OBJECTIVE_LOAD_FAILED=true"></script>
+<script src="objective-questions.js?v=20260825-5" onerror="window.OBJECTIVE_LOAD_FAILED=true"></script>
 <script src="policy-library-data.js?v=20260822-2" onerror="window.POLICY_LOAD_FAILED=true"></script>
 <script src="policy-dates.js?v=20260822-2"></script>
 <script>
@@ -2879,6 +2879,8 @@ function renderSampleQuestion(q, idx) {
   html += '</div>';
   document.getElementById('contentArea').innerHTML = html;
   bindObjSearchImeGuard(document.getElementById('objectiveSearch'));
+  // 渲染出 select 后再同步一次下拉框显示值（init 时 select 还不存在，跳过了回填）
+  if (typeof applyQFontSizeFromStorage === 'function') applyQFontSizeFromStorage();
 }
 
 function renderEmptyBank(bankData) {
