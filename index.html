@@ -887,7 +887,7 @@ body { background: var(--bg-grad); background-attachment: fixed; }
   </div>
 </div>
 
-<script src="objective-questions.js?v=20260825-15" onerror="window.OBJECTIVE_LOAD_FAILED=true"></script>
+<script src="objective-questions.js?v=20260825-16" onerror="window.OBJECTIVE_LOAD_FAILED=true"></script>
 <script src="policy-library-data.js?v=20260822-2" onerror="window.POLICY_LOAD_FAILED=true"></script>
 <script src="policy-dates.js?v=20260822-2"></script>
 <script>
@@ -984,20 +984,21 @@ var Auth = {
     // 刷新"最近活跃"：恢复会话时也 touch 一下
     this.touch(username);
   },
-  /* touch: 登录/恢复会话时把 auth:<用户> 行的 updated_at 刷到 now()（保留密码哈希 + 加 last 时间戳），
-     让账号管理面板的"最近活跃"显示真正的登录时间，而不是停留在注册日期 */
+  /* touch: 登录/恢复会话时在 auth:<用户> 行的 objective_completed 里写入 last 时间戳，
+     账号管理面板优先读 last 字段显示"最近活跃"，无 last 时回退注册日期 */
   touch: async function(username){
     try {
-      var get = await fetch(this.apiUrl() + '?slug=eq.' + encodeURIComponent('auth:'+username) + '&select=objective_completed', {method:'GET', headers:this.authHeaders()});
+      var slug = 'auth:'+username;
+      var get = await fetch(this.apiUrl() + '?slug=eq.' + encodeURIComponent(slug) + '&select=objective_completed', {method:'GET', headers:this.authHeaders()});
       if (!get.ok) return;
       var rows = await get.json();
       if (!rows || !rows[0]) return;
       var oc = rows[0].objective_completed || {};
       oc.last = new Date().toISOString();
-      var patch = await fetch(this.apiUrl(), {
-        method:'POST',
-        headers: this.authHeaders({'Prefer': 'resolution=merge-duplicates'}),
-        body: JSON.stringify([{slug:'auth:'+username, objective_completed: oc}])
+      await fetch(this.apiUrl() + '?slug=eq.' + encodeURIComponent(slug), {
+        method:'PATCH',
+        headers: this.authHeaders({'Content-Type':'application/json'}),
+        body: JSON.stringify({objective_completed: oc})
       });
       // silent fail
     } catch(e) { /* ignore */ }
@@ -1096,15 +1097,18 @@ async function loadAdminAccounts(){
   if (!box) return;
   box.textContent = '加载中…';
   try {
-    var res = await fetch(AUTH_CFG.url.replace(/\/+$/,'') + '/rest/v1/progress?slug=like.auth:*&select=slug,updated_at&order=updated_at.desc', {method:'GET', headers:Auth.authHeaders()});
+    var res = await fetch(AUTH_CFG.url.replace(/\/+$/,'') + '/rest/v1/progress?slug=like.auth:*&select=slug,updated_at,objective_completed&order=updated_at.desc', {method:'GET', headers:Auth.authHeaders()});
     if (!res.ok) throw new Error('HTTP ' + res.status);
     var rows = await res.json();
     var html = '';
     (rows || []).forEach(function(r){
       var name = r.slug.slice(5);
       var isMain = name === (AdminState.name || MAIN_USER);
+      var oc = r.objective_completed || {};
+      var activeDate = oc.last ? String(oc.last).slice(0,10) : (r.updated_at ? String(r.updated_at).slice(0,10) : '');
+      var label = oc.last ? '最近活跃：' : '注册日期：';
       html += '<div class="admin-row"><span class="admin-name">' + esc(name) + (isMain ? '<span class="admin-tag">主账号</span>' : '') + '</span>'
-        + '<span class="admin-time">最近活跃：' + esc(String(r.updated_at || '').slice(0,10)) + '</span>'
+        + '<span class="admin-time">' + label + esc(activeDate) + '</span>'
         + (isMain ? '' : '<button class="policy-action" type="button" onclick="deleteAccount(\'' + esc(name) + '\')">删除</button>')
         + '</div>';
     });
