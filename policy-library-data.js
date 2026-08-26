@@ -368,14 +368,6 @@ window.POLICY_DATA = [
     "origin": "分类表"
   },
   {
-    "category": "输配电价",
-    "subcategory": "办法",
-    "title": "输配电定价成本监审办法",
-    "doc": "发改价格规〔2025〕1490号",
-    "url": "",
-    "origin": "分类表"
-  },
-  {
     "category": "零售",
     "subcategory": "通知",
     "title": "关于组织开展电网企业代理购电工作有关事项的通知",
@@ -404,14 +396,6 @@ window.POLICY_DATA = [
     "subcategory": "政策文件",
     "title": "电力并网运行管理规定",
     "doc": "国能发监管规〔2021〕60号",
-    "url": "",
-    "origin": "分类表"
-  },
-  {
-    "category": "绿电绿证",
-    "subcategory": "方案",
-    "title": "关于绿色电力交易试点工作方案的复函",
-    "doc": "发改体改〔2021〕1260号",
     "url": "",
     "origin": "分类表"
   },
@@ -544,14 +528,6 @@ window.POLICY_DATA = [
     "origin": "原网站"
   },
   {
-    "category": "电价政策",
-    "subcategory": "办法",
-    "title": "输配电定价成本监审办法、省级电网输配电价定价办法",
-    "doc": "发改价格规〔2025〕1490号",
-    "url": "",
-    "origin": "原网站"
-  },
-  {
     "category": "新型电力系统",
     "subcategory": "办法",
     "title": "电力辅助服务管理办法",
@@ -616,22 +592,6 @@ window.POLICY_DATA = [
     "origin": "原网站"
   },
   {
-    "category": "绿电绿证",
-    "subcategory": "细则",
-    "title": "北京电力交易中心绿色电力交易实施细则（2024年修订稿）",
-    "doc": "京电交市〔2024〕59号",
-    "url": "",
-    "origin": "原网站"
-  },
-  {
-    "category": "绿电绿证",
-    "subcategory": "方案",
-    "title": "2024—2025年节能降碳行动方案",
-    "doc": "国发〔2024〕12号",
-    "url": "",
-    "origin": "原网站"
-  },
-  {
     "category": "法规", "subcategory": "行政法规", "title": "电力监管条例", "doc": "国务院令第432号", "url": "https://xzfg.moj.gov.cn/front/law/detail?LawID=138", "origin": "司法部"
   },
   {
@@ -659,9 +619,6 @@ window.POLICY_DATA = [
     "category": "新能源政策", "subcategory": "指导意见", "title": "关于大力实施可再生能源替代行动的指导意见", "doc": "发改能源〔2024〕1537号", "url": "https://zfxxgk.ndrc.gov.cn/web/iteminfo.jsp?id=20451", "origin": "国家发展改革委"
   },
   {
-    "category": "全国统一电力市场建设", "subcategory": "历史基础政策", "title": "关于积极推进电力市场化交易进一步完善交易机制的通知", "doc": "发改运行〔2018〕1027号", "url": "https://www.ndrc.gov.cn/fzggw/jgsj/yxj/sjdt/201807/t20180718_986995.html", "origin": "国家发展改革委"
-  },
-  {
     "category": "注册、计量规则", "subcategory": "管理规定", "title": "电力业务许可证管理规定", "doc": "电监会令第9号（2024年修订）", "url": "https://zfxxgk.ndrc.gov.cn/web/iteminfo.jsp?id=20324", "origin": "国家发展改革委"
   },
   {
@@ -669,6 +626,33 @@ window.POLICY_DATA = [
   },
   {
     "category": "法规", "subcategory": "行政法规", "title": "电网调度管理条例", "doc": "国务院令第115号（2011年修订）", "url": "https://xzfg.moj.gov.cn/front/law/detail?LawID=1585", "origin": "司法部"
+  },
+  {
+    "category": "电力系统建设", "subcategory": "实施方案", "title": "关于印发《新一代煤电升级专项行动实施方案（2025—2027年）》的通知", "doc": "发改能源〔2025〕363号", "url": "https://www.ndrc.gov.cn/xxgk/zcfb/tz/202504/t20250414_1397185.html", "origin": "国家发展改革委"
+  },
+  {
+    "category": "新能源政策", "subcategory": "通知", "title": "关于督促重点地区做好新能源消纳工作的通知", "doc": "国能发电力〔2025〕77号", "url": "", "origin": "国家能源局"
+  },
+  {
+    "category": "监管规范", "subcategory": "意见", "title": "关于健全自然垄断环节监管体制机制的实施意见", "doc": "中央深改委第三次会议审议通过", "url": "https://www.gov.cn/yaowen/liebiao/202311/content_6914056.htm", "origin": "中国政府网"
+  },
+  {
+    "category": "管理办法", "subcategory": "办法", "title": "供电营业规则", "doc": "发改令第14号", "url": "https://www.ndrc.gov.cn/xxgk/zcfb/fzggwl/202403/t20240315_1364965_ext.html", "origin": "国家发展改革委"
+  },
+  {
+    "category": "输配电价", "subcategory": "通知", "title": "关于第四监管周期省级电网输配电价、区域电网输电价格及有关事项的通知", "doc": "发改价格〔2026〕1077号", "url": "https://zfxxgk.ndrc.gov.cn/web/iteminfo.jsp?id=20643", "origin": "国家发展改革委"
+  },
+  {
+    "category": "电力系统建设", "subcategory": "指导意见", "title": "关于促进电网高质量发展的指导意见", "doc": "发改能源〔2025〕1710号", "url": "https://www.ndrc.gov.cn/xxgk/zcfb/tz/202512/t20251231_1402949.html", "origin": "国家发展改革委"
+  },
+  {
+    "category": "可再生能源消纳", "subcategory": "通知", "title": "关于2025年可再生能源电力消纳责任权重及有关事项的通知", "doc": "发改办能源〔2025〕669号", "url": "https://www.ndrc.gov.cn/xxgk/zcfb/tz/202507/t20250711_1399141.html", "origin": "国家发展改革委"
+  },
+  {
+    "category": "新型储能", "subcategory": "方案", "title": "关于印发《新型储能规模化建设专项行动方案（2025—2027年）》的通知", "doc": "发改能源〔2025〕1144号", "url": "https://www.ndrc.gov.cn/xwdt/tzgg/202509/t20250912_1400427.html", "origin": "国家发展改革委"
+  },
+  {
+    "category": "输配电价", "subcategory": "办法", "title": "输配电定价成本监审办法、省级电网输配电价定价办法、区域电网输电价格定价办法和跨省跨区专项工程输电价格定价办法", "doc": "发改价格规〔2025〕1490号", "url": "https://www.ndrc.gov.cn/xxgk/zcfb/ghxwj/202511/t20251127_1401964_ext.html", "origin": "国家发展改革委"
   }
 ];
 window.POLICY_PDF_MAP = {
@@ -718,11 +702,9 @@ window.POLICY_PDF_MAP = {
   "国能发法改〔2024〕93号|关于支持电力领域新型经营主体创新发展的指导意见": "policies/library/policy-044.pdf",
   "发改能源〔2025〕357号|关于加快推进虚拟电厂发展的指导意见": "policies/library/policy-045.pdf",
   "国能发电力〔2025〕53号|关于组织开展新型电力系统建设第一批试点工作的通知": "policies/library/policy-046.pdf",
-  "发改价格规〔2025〕1490号|输配电定价成本监审办法": "policies/library/policy-047.pdf",
   "发改办价格〔2021〕809号|关于组织开展电网企业代理购电工作有关事项的通知": "policies/library/policy-048.pdf",
   "发改体改规〔2021〕1595号|售电公司管理办法": "policies/library/policy-049.pdf",
   "国能发监管规〔2021〕60号|电力并网运行管理规定": "policies/library/policy-050.pdf",
-  "发改体改〔2021〕1260号|关于绿色电力交易试点工作方案的复函": "policies/library/policy-051.pdf",
   "发改办体改〔2022〕821号|关于有序推进绿色电力交易有关事项的通知": "policies/library/policy-052.pdf",
   "发改能源〔2023〕1044号|关于做好可再生能源绿色电力证书全覆盖工作促进可再生能源电力消费的通知": "policies/library/policy-053.pdf",
   "发改能源〔2025〕262号|关于促进可再生能源绿色电力证书市场高质量发展的意见": "policies/library/policy-054.pdf",
@@ -739,7 +721,6 @@ window.POLICY_PDF_MAP = {
   "GZB4-11-01-02|电力交易员国家职业标准(2024年版〕": "policies/library/policy-065.pdf",
   "京电交市〔2026〕42号|北京电力交易中心跨区跨省电力中长期交易实施细则": "policies/library/policy-066.pdf",
   "发改体改〔2025〕915号|跨经营区常态化交易机制方案": "policies/library/policy-067.pdf",
-  "发改价格规〔2025〕1490号|输配电定价成本监审办法、省级电网输配电价定价办法": "policies/library/policy-068.pdf",
   "国能发监管规〔2021〕61号|电力辅助服务管理办法": "policies/library/policy-069.pdf",
   "国能发监管规〔2023〕48号|发电机组进入及退出商业运营办法": "policies/library/policy-070.pdf",
   "发改经体〔2015〕2752号|关于印发电力体制改革配套文件的通知": "policies/library/policy-071.pdf",
@@ -748,8 +729,6 @@ window.POLICY_PDF_MAP = {
   "发改经体〔2015〕2752号附件3|关于电力交易机构组建和规范运行的实施意见": "policies/library/policy-074.pdf",
   "发改经体〔2015〕2752号附件4|关于有序放开发用电计划的实施意见": "policies/library/policy-075.pdf",
   "发改经体〔2015〕2752号附件6|关于加强和规范燃煤自备电厂监督管理的指导意见": "policies/library/policy-076.pdf",
-  "京电交市〔2024〕59号|北京电力交易中心绿色电力交易实施细则（2024年修订稿）": "policies/library/policy-077.pdf",
-  "国发〔2024〕12号|2024—2025年节能降碳行动方案": "policies/library/policy-079.pdf",
   "发改办能源〔2026〕443号|关于加强电力零售市场管理有关事项的通知": "policies/library/policy-080.pdf",
   "国务院令第432号|电力监管条例": "policies/library/policy-081.pdf",
   "国能发监管规〔2021〕49号|电网公平开放监管办法": "policies/library/policy-082.pdf",
@@ -760,9 +739,12 @@ window.POLICY_PDF_MAP = {
   "发改能源〔2024〕1803号|电力系统调节能力优化专项行动实施方案（2025—2027年）": "policies/library/policy-087.pdf",
   "发改能源规〔2024〕317号|增量配电业务配电区域划分实施办法": "policies/library/policy-088.pdf",
   "发改能源〔2024〕1537号|关于大力实施可再生能源替代行动的指导意见": "policies/library/policy-089.pdf",
-  "发改运行〔2018〕1027号|关于积极推进电力市场化交易进一步完善交易机制的通知": "policies/library/policy-090.pdf",
   "电监会令第9号（2024年修订）|电力业务许可证管理规定": "policies/library/policy-091.pdf",
   "国务院令第196号（2019年修订）|电力供应与使用条例": "policies/library/policy-092.pdf",
-  "国务院令第115号（2011年修订）|电网调度管理条例": "policies/library/policy-093.pdf"
+  "国务院令第115号（2011年修订）|电网调度管理条例": "policies/library/policy-093.pdf",
+  "发改能源〔2025〕363号|关于印发《新一代煤电升级专项行动实施方案（2025—2027年）》的通知": "policies/library/policy-094.pdf",
+  "发改令第14号|供电营业规则": "policies/library/policy-095.pdf",
+  "发改价格规〔2025〕1490号|输配电定价成本监审办法、省级电网输配电价定价办法、区域电网输电价格定价办法和跨省跨区专项工程输电价格定价办法": "policies/library/policy-096.pdf",
+  "发改能源〔2025〕1144号|关于印发《新型储能规模化建设专项行动方案（2025—2027年）》的通知": "policies/library/policy-097.pdf"
 };
 
