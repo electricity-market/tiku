@@ -344,7 +344,7 @@ window.POLICY_DATA = [
     "origin": "分类表"
   },
   {
-    "category": "新型主体与职业标准",
+    "category": "新型电力系统、储能与新型主体",
     "subcategory": "新型经营主体",
     "title": "关于支持电力领域新型经营主体创新发展的指导意见",
     "doc": "国能发法改〔2024〕93号",
@@ -352,7 +352,7 @@ window.POLICY_DATA = [
     "origin": "分类表"
   },
   {
-    "category": "新型主体与职业标准",
+    "category": "新型电力系统、储能与新型主体",
     "subcategory": "新型经营主体",
     "title": "关于加快推进虚拟电厂发展的指导意见",
     "doc": "发改能源〔2025〕357号",
@@ -360,7 +360,7 @@ window.POLICY_DATA = [
     "origin": "分类表"
   },
   {
-    "category": "新型电力系统与储能",
+    "category": "新型电力系统、储能与新型主体",
     "subcategory": "建设试点",
     "title": "关于组织开展新型电力系统建设第一批试点工作的通知",
     "doc": "国能发电力〔2025〕53号",
@@ -480,7 +480,7 @@ window.POLICY_DATA = [
     "origin": "分类表"
   },
   {
-    "category": "新型电力系统与储能",
+    "category": "新型电力系统、储能与新型主体",
     "subcategory": "系统规划",
     "title": "关于印发《加快构建新型电力系统行动方案(2024—2027年〕》的通知",
     "doc": "发改能源〔2024〕1128号",
@@ -488,7 +488,7 @@ window.POLICY_DATA = [
     "origin": "分类表"
   },
   {
-    "category": "新型电力系统与储能",
+    "category": "新型电力系统、储能与新型主体",
     "subcategory": "系统规划",
     "title": "新型电力系统建设“十五五”规划",
     "doc": "发改能源〔2026〕942号",
@@ -504,7 +504,7 @@ window.POLICY_DATA = [
     "origin": "分类表"
   },
   {
-    "category": "新型主体与职业标准",
+    "category": "新型电力系统、储能与新型主体",
     "subcategory": "职业标准",
     "title": "电力交易员国家职业标准(2024年版〕",
     "doc": "GZB4-11-01-02",
@@ -616,7 +616,7 @@ window.POLICY_DATA = [
     "origin": "国家发展改革委"
   },
   {
-    "category": "新型电力系统与储能",
+    "category": "新型电力系统、储能与新型主体",
     "subcategory": "新型储能",
     "title": "关于进一步推动新型储能参与电力市场和调度运用的通知",
     "doc": "发改办运行〔2022〕475号",
@@ -624,7 +624,7 @@ window.POLICY_DATA = [
     "origin": "国家发展改革委"
   },
   {
-    "category": "新型电力系统与储能",
+    "category": "新型电力系统、储能与新型主体",
     "subcategory": "新型储能",
     "title": "关于加快推动新型储能发展的指导意见",
     "doc": "发改能源规〔2021〕1051号",
@@ -640,7 +640,7 @@ window.POLICY_DATA = [
     "origin": "国家能源局"
   },
   {
-    "category": "新型电力系统与储能",
+    "category": "新型电力系统、储能与新型主体",
     "subcategory": "专项行动",
     "title": "电力系统调节能力优化专项行动实施方案（2025—2027年）",
     "doc": "发改能源〔2024〕1803号",
@@ -688,7 +688,7 @@ window.POLICY_DATA = [
     "origin": "司法部"
   },
   {
-    "category": "新型电力系统与储能",
+    "category": "新型电力系统、储能与新型主体",
     "subcategory": "专项行动",
     "title": "关于印发《新一代煤电升级专项行动实施方案（2025—2027年）》的通知",
     "doc": "发改能源〔2025〕363号",
@@ -728,7 +728,7 @@ window.POLICY_DATA = [
     "origin": "国家发展改革委"
   },
   {
-    "category": "新型电力系统与储能",
+    "category": "新型电力系统、储能与新型主体",
     "subcategory": "专项行动",
     "title": "关于促进电网高质量发展的指导意见",
     "doc": "发改能源〔2025〕1710号",
@@ -744,7 +744,7 @@ window.POLICY_DATA = [
     "origin": "国家发展改革委"
   },
   {
-    "category": "新型电力系统与储能",
+    "category": "新型电力系统、储能与新型主体",
     "subcategory": "新型储能",
     "title": "关于印发《新型储能规模化建设专项行动方案（2025—2027年）》的通知",
     "doc": "发改能源〔2025〕1144号",
@@ -778,6 +778,70 @@ window.POLICY_DATA = [
   {
     "category": "电价与输配电定价",
     "subcategory": "输配电价",
+    "title": "跨省跨区专项工程输电价格定价办法",
+    "doc": "发改价格规〔2025〕1490号附件4",
+    "url": "https://www.ndrc.gov.cn/xxgk/zcfb/ghxwj/202511/t20251127_1401964_ext.html",
+    "origin": "国家发展改革委"
+  },
+  {
+    "category": "跨省跨区",
+    "subcategory": "跨区跨省交易",
+    "title": "跨区跨省电力中长期交易实施细则",
+    "doc": "2026年第一版",
+    "url": "https://news.bjx.com.cn/html/20260610/1499290.shtml",
+    "origin": "分类表"
+  },
+  {
+    "category": "跨省跨区",
+    "subcategory": "跨区跨省交易",
+    "title": "省间电力现货交易规则",
+    "doc": "发改办体改〔2026〕275号",
+    "url": "https://www.ndrc.gov.cn/xxgk/zcfb/tz/202604/t20260424_1404861_ext.html",
+    "origin": "分类表"
+  },
+  {
+    "category": "跨省跨区",
+    "subcategory": "跨区跨省交易",
+    "title": "关于在云霄直流开展输电权市场化交易的通知",
+    "doc": "发改体改〔2026〕734号",
+    "url": "https://zfxxgk.ndrc.gov.cn/wap/iteminfo.jsp?id=20637",
+    "origin": "分类表"
+  },
+  {
+    "category": "跨省跨区",
+    "subcategory": "跨区跨省交易",
+    "title": "北京电力交易中心跨区跨省电力中长期交易实施细则",
+    "doc": "京电交市〔2026〕42号",
+    "url": "https://news.bjx.com.cn/html/20260610/1499290.shtml",
+    "origin": "原网站"
+  },
+  {
+    "category": "跨省跨区",
+    "subcategory": "跨区跨省交易",
+    "title": "跨经营区常态化交易机制方案",
+    "doc": "发改体改〔2025〕915号",
+    "url": "https://zfxxgk.ndrc.gov.cn/wap/iteminfo.jsp?id=20525",
+    "origin": "原网站"
+  },
+  {
+    "category": "跨省跨区",
+    "subcategory": "跨区输电价格",
+    "title": "关于第四监管周期省级电网输配电价、区域电网输电价格及有关事项的通知",
+    "doc": "发改价格〔2026〕1077号",
+    "url": "https://www.ndrc.gov.cn/xxgk/zcfb/tz/202607/t20260710_1406431.html",
+    "origin": "国家发展改革委"
+  },
+  {
+    "category": "跨省跨区",
+    "subcategory": "跨区输电价格",
+    "title": "区域电网输电价格定价办法",
+    "doc": "发改价格规〔2025〕1490号附件3",
+    "url": "https://www.ndrc.gov.cn/xxgk/zcfb/ghxwj/202511/t20251127_1401964_ext.html",
+    "origin": "国家发展改革委"
+  },
+  {
+    "category": "跨省跨区",
+    "subcategory": "跨区输电价格",
     "title": "跨省跨区专项工程输电价格定价办法",
     "doc": "发改价格规〔2025〕1490号附件4",
     "url": "https://www.ndrc.gov.cn/xxgk/zcfb/ghxwj/202511/t20251127_1401964_ext.html",
