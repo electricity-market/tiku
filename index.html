@@ -461,6 +461,9 @@ tr:nth-child(even) { background: #f8f9fa; }
 .policy-subcategory-bar { display:flex; gap:8px; flex-wrap:wrap; margin:0 0 14px; }
 .policy-subcategory-filter { padding:8px 14px; border:1px solid #d7dde8; border-radius:999px; background:#fff; color:#172033; cursor:pointer; font-size:13px; }
 .policy-subcategory-filter.active { border-color:var(--primary); background:var(--primary); color:#fff; font-weight:700; }
+.policy-filter-bar { display:flex; gap:10px 20px; flex-wrap:wrap; align-items:center; margin:0 0 16px; padding:10px 14px; background:#f8f9fb; border-radius:12px; }
+.policy-filter-group { display:flex; gap:6px; flex-wrap:wrap; align-items:center; }
+.policy-filter-label { font-size:12px; color:#667085; font-weight:500; margin-right:2px; }
 .policy-badge { display:inline-flex; align-items:center; margin-left:7px; padding:3px 8px; border-radius:999px; font-size:12px; font-weight:700; }
 .policy-badge.latest { color:#175cd3; background:#eaf2ff; }
 .policy-badge.upcoming { color:#b54708; background:#fff3dc; }
@@ -1083,11 +1086,11 @@ function openAdmin(){
   }
   loadAdminAccounts();
 }
-/* 题库编辑入口：关闭账号管理，进入选择题板块并提示编辑按钮位置 */
+/* 题库编辑入口：关闭账号管理，进入客观题板块并提示编辑按钮位置 */
 function openQBankEditorEntry(){
   closeAdmin();
   renderQuestionSection();
-  showToast('已进入选择题板块。任意题型练习页中，每道题的按钮栏都有「✎ 编辑本题」。');
+  showToast('已进入客观题板块。任意题型练习页中，每道题的按钮栏都有「✎ 编辑本题」。');
 }
 function closeAdmin(){
   closeModal('adminDialog');
@@ -2980,11 +2983,11 @@ function renderHome() {
     : '<span class="wrong-empty">暂无错题</span>';
   const wrongFirstBank = totalWrong ? (wrongParts[0] || {}).bank : 'single';
   const wrongCard = '<button class="home-entry home-entry-wrong' + (totalWrong ? '' : ' home-entry-empty') + '" onclick="enterWrongBank(\'' + wrongFirstBank + '\')"><span class="entry-icon">错</span><span class="entry-meta">' + (totalWrong ? '共 ' + totalWrong + ' 题待重做' : '随时开始练习') + '</span><h3>错题本</h3><p class="wrong-parts">' + wrongPartsHtml + '</p><span class="entry-go">' + (totalWrong ? '开始重做 →' : '进入错题本 →') + '</span></button>';
-  // 6 板块 3×2 网格：顺序为 选择题 / 简答题 / 计算题 / 仿真分析 / 政策学习 / 错题本（错题本放最后，常驻）
+  // 6 板块 3×2 网格：顺序为 客观题 / 简答题 / 计算题 / 仿真分析 / 政策学习 / 错题本（错题本放最后，常驻）
   document.getElementById('contentArea').innerHTML =
     '<section class="home-hero"><h2>今天想学习什么？</h2></section>' +
     '<section class="home-grid" aria-label="学习模块">' +
-      '<button class="home-entry" onclick="renderQuestionSection()"><span class="entry-icon">选</span><span class="entry-meta">' + (window.OBJECTIVE_QUESTIONS ? window.OBJECTIVE_QUESTIONS.length : 0) + ' 题</span><h3>选择题</h3><p>单选、多选与判断题，按题型进入练习，错题自动收录。</p><span class="entry-go">进入练习 →</span></button>' +
+      '<button class="home-entry" onclick="renderQuestionSection()"><span class="entry-icon">选</span><span class="entry-meta">' + (window.OBJECTIVE_QUESTIONS ? window.OBJECTIVE_QUESTIONS.length : 0) + ' 题</span><h3>客观题</h3><p>单选、多选与判断题，按题型进入练习，错题自动收录。</p><span class="entry-go">进入练习 →</span></button>' +
       '<button class="home-entry" onclick="switchQuestionType(\'short\')"><span class="entry-icon">简</span><span class="entry-meta">' + (SAMPLE_BANKS.short.questions.length ? SAMPLE_BANKS.short.questions.length + ' 题' : '持续整理') + '</span><h3>简答题</h3><p>知识点表述与规则理解，文字作答。</p><span class="entry-go">进入练习 →</span></button>' +
       '<button class="home-entry" onclick="switchQuestionType(\'calculation\')"><span class="entry-icon">算</span><span class="entry-meta">' + DATA.filter(q => CALCULATION_IDS.includes(q.id)).length + ' 道</span><h3>计算题</h3><p>独立公式与基础计算，独立练习。</p><span class="entry-go">进入练习 →</span></button>' +
       '<button class="home-entry" onclick="switchQuestionType(\'analysis\')"><span class="entry-icon">析</span><span class="entry-meta">' + DATA.filter(q => !CALCULATION_IDS.includes(q.id)).length + ' 道大题</span><h3>仿真分析</h3><p>现货出清、节点电价、输电权等完整案例。</p><span class="entry-go">开始学习 →</span></button>' +
@@ -3003,7 +3006,7 @@ function renderQuestionSection() {
     ['multiple','多选题',SAMPLE_BANKS.multiple.questions.length + ' 题','少选、多选均不得分'],
     ['judge','判断题',SAMPLE_BANKS.judge.questions.length + ' 题','判断说法是否正确']
   ];
-  document.getElementById('contentArea').innerHTML = '<div class="section-shell"><div class="section-intro"><h2>选择题</h2><p>选择一种题型进入，左侧目录用于切换题目。</p></div><div class="section-grid">' + cards.map(x => '<button class="section-entry" onclick="switchQuestionType(\'' + x[0] + '\')"><strong>' + x[1] + '</strong><span>' + x[3] + '</span><em>' + x[2] + ' · 开始练习 →</em></button>').join('') + '</div></div>';
+  document.getElementById('contentArea').innerHTML = '<div class="section-shell"><div class="section-intro"><h2>客观题</h2><p>选择一种题型进入，左侧目录用于切换题目。</p></div><div class="section-grid">' + cards.map(x => '<button class="section-entry" onclick="switchQuestionType(\'' + x[0] + '\')"><strong>' + x[1] + '</strong><span>' + x[3] + '</span><em>' + x[2] + ' · 开始练习 →</em></button>').join('') + '</div></div>';
 }
 
 function switchQuestionType(bank) {
@@ -3211,15 +3214,15 @@ function renderPolicyColumn() {
   const subOptions = policySubcategories();
   const items = sortPolicies(categoryItems.filter(item => (policyLifecycleFilter === '全部' || policyLifecycle(item).status === policyLifecycleFilter) && (policySubcategory === '全部' || item.subcategory === policySubcategory)));
   const lifecycleOptions = ['全部','最新政策','即将失效','已废止/被替代'];
-  let html = '<div class="section-shell"><div class="policy-list-head"><div><h2>' + esc(policyCategory) + '</h2><div class="subtitle">按发布时间从新到旧 · 当前显示 ' + items.length + ' / ' + categoryItems.length + ' 份</div></div><button type="button" onclick="renderPolicyCategories()">← 返回政策主题</button></div>';
+  let html = '<div class="section-shell"><div class="policy-list-head"><div><h2>' + esc(policyCategory) + '</h2><div class="subtitle">按发布时间从新到旧 · 当前显示 ' + items.length + ' / ' + categoryItems.length + ' 份</div></div><button type="button" onclick="renderPolicyCategories()">← 返回政策主题</button></div><div class="policy-filter-bar">';
   if (subOptions.length > 1) {
-    html += '<div class="policy-subcategory-bar">';
+    html += '<div class="policy-filter-group"><span class="policy-filter-label">主题</span>';
     subOptions.forEach(sub => { const count = sub === '全部' ? categoryItems.length : categoryItems.filter(item => item.subcategory === sub).length; html += '<button class="policy-subcategory-filter ' + (policySubcategory === sub ? 'active' : '') + '" onclick="setPolicySubcategory(\'' + esc(sub) + '\')">' + esc(sub) + '（' + count + '）</button>'; });
     html += '</div>';
   }
-  html += '<div class="policy-lifecycle-bar">';
+  html += '<div class="policy-filter-group"><span class="policy-filter-label">状态</span>';
   lifecycleOptions.forEach(status => { const count = status === '全部' ? categoryItems.length : categoryItems.filter(item => policyLifecycle(item).status === status).length; html += '<button class="policy-lifecycle-filter ' + (policyLifecycleFilter === status ? 'active' : '') + '" onclick="setPolicyLifecycleFilter(\'' + status + '\')">' + status + '（' + count + '）</button>'; });
-  html += '</div><div class="policy-list">';
+  html += '</div></div><div class="policy-list">';
   items.forEach(item => {
     const key = policyKey(item);
     const isRead = policyRead.includes(key);
@@ -3509,7 +3512,7 @@ function applyObjectiveFilter(keepPos) {
   else currentQ = 0;
   renderSampleNav(SAMPLE_BANKS[activeBank]);
   if (objectiveFiltered.length) renderSampleQuestion(objectiveFiltered[currentQ], currentQ);
-  else document.getElementById('contentArea').innerHTML = '<div class="objective-tools"><div class="tools-left"></div><button class="btn" type="button" onclick="openSearchView()">🔍 搜索题</button></div><div class="card">' + (objectiveOnlyWrong ? '错题本是空的——答错的选择题会自动出现在这里，答对后自动移出。' : (objectiveQuery ? '没有找到匹配「' + esc(objectiveQuery) + '」的题目，试试别的关键词。' : '没有找到匹配题目。')) + '</div>';
+  else document.getElementById('contentArea').innerHTML = '<div class="objective-tools"><div class="tools-left"></div><button class="btn" type="button" onclick="openSearchView()">🔍 搜索题</button></div><div class="card">' + (objectiveOnlyWrong ? '错题本是空的——答错的客观题会自动出现在这里，答对后自动移出。' : (objectiveQuery ? '没有找到匹配「' + esc(objectiveQuery) + '」的题目，试试别的关键词。' : '没有找到匹配题目。')) + '</div>';
   const input = document.getElementById('objectiveSearch');
   if (input) { input.focus(); input.setSelectionRange(input.value.length, input.value.length); }
   if (input) bindObjSearchImeGuard(input);
@@ -3697,7 +3700,7 @@ function renderSearchView() {
   if (searchQueryText) {
     html += '<div class="search-summary">匹配「' + esc(searchQueryText) + '」· 共找到 ' + searchResultsCache.length + ' 道' + (searchResultsCache.length === 100 ? '（最多显示 100 条）' : '') + ' · 题库总数 ' + all.length + '</div>';
   } else {
-    html += '<div class="search-summary">题库总数 ' + all.length + ' 道 · 选择题型后点击「搜索」或直接回车</div>';
+    html += '<div class="search-summary">题库总数 ' + all.length + ' 道 · 客观题型后点击「搜索」或直接回车</div>';
   }
   if (searchResultsCache.length === 0) {
     if (searchQueryText) {
