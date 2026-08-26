@@ -3451,7 +3451,7 @@ function renderSampleQuestion(q, idx) {
   html += '<div class="objective-summary">当前显示 ' + objectiveFiltered.length + ' / ' + bankData.questions.length + ' 题' + (objectiveQuery ? ' · 搜索：' + esc(objectiveQuery) : '') + ' · 第 ' + (idx + 1) + ' 题</div>';
   html += '<div class="card sample-card"><h3><span class="qnum">' + (idx + 1) + '</span>' + esc(q.title) + '</h3>';
   const wrongTimes = (objectiveWrong[activeBank] || {})[q.id];
-  html += '<div class="question-meta"><span class="meta-pill">' + esc(bankData.title) + '</span><span class="meta-pill">原题号：' + esc(q.number) + '</span>' + (QBANK_EDITS[q.id] ? '<span class="meta-pill edited-pill">✎ 已编辑</span>' : '') + (wrongTimes !== undefined ? '<span class="meta-pill meta-pill-wrong">错题 · 已错 ' + wrongTimes + ' 次</span>' : '') + '</div>';
+  html += '<div class="question-meta"><span class="meta-pill">' + esc(bankData.title) + '</span>' + (QBANK_EDITS[q.id] ? '<span class="meta-pill edited-pill">✎ 已编辑</span>' : '') + (wrongTimes !== undefined ? '<span class="meta-pill meta-pill-wrong">错题 · 已错 ' + wrongTimes + ' 次</span>' : '') + '</div>';
   html += '<div class="problem-text"><p>' + esc(q.stem) + '</p></div>';
   if (q.type === 'single' || q.type === 'multiple' || q.type === 'judge') {
     const inputType = q.type === 'multiple' ? 'checkbox' : 'radio';
@@ -3546,6 +3546,27 @@ function clearWrong(){
   objectiveOnlyWrong = false; // 清空后回到普通模式
   applyObjectiveFilter(false);
   showToast('已清空「' + SAMPLE_BANKS[activeBank].title + '」的全部错题');
+}
+
+// 单道题答对后，用户主动从错题本移除（点"移除错题"按钮时调用）
+function removeWrongQuestion(id) {
+  var wrongMap = objectiveWrong[activeBank] || {};
+  if (wrongMap[id] === undefined) return;
+  delete wrongMap[id];
+  if (Object.keys(wrongMap).length === 0) {
+    delete objectiveWrong[activeBank];
+  } else {
+    objectiveWrong[activeBank] = wrongMap;
+  }
+  localStorage.setItem('huadian_objective_wrong', JSON.stringify(objectiveWrong));
+  syncPushNow();
+  // 刷新侧栏 done/wrong 标记
+  renderSampleNav(SAMPLE_BANKS[activeBank]);
+  // 把按钮替换为"已移除"提示
+  var btn = document.querySelector('#sampleResult button[data-remove-wrong]');
+  if (btn) {
+    btn.outerHTML = '<em class="removed-hint" style="color:#137333;display:inline-block;margin-top:8px">✓ 已从错题本移除</em>';
+  }
 }
 
 function filterObjectiveQuestions(value) {
@@ -3801,47 +3822,37 @@ function checkSampleAnswer() {
   const detail = '正确答案：' + answerLabel + (q.explanation ? '\n解析：' + q.explanation : '');
   showSampleResult(correct, detail);
   var wrongMap = objectiveWrong[activeBank] || {};
-  var wrongChanged = false;
   if (correct) {
     const done = new Set(objectiveCompleted[activeBank] || []);
     done.add(q.id);
     objectiveCompleted[activeBank] = [...done];
     localStorage.setItem('huadian_objective_completed', JSON.stringify(objectiveCompleted));
-    // 答对自动移出错题本
+    // 答对不自动移出错题本；若该题在错题本中，显示"移除错题"按钮让用户主动操作
     if (wrongMap[q.id] !== undefined) {
-      delete wrongMap[q.id];
-      objectiveWrong[activeBank] = wrongMap;
-      localStorage.setItem('huadian_objective_wrong', JSON.stringify(objectiveWrong));
-      wrongChanged = true;
+      var box = document.getElementById('sampleResult');
+      if (box) box.innerHTML += '<br><button class="btn btn-wrong-remove" type="button" data-remove-wrong="1" onclick="removeWrongQuestion(\'' + esc(q.id) + '\')" style="margin-top:8px">移除错题</button>';
     }
     syncPushNow();
     renderSampleNav(SAMPLE_BANKS[activeBank]); // 同步刷新侧栏 done/wrong 标记
 
     // 答对自动下一题：1 秒延时让用户看完解析
     clearTimeout(window.__autoNext);
-    var hasMore = (objectiveOnlyWrong && wrongChanged) ? true : (currentQ + 1 < objectiveFiltered.length);
-    if (hasMore) {
-      var box = document.getElementById('sampleResult');
-      if (box) box.innerHTML += '<br><em class="auto-next-hint">1 秒后自动进入下一题…</em>';
+    if (currentQ + 1 < objectiveFiltered.length) {
+      var box2 = document.getElementById('sampleResult');
+      if (box2) box2.innerHTML += '<br><em class="auto-next-hint">1 秒后自动进入下一题…</em>';
     }
     window.__autoNext = setTimeout(function(){
-      if (objectiveOnlyWrong && wrongChanged) {
-        // 错题模式答对：刷新列表后 currentQ 被 clamp 到新范围，渲染的即为下一道错题
-        applyObjectiveFilter(true);
-        if (objectiveFiltered.length === 0) {
-          showSampleResult(true, '🎉 全部错题已重做完毕！');
-        }
-      } else if (currentQ + 1 < objectiveFiltered.length) {
+      if (currentQ + 1 < objectiveFiltered.length) {
         goObjective(currentQ + 1);
       }
     }, 1000);
   } else if (['single', 'multiple', 'judge'].includes(activeBank) && selected.length) {
     // 答错自动收集进错题本（累加错误次数）
-    if (wrongMap[q.id] === undefined) wrongChanged = true;
+    var firstTimeWrong = (wrongMap[q.id] === undefined);
     wrongMap[q.id] = (wrongMap[q.id] || 0) + 1;
     objectiveWrong[activeBank] = wrongMap;
     localStorage.setItem('huadian_objective_wrong', JSON.stringify(objectiveWrong));
-    if (wrongChanged) syncPushNow();
+    if (firstTimeWrong) syncPushNow();
     renderSampleNav(SAMPLE_BANKS[activeBank]);
   }
 }
