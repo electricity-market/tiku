@@ -458,6 +458,9 @@ tr:nth-child(even) { background: #f8f9fa; }
 .policy-lifecycle-bar { display:flex; gap:8px; flex-wrap:wrap; margin:0 0 16px; }
 .policy-lifecycle-filter { padding:8px 12px; border:1px solid #d7dde8; border-radius:999px; background:#fff; color:#475467; cursor:pointer; }
 .policy-lifecycle-filter.active { border-color:var(--primary); background:#eaf1ff; color:var(--primary); font-weight:700; }
+.policy-subcategory-bar { display:flex; gap:8px; flex-wrap:wrap; margin:0 0 14px; }
+.policy-subcategory-filter { padding:8px 14px; border:1px solid #d7dde8; border-radius:999px; background:#fff; color:#172033; cursor:pointer; font-size:13px; }
+.policy-subcategory-filter.active { border-color:var(--primary); background:var(--primary); color:#fff; font-weight:700; }
 .policy-badge { display:inline-flex; align-items:center; margin-left:7px; padding:3px 8px; border-radius:999px; font-size:12px; font-weight:700; }
 .policy-badge.latest { color:#175cd3; background:#eaf2ff; }
 .policy-badge.upcoming { color:#b54708; background:#fff3dc; }
@@ -3205,9 +3208,16 @@ function renderPolicyColumn() {
   recordRoute({view:'policy-list', category:policyCategory});
   setViewClass('policy-view');
   const categoryItems = POLICY_DATA.filter(item => item.category === policyCategory);
-  const items = sortPolicies(categoryItems.filter(item => policyLifecycleFilter === '全部' || policyLifecycle(item).status === policyLifecycleFilter));
+  const subOptions = policySubcategories();
+  const items = sortPolicies(categoryItems.filter(item => (policyLifecycleFilter === '全部' || policyLifecycle(item).status === policyLifecycleFilter) && (policySubcategory === '全部' || item.subcategory === policySubcategory)));
   const lifecycleOptions = ['全部','最新政策','即将失效','已废止/被替代'];
-  let html = '<div class="section-shell"><div class="policy-list-head"><div><h2>' + esc(policyCategory) + '</h2><div class="subtitle">按发布时间从新到旧 · 当前显示 ' + items.length + ' / ' + categoryItems.length + ' 份</div></div><button type="button" onclick="renderPolicyCategories()">← 返回政策主题</button></div><div class="policy-lifecycle-bar">';
+  let html = '<div class="section-shell"><div class="policy-list-head"><div><h2>' + esc(policyCategory) + '</h2><div class="subtitle">按发布时间从新到旧 · 当前显示 ' + items.length + ' / ' + categoryItems.length + ' 份</div></div><button type="button" onclick="renderPolicyCategories()">← 返回政策主题</button></div>';
+  if (subOptions.length > 1) {
+    html += '<div class="policy-subcategory-bar">';
+    subOptions.forEach(sub => { const count = sub === '全部' ? categoryItems.length : categoryItems.filter(item => item.subcategory === sub).length; html += '<button class="policy-subcategory-filter ' + (policySubcategory === sub ? 'active' : '') + '" onclick="setPolicySubcategory(\'' + esc(sub) + '\')">' + esc(sub) + '（' + count + '）</button>'; });
+    html += '</div>';
+  }
+  html += '<div class="policy-lifecycle-bar">';
   lifecycleOptions.forEach(status => { const count = status === '全部' ? categoryItems.length : categoryItems.filter(item => policyLifecycle(item).status === status).length; html += '<button class="policy-lifecycle-filter ' + (policyLifecycleFilter === status ? 'active' : '') + '" onclick="setPolicyLifecycleFilter(\'' + status + '\')">' + status + '（' + count + '）</button>'; });
   html += '</div><div class="policy-list">';
   items.forEach(item => {
