@@ -3214,15 +3214,13 @@ function renderPolicyColumn() {
   const subOptions = policySubcategories();
   const items = sortPolicies(categoryItems.filter(item => (policyLifecycleFilter === '全部' || policyLifecycle(item).status === policyLifecycleFilter) && (policySubcategory === '全部' || item.subcategory === policySubcategory)));
   const lifecycleOptions = ['全部','最新政策','即将失效','已废止/被替代'];
-  let html = '<div class="section-shell"><div class="policy-list-head"><div><h2>' + esc(policyCategory) + '</h2><div class="subtitle">按发布时间从新到旧 · 当前显示 ' + items.length + ' / ' + categoryItems.length + ' 份</div></div><button type="button" onclick="renderPolicyCategories()">← 返回政策主题</button></div><div class="policy-filter-bar">';
+  let html = '<div class="section-shell"><div class="policy-list-head"><div><h2>' + esc(policyCategory) + '</h2><div class="subtitle">按发布时间从新到旧 · 当前显示 ' + items.length + ' / ' + categoryItems.length + ' 份</div></div><button type="button" onclick="renderPolicyCategories()">← 返回政策主题</button></div>';
   if (subOptions.length > 1) {
-    html += '<div class="policy-filter-group"><span class="policy-filter-label">主题</span>';
-    subOptions.forEach(sub => { const count = sub === '全部' ? categoryItems.length : categoryItems.filter(item => item.subcategory === sub).length; html += '<button class="policy-subcategory-filter ' + (policySubcategory === sub ? 'active' : '') + '" onclick="setPolicySubcategory(\'' + esc(sub) + '\')">' + esc(sub) + '（' + count + '）</button>'; });
+    html += '<div class="policy-subcategory-bar">';
+    subOptions.forEach(sub => { if (sub === '全部') return; const count = categoryItems.filter(item => item.subcategory === sub).length; html += '<button class="policy-subcategory-filter ' + (policySubcategory === sub ? 'active' : '') + '" onclick="setPolicySubcategory(\'' + esc(sub) + '\')">' + esc(sub) + '（' + count + '）</button>'; });
     html += '</div>';
   }
-  html += '<div class="policy-filter-group"><span class="policy-filter-label">状态</span>';
-  lifecycleOptions.forEach(status => { const count = status === '全部' ? categoryItems.length : categoryItems.filter(item => policyLifecycle(item).status === status).length; html += '<button class="policy-lifecycle-filter ' + (policyLifecycleFilter === status ? 'active' : '') + '" onclick="setPolicyLifecycleFilter(\'' + status + '\')">' + status + '（' + count + '）</button>'; });
-  html += '</div></div><div class="policy-list">';
+  html += '<div class="policy-list">';
   items.forEach(item => {
     const key = policyKey(item);
     const isRead = policyRead.includes(key);
