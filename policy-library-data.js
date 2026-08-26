@@ -640,7 +640,7 @@ window.POLICY_DATA = [
     "category": "管理办法", "subcategory": "办法", "title": "供电营业规则", "doc": "发改令第14号", "url": "https://www.ndrc.gov.cn/xxgk/zcfb/fzggwl/202403/t20240315_1364965_ext.html", "origin": "国家发展改革委"
   },
   {
-    "category": "输配电价", "subcategory": "通知", "title": "关于第四监管周期省级电网输配电价、区域电网输电价格及有关事项的通知", "doc": "发改价格〔2026〕1077号", "url": "https://zfxxgk.ndrc.gov.cn/web/iteminfo.jsp?id=20643", "origin": "国家发展改革委"
+    "category": "输配电价", "subcategory": "通知", "title": "关于第四监管周期省级电网输配电价、区域电网输电价格及有关事项的通知", "doc": "发改价格〔2026〕1077号", "url": "https://www.ndrc.gov.cn/xxgk/zcfb/tz/202607/t20260710_1406431.html", "origin": "国家发展改革委"
   },
   {
     "category": "电力系统建设", "subcategory": "指导意见", "title": "关于促进电网高质量发展的指导意见", "doc": "发改能源〔2025〕1710号", "url": "https://www.ndrc.gov.cn/xxgk/zcfb/tz/202512/t20251231_1402949.html", "origin": "国家发展改革委"
@@ -745,6 +745,9 @@ window.POLICY_PDF_MAP = {
   "发改能源〔2025〕363号|关于印发《新一代煤电升级专项行动实施方案（2025—2027年）》的通知": "policies/library/policy-094.pdf",
   "发改令第14号|供电营业规则": "policies/library/policy-095.pdf",
   "发改价格规〔2025〕1490号|输配电定价成本监审办法、省级电网输配电价定价办法、区域电网输电价格定价办法和跨省跨区专项工程输电价格定价办法": "policies/library/policy-096.pdf",
-  "发改能源〔2025〕1144号|关于印发《新型储能规模化建设专项行动方案（2025—2027年）》的通知": "policies/library/policy-097.pdf"
+  "发改能源〔2025〕1144号|关于印发《新型储能规模化建设专项行动方案（2025—2027年）》的通知": "policies/library/policy-097.pdf",
+  "发改办能源〔2025〕669号|关于2025年可再生能源电力消纳责任权重及有关事项的通知": "policies/library/policy-098.pdf",
+  "发改价格〔2026〕1077号|关于第四监管周期省级电网输配电价、区域电网输电价格及有关事项的通知": "policies/library/policy-099.pdf",
+  "发改能源〔2025〕1710号|关于促进电网高质量发展的指导意见": "policies/library/policy-100.pdf"
 };
 
