@@ -887,7 +887,7 @@ body { background: var(--bg-grad); background-attachment: fixed; }
   </div>
 </div>
 
-<script src="objective-questions.js?v=20260825-14" onerror="window.OBJECTIVE_LOAD_FAILED=true"></script>
+<script src="objective-questions.js?v=20260825-15" onerror="window.OBJECTIVE_LOAD_FAILED=true"></script>
 <script src="policy-library-data.js?v=20260822-2" onerror="window.POLICY_LOAD_FAILED=true"></script>
 <script src="policy-dates.js?v=20260822-2"></script>
 <script>
@@ -981,6 +981,26 @@ var Auth = {
     document.body.classList.add('authenticated');
     setUserChip(username);
     CloudSync.configure({url:AUTH_CFG.url, anonKey:AUTH_CFG.anonKey, slug:'prog:'+username});
+    // 刷新"最近活跃"：恢复会话时也 touch 一下
+    this.touch(username);
+  },
+  /* touch: 登录/恢复会话时把 auth:<用户> 行的 updated_at 刷到 now()（保留密码哈希 + 加 last 时间戳），
+     让账号管理面板的"最近活跃"显示真正的登录时间，而不是停留在注册日期 */
+  touch: async function(username){
+    try {
+      var get = await fetch(this.apiUrl() + '?slug=eq.' + encodeURIComponent('auth:'+username) + '&select=objective_completed', {method:'GET', headers:this.authHeaders()});
+      if (!get.ok) return;
+      var rows = await get.json();
+      if (!rows || !rows[0]) return;
+      var oc = rows[0].objective_completed || {};
+      oc.last = new Date().toISOString();
+      var patch = await fetch(this.apiUrl(), {
+        method:'POST',
+        headers: this.authHeaders({'Prefer': 'resolution=merge-duplicates'}),
+        body: JSON.stringify([{slug:'auth:'+username, objective_completed: oc}])
+      });
+      // silent fail
+    } catch(e) { /* ignore */ }
   }
 };
 function setUserChip(username){
@@ -1023,6 +1043,7 @@ async function completeLogin(username){
   reloadProgressFromStorage();
   rerenderAllViews();
   loadAdminName(); // 登录后刷新主账号配置（可能已被移交）
+  Auth.touch(username); // 刷新"最近活跃"为本次登录时间
 }
 function logout(){
   if (!confirm('确定要退出当前账号吗？本设备的学习进度缓存将被清除（云端进度不受影响）。')) return;
