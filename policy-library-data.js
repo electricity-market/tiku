@@ -320,24 +320,24 @@ window.POLICY_DATA = [
     "origin": "分类表"
   },
   {
-    "category": "新能源与可再生能源",
-    "subcategory": "绿电直连",
+    "category": "绿电绿证",
+    "subcategory": "绿电",
     "title": "关于有序推动绿电直连发展有关事项的通知",
     "doc": "发改能源〔2025〕650号",
     "url": "https://www.ndrc.gov.cn/xxgk/zcfb/tz/202505/t20250530_1398138.html",
     "origin": "分类表"
   },
   {
-    "category": "新能源与可再生能源",
-    "subcategory": "绿电直连",
+    "category": "绿电绿证",
+    "subcategory": "绿电",
     "title": "关于有序推动多用户绿电直连发展有关事项的通知",
     "doc": "发改能源〔2026〕688号",
     "url": "https://gbdy.ndrc.gov.cn/gbdyzcjd/202605/t20260520_1405315.html",
     "origin": "分类表"
   },
   {
-    "category": "新能源与可再生能源",
-    "subcategory": "绿电直连",
+    "category": "绿电绿证",
+    "subcategory": "绿电",
     "title": "关于促进新能源消纳和调控的指导意见",
     "doc": "发改能源〔2025〕1360号",
     "url": "https://www.gov.cn/zhengce/zhengceku/202511/content_7047707.htm",
@@ -401,7 +401,7 @@ window.POLICY_DATA = [
   },
   {
     "category": "绿电绿证",
-    "subcategory": "绿电交易",
+    "subcategory": "绿电",
     "title": "关于有序推进绿色电力交易有关事项的通知",
     "doc": "发改办体改〔2022〕821号",
     "url": "https://dxal.zwfw.hlj.gov.cn/yshjzq/yshjzczl/hddl/art/2023/art_c64c101fcfaf4818a9f8e087676a89cb.html",

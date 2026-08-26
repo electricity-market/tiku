@@ -894,8 +894,8 @@ body { background: var(--bg-grad); background-attachment: fixed; }
 </div>
 
 <script src="objective-questions.js?v=20260825-16" onerror="window.OBJECTIVE_LOAD_FAILED=true"></script>
-<script src="policy-library-data.js?v=20260826-4" onerror="window.POLICY_LOAD_FAILED=true"></script>
-<script src="policy-dates.js?v=20260826-4"></script>
+<script src="policy-library-data.js?v=20260826-5" onerror="window.POLICY_LOAD_FAILED=true"></script>
+<script src="policy-dates.js?v=20260826-5"></script>
 <script>
 /* ====== 跨设备进度同步层 (cloud-sync) ====== */
 (function(global){
@@ -3154,6 +3154,7 @@ function renderPolicyCategories() {
   recordRoute({view:'policy-categories'});
   setViewClass('policy-view');
   policyCategory = '全部';
+  policySubcategory = '全部';
   policyQuery = '';
   policyLifecycleFilter = '全部';
   const categories = policyCategories().filter(category => category !== '全部');
@@ -3207,8 +3208,8 @@ function openPolicyCategory(category) {
   renderPolicyColumn();
 }
 
-function renderPolicyColumn() {
-  recordRoute({view:'policy-list', category:policyCategory});
+function renderPolicyColumn(replace) {
+  recordRoute({view:'policy-list', category:policyCategory}, replace);
   setViewClass('policy-view');
   const categoryItems = POLICY_DATA.filter(item => item.category === policyCategory);
   const subOptions = policySubcategories();
@@ -3267,7 +3268,7 @@ function setPolicyCategory(category) {
 
 function setPolicySubcategory(category) {
   policySubcategory = category;
-  renderPolicyColumn();
+  renderPolicyColumn(true); // 二级筛选用 replaceState，不往浏览器历史栈新增记录
 }
 
 function setPolicyStatus(status) {
