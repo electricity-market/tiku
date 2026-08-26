@@ -136,7 +136,7 @@ window.POLICY_DATA = [
     "origin": "分类表"
   },
   {
-    "category": "监管、法规与许可",
+    "category": "监管、法规与标准",
     "subcategory": "法律法规",
     "title": "中华人民共和国能源法",
     "doc": "",
@@ -144,7 +144,7 @@ window.POLICY_DATA = [
     "origin": "分类表"
   },
   {
-    "category": "监管、法规与许可",
+    "category": "监管、法规与标准",
     "subcategory": "法律法规",
     "title": "中华人民共和国电力法",
     "doc": "2018年修订版",
@@ -192,7 +192,7 @@ window.POLICY_DATA = [
     "origin": "分类表"
   },
   {
-    "category": "监管、法规与许可",
+    "category": "监管、法规与标准",
     "subcategory": "市场监管",
     "title": "电力市场监管办法",
     "doc": "发改令第18号",
@@ -200,7 +200,7 @@ window.POLICY_DATA = [
     "origin": "分类表"
   },
   {
-    "category": "监管、法规与许可",
+    "category": "监管、法规与标准",
     "subcategory": "市场监管",
     "title": "关于进一步加强电力市场管理委员会规范运作的指导意见",
     "doc": "国能发监管〔2023〕57号",
@@ -208,7 +208,7 @@ window.POLICY_DATA = [
     "origin": "分类表"
   },
   {
-    "category": "监管、法规与许可",
+    "category": "监管、法规与标准",
     "subcategory": "市场监管",
     "title": "关于进一步规范电力市场交易行为有关事项的通知",
     "doc": "国能综通监管〔2024〕148号",
@@ -504,8 +504,8 @@ window.POLICY_DATA = [
     "origin": "分类表"
   },
   {
-    "category": "新型电力系统、储能与新型主体",
-    "subcategory": "职业标准",
+    "category": "监管、法规与标准",
+    "subcategory": "标准与许可",
     "title": "电力交易员国家职业标准(2024年版〕",
     "doc": "GZB4-11-01-02",
     "url": "https://www.osta.org.cn/api/sys/downloadFile/decrypt?fileName=4eNsZIOv3WFNDfbnldJHeA/2024/4/30/58ac3e39a4414e539879df8fe27c746d.pdf",
@@ -592,7 +592,7 @@ window.POLICY_DATA = [
     "origin": "原网站"
   },
   {
-    "category": "监管、法规与许可",
+    "category": "监管、法规与标准",
     "subcategory": "法律法规",
     "title": "电力监管条例",
     "doc": "国务院令第432号",
@@ -600,7 +600,7 @@ window.POLICY_DATA = [
     "origin": "司法部"
   },
   {
-    "category": "监管、法规与许可",
+    "category": "监管、法规与标准",
     "subcategory": "市场监管",
     "title": "电网公平开放监管办法",
     "doc": "国能发监管规〔2021〕49号",
@@ -664,15 +664,15 @@ window.POLICY_DATA = [
     "origin": "国家发展改革委"
   },
   {
-    "category": "监管、法规与许可",
-    "subcategory": "准入与许可",
+    "category": "监管、法规与标准",
+    "subcategory": "标准与许可",
     "title": "电力业务许可证管理规定",
     "doc": "电监会令第9号（2024年修订）",
     "url": "https://zfxxgk.ndrc.gov.cn/web/iteminfo.jsp?id=20324",
     "origin": "国家发展改革委"
   },
   {
-    "category": "监管、法规与许可",
+    "category": "监管、法规与标准",
     "subcategory": "法律法规",
     "title": "电力供应与使用条例",
     "doc": "国务院令第196号（2019年修订）",
@@ -680,7 +680,7 @@ window.POLICY_DATA = [
     "origin": "司法部"
   },
   {
-    "category": "监管、法规与许可",
+    "category": "监管、法规与标准",
     "subcategory": "法律法规",
     "title": "电网调度管理条例",
     "doc": "国务院令第115号（2011年修订）",
@@ -704,7 +704,7 @@ window.POLICY_DATA = [
     "origin": "国家能源局"
   },
   {
-    "category": "监管、法规与许可",
+    "category": "监管、法规与标准",
     "subcategory": "市场监管",
     "title": "关于健全自然垄断环节监管体制机制的实施意见",
     "doc": "中央深改委第三次会议审议通过",
