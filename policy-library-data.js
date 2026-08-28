@@ -806,6 +806,22 @@ window.POLICY_DATA = [
     "doc": "发改价格规〔2025〕1490号附件4",
     "url": "https://www.ndrc.gov.cn/xxgk/zcfb/ghxwj/202511/t20251127_1401964_ext.html",
     "origin": "国家发展改革委"
+  },
+  {
+    "category": "跨省跨区",
+    "subcategory": "跨区输电价格",
+    "title": "输配电定价成本监审办法",
+    "doc": "发改价格规〔2025〕1490号附件1",
+    "url": "https://www.ndrc.gov.cn/xxgk/zcfb/ghxwj/202511/t20251127_1401964_ext.html",
+    "origin": "国家发展改革委"
+  },
+  {
+    "category": "跨省跨区",
+    "subcategory": "跨区输电价格",
+    "title": "省级电网输配电价定价办法",
+    "doc": "发改价格规〔2025〕1490号附件2",
+    "url": "https://www.ndrc.gov.cn/xxgk/zcfb/ghxwj/202511/t20251127_1401964_ext.html",
+    "origin": "国家发展改革委"
   }
 ];
 window.POLICY_PDF_MAP = {
