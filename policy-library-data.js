@@ -668,7 +668,7 @@ window.POLICY_DATA = [
     "subcategory": "新能源消纳",
     "title": "关于督促重点地区做好新能源消纳工作的通知",
     "doc": "国能发电力〔2025〕77号",
-    "url": "https://www.nea.gov.cn/20260409/00b12706048c4f5bb0aaa652364bec15/c.html",
+    "url": "https://www.nea.gov.cn/20250825/a3b969e68bc145578c9c8bc0c17b5bfb/c.html",
     "origin": "国家能源局"
   },
   {
@@ -900,6 +900,7 @@ window.POLICY_PDF_MAP = {
   "发改能源〔2025〕1144号|关于印发《新型储能规模化建设专项行动方案（2025—2027年）》的通知": "policies/library/policy-097.pdf",
   "发改办能源〔2025〕669号|关于2025年可再生能源电力消纳责任权重及有关事项的通知": "policies/library/policy-098.pdf",
   "发改价格〔2026〕1077号|关于第四监管周期省级电网输配电价、区域电网输电价格及有关事项的通知": "policies/library/policy-099.pdf",
-  "发改能源〔2025〕1710号|关于促进电网高质量发展的指导意见": "policies/library/policy-100.pdf"
+  "发改能源〔2025〕1710号|关于促进电网高质量发展的指导意见": "policies/library/policy-100.pdf",
+  "中央深改委第三次会议审议通过|关于健全自然垄断环节监管体制机制的实施意见": "policies/library/policy-105.pdf"
 };
 
