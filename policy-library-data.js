@@ -90,14 +90,6 @@ window.POLICY_DATA = [
   {
     "category": "电力市场规则",
     "subcategory": "现货市场",
-    "title": "关于进一步加快电力现货市场建设工作的通知",
-    "doc": "发改办体改〔2023〕813号",
-    "url": "https://www.gov.cn/zhengce/zhengceku/202311/content_6913560.htm",
-    "origin": "分类表"
-  },
-  {
-    "category": "电力市场规则",
-    "subcategory": "现货市场",
     "title": "关于全面加快电力现货市场建设工作的通知",
     "doc": "发改办体改〔2025〕394号",
     "url": "https://www.gov.cn/zhengce/zhengceku/202505/content_7022299.htm",
@@ -608,14 +600,6 @@ window.POLICY_DATA = [
     "origin": "国家发展改革委"
   },
   {
-    "category": "新型电力系统、储能与新型主体",
-    "subcategory": "新型储能",
-    "title": "关于加快推动新型储能发展的指导意见",
-    "doc": "发改能源规〔2021〕1051号",
-    "url": "https://zfxxgk.nea.gov.cn/2021-07/15/c_1310079331.htm",
-    "origin": "国家能源局"
-  },
-  {
     "category": "新能源与可再生能源",
     "subcategory": "分布式新能源",
     "title": "分布式光伏发电开发建设管理办法",
@@ -836,7 +820,6 @@ window.POLICY_PDF_MAP = {
   "发改能源规〔2025〕411号|电力辅助服务市场基本规则": "policies/library/policy-010.pdf",
   "发改能源规〔2023〕1217号|电力现货市场基本规则(试行〕的通知": "policies/library/policy-011.pdf",
   "发改办体改〔2026〕275号|省间电力现货交易规则": "policies/library/policy-012.pdf",
-  "发改办体改〔2023〕813号|关于进一步加快电力现货市场建设工作的通知": "policies/library/policy-013.pdf",
   "发改办体改〔2025〕394号|关于全面加快电力现货市场建设工作的通知": "policies/library/policy-014.pdf",
   "发改能源〔2025〕1171号|电力现货连续运行地区市场建设指引": "policies/library/policy-015.pdf",
   "国能发监管〔2024〕76号|电力市场注册基本规则": "policies/library/policy-016.pdf",
@@ -901,7 +884,6 @@ window.POLICY_PDF_MAP = {
   "国能发监管规〔2021〕49号|电网公平开放监管办法": "policies/library/policy-082.pdf",
   "发改体改〔2020〕234号|关于推进电力交易机构独立规范运行的实施意见": "policies/library/policy-083.pdf",
   "发改办运行〔2022〕475号|关于进一步推动新型储能参与电力市场和调度运用的通知": "policies/library/policy-084.pdf",
-  "发改能源规〔2021〕1051号|关于加快推动新型储能发展的指导意见": "policies/library/policy-085.pdf",
   "国能发新能规〔2025〕7号|分布式光伏发电开发建设管理办法": "policies/library/policy-086.pdf",
   "发改能源〔2024〕1803号|电力系统调节能力优化专项行动实施方案（2025—2027年）": "policies/library/policy-087.pdf",
   "发改能源规〔2024〕317号|增量配电业务配电区域划分实施办法": "policies/library/policy-088.pdf",

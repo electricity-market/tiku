@@ -675,15 +675,6 @@ window.POLICY_DATA = [
     "url": "https://www.nea.gov.cn/2024-12/02/c_1310787408.htm"
   },
   {
-    "category": "一、顶层规划与基础规则",
-    "subcategory": "分市场交易规则",
-    "title": "关于进一步加快电力现货市场建设工作的通知",
-    "doc": "发改办体改〔2023〕813号",
-    "summary": "部署省级现货市场建设进度、市场衔接、价格机制、容量补偿和运营保障工作",
-    "significance": "在全面加快现货市场建设前承上启下，明确现货市场覆盖与连续运行要求",
-    "url": "https://www.ndrc.gov.cn/xxgk/zcfb/tz/202311/t20231101_1361704.html"
-  },
-  {
     "category": "三、价格机制有关政策",
     "subcategory": "煤电价格联动",
     "title": "关于进一步完善煤炭市场价格形成机制的通知",
