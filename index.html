@@ -2987,7 +2987,7 @@ function renderHome() {
   document.getElementById('contentArea').innerHTML =
     '<section class="home-hero"><h2>今天想学习什么？</h2></section>' +
     '<section class="home-grid" aria-label="学习模块">' +
-      '<button class="home-entry" onclick="renderQuestionSection()"><span class="entry-icon">选</span><span class="entry-meta">' + (window.OBJECTIVE_QUESTIONS ? window.OBJECTIVE_QUESTIONS.length : 0) + ' 题</span><h3>客观题</h3><p>单选、多选与判断题，按题型进入练习，错题自动收录。</p><span class="entry-go">进入练习 →</span></button>' +
+      '<button class="home-entry" onclick="renderQuestionSection()"><span class="entry-icon">客</span><span class="entry-meta">' + (window.OBJECTIVE_QUESTIONS ? window.OBJECTIVE_QUESTIONS.length : 0) + ' 题</span><h3>客观题</h3><p>单选、多选与判断题，按题型进入练习，错题自动收录。</p><span class="entry-go">进入练习 →</span></button>' +
       '<button class="home-entry" onclick="switchQuestionType(\'short\')"><span class="entry-icon">简</span><span class="entry-meta">' + (SAMPLE_BANKS.short.questions.length ? SAMPLE_BANKS.short.questions.length + ' 题' : '持续整理') + '</span><h3>简答题</h3><p>知识点表述与规则理解，文字作答。</p><span class="entry-go">进入练习 →</span></button>' +
       '<button class="home-entry" onclick="switchQuestionType(\'calculation\')"><span class="entry-icon">算</span><span class="entry-meta">' + DATA.filter(q => CALCULATION_IDS.includes(q.id)).length + ' 道</span><h3>计算题</h3><p>独立公式与基础计算，独立练习。</p><span class="entry-go">进入练习 →</span></button>' +
       '<button class="home-entry" onclick="switchQuestionType(\'analysis\')"><span class="entry-icon">析</span><span class="entry-meta">' + DATA.filter(q => !CALCULATION_IDS.includes(q.id)).length + ' 道大题</span><h3>仿真分析</h3><p>现货出清、节点电价、输电权等完整案例。</p><span class="entry-go">开始学习 →</span></button>' +
