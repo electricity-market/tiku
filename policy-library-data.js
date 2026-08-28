@@ -822,6 +822,46 @@ window.POLICY_DATA = [
     "doc": "发改价格规〔2025〕1490号附件2",
     "url": "https://www.ndrc.gov.cn/xxgk/zcfb/ghxwj/202511/t20251127_1401964_ext.html",
     "origin": "国家发展改革委"
+  },
+  {
+    "category": "监管、法规与标准",
+    "subcategory": "信用监管",
+    "title": "能源行业公共信用信息管理办法",
+    "doc": "国能发资质规〔2025〕109号",
+    "url": "https://www.nea.gov.cn/20260107/7b3c26b1527d4283a7736680a3755a43/c.html",
+    "origin": "国家能源局"
+  },
+  {
+    "category": "电力市场规则",
+    "subcategory": "中长期交易",
+    "title": "关于做好2026年电力中长期合同签约履约工作的通知",
+    "doc": "发改运行〔2025〕1502号",
+    "url": "https://www.pvmeng.com/2025/11/25/54362/",
+    "origin": "国家发展改革委、国家能源局"
+  },
+  {
+    "category": "监管、法规与标准",
+    "subcategory": "综合监管",
+    "title": "关于开展2026年电力领域综合监管工作的通知",
+    "doc": "国能发监管〔2026〕29号",
+    "url": "https://www.nea.gov.cn/20260409/00b12706048c4f5bb0aaa652364bec15/c.html",
+    "origin": "国家能源局"
+  },
+  {
+    "category": "绿电绿证",
+    "subcategory": "绿证管理",
+    "title": "关于组织推进非公共电网可再生能源发电项目绿证核发的通知",
+    "doc": "国能综通资质〔2026〕60号",
+    "url": "https://www.nea.gov.cn/20260623/62bac506e76544bda509a7a50e81ba08/c.html",
+    "origin": "国家能源局"
+  },
+  {
+    "category": "新能源与可再生能源",
+    "subcategory": "节能降碳",
+    "title": "能源领域节能降碳行动计划（2026—2028年）",
+    "doc": "国能发规划〔2026〕45号",
+    "url": "https://www.nea.gov.cn/20260710/4acf5873e20149cdbc52c709b16b30ff/c.html",
+    "origin": "国家能源局"
   }
 ];
 window.POLICY_PDF_MAP = {
@@ -917,6 +957,11 @@ window.POLICY_PDF_MAP = {
   "发改办能源〔2025〕669号|关于2025年可再生能源电力消纳责任权重及有关事项的通知": "policies/library/policy-098.pdf",
   "发改价格〔2026〕1077号|关于第四监管周期省级电网输配电价、区域电网输电价格及有关事项的通知": "policies/library/policy-099.pdf",
   "发改能源〔2025〕1710号|关于促进电网高质量发展的指导意见": "policies/library/policy-100.pdf",
-  "中央深改委第三次会议审议通过|关于健全自然垄断环节监管体制机制的实施意见": "policies/library/policy-105.pdf"
+  "中央深改委第三次会议审议通过|关于健全自然垄断环节监管体制机制的实施意见": "policies/library/policy-105.pdf",
+  "国能发资质规〔2025〕109号|能源行业公共信用信息管理办法": "policies/library/policy-106.pdf",
+  "发改运行〔2025〕1502号|关于做好2026年电力中长期合同签约履约工作的通知": "policies/library/policy-107.pdf",
+  "国能发监管〔2026〕29号|关于开展2026年电力领域综合监管工作的通知": "policies/library/policy-108.pdf",
+  "国能综通资质〔2026〕60号|关于组织推进非公共电网可再生能源发电项目绿证核发的通知": "policies/library/policy-109.pdf",
+  "国能发规划〔2026〕45号|能源领域节能降碳行动计划（2026—2028年）": "policies/library/policy-110.pdf"
 };
 
