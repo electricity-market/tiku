@@ -1388,12 +1388,16 @@ CloudSync.onStatus(updateSyncBadge);
 <script>
 
 const SAMPLE_BANKS = {
-  single: { title: '单选题', subtitle: '共1365题 · 每题只有一个正确答案', questions: (window.OBJECTIVE_QUESTIONS || []).filter(q => q.type === 'single') },
-  multiple: { title: '多选题', subtitle: '共512题 · 少选、多选均不得分', questions: (window.OBJECTIVE_QUESTIONS || []).filter(q => q.type === 'multiple') },
-  judge: { title: '判断题', subtitle: '共428题 · 选择后提交查看结果', questions: (window.OBJECTIVE_QUESTIONS || []).filter(q => q.type === 'judge') },
-  short: { title: '简答题', subtitle: '简答题暂未导入', questions: [] },
+  single: { title: '单选题', subtitle: '', questions: (window.OBJECTIVE_QUESTIONS || []).filter(q => q.type === 'single') },
+  multiple: { title: '多选题', subtitle: '', questions: (window.OBJECTIVE_QUESTIONS || []).filter(q => q.type === 'multiple') },
+  judge: { title: '判断题', subtitle: '', questions: (window.OBJECTIVE_QUESTIONS || []).filter(q => q.type === 'judge') },
+  short: { title: '简答题', subtitle: '', questions: (window.OBJECTIVE_QUESTIONS || []).filter(q => q.type === 'short') },
   calculation: { title: '计算题', subtitle: '计算题暂未导入', questions: [] }
 };
+/* 副标题统一由 bankSubtitle() 按实际题数生成，避免硬编码数字随题库扩容而过期 */
+['single', 'multiple', 'judge', 'short'].forEach(function (bank) {
+  SAMPLE_BANKS[bank].subtitle = bankSubtitle(bank, SAMPLE_BANKS[bank].questions.length);
+});
 
 /* ====== 题库在线编辑（主账号专用）======
    方案：编辑结果作为"云端覆盖层"存 progress 表 slug=qbank_edits 行的 objective_completed 字段；
@@ -3557,7 +3561,7 @@ function goObjective(idx) {
 
 /* ====== 独立搜题视图（search-view）======
    入口：工具栏「🔍 搜索题」按钮；退出：返回原 activeBank。
-   范围：客观题（single/multiple/judge，2305 道）+ 案例分析 + 计算题（DATA 中按 CALCULATION_IDS 区分）。 */
+   范围：客观题（single/multiple/judge/short，随 OBJECTIVE_QUESTIONS 动态变化）+ 案例分析 + 计算题（DATA 中按 CALCULATION_IDS 区分）。 */
 let searchQueryText = '';
 let searchTypeFilter = ''; // '' = 全部 / 'single' / 'multiple' / 'judge' / 'analysis' / 'calculation'
 let searchResultsCache = [];
@@ -3808,13 +3812,6 @@ function showReferenceAnswer() {
   const box = document.getElementById('sampleResult');
   box.className = 'result-box show correct';
   box.innerHTML = '<strong>参考答案</strong><br>' + esc(q.reference);
-}
-
-function checkCalculation() {
-  const q = currentSample();
-  const input = document.getElementById('calcAnswer');
-  if (input.value === '') return showSampleResult(false, '请先填写计算结果。');
-  showSampleResult(Number(input.value) === q.answerValue, q.explanation);
 }
 
 function rerenderAllViews(){
