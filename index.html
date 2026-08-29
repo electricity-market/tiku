@@ -894,8 +894,8 @@ body { background: var(--bg-grad); background-attachment: fixed; }
 </div>
 
 <script src="objective-questions.js?v=20260825-16" onerror="window.OBJECTIVE_LOAD_FAILED=true"></script>
-<script src="policy-library-data.js?v=20260828-9" onerror="window.POLICY_LOAD_FAILED=true"></script>
-<script src="policy-dates.js?v=20260828-8"></script>
+<script src="policy-library-data.js?v=20260829-1" onerror="window.POLICY_LOAD_FAILED=true"></script>
+<script src="policy-dates.js?v=20260829-1"></script>
 <script>
 /* ====== 跨设备进度同步层 (cloud-sync) ====== */
 (function(global){
@@ -2420,7 +2420,6 @@ let objectiveOnlyWrong = false;
 let policyCategory = '全部';
 let policySubcategory = '全部';
 let policyQuery = '';
-let policyStatus = '全部';
 let policyLifecycleFilter = '全部';
 let policyRead = JSON.parse(localStorage.getItem('huadian_policy_read') || '[]');
 let policyStarred = JSON.parse(localStorage.getItem('huadian_policy_starred') || '[]');
@@ -3034,7 +3033,6 @@ function switchQuestionType(bank) {
     policyCategory = '全部';
     policySubcategory = '全部';
     policyQuery = '';
-    policyStatus = '全部';
     document.getElementById('sidebarTitle').textContent = '政策分类';
     document.getElementById('pageSubtitle').textContent = POLICY_DATA.length + '份无标注政策原文';
     renderPolicyCategories();
@@ -3125,18 +3123,6 @@ function policySubcategories() {
   return ['全部', ...new Set(source.map(item => item.subcategory))];
 }
 
-function filteredPolicies() {
-  const query = policyQuery.trim().toLowerCase();
-  return POLICY_DATA.filter(item => {
-    const categoryMatch = policyCategory === '全部' || item.category === policyCategory;
-    const subcategoryMatch = policySubcategory === '全部' || item.subcategory === policySubcategory;
-    const key = policyKey(item);
-    const statusMatch = policyStatus === '全部' || (policyStatus === '未读' && !policyRead.includes(key)) || (policyStatus === '已读' && policyRead.includes(key)) || (policyStatus === '已收藏' && policyStarred.includes(key)) || (policyStatus === '可站内阅读' && !!POLICY_PDF_MAP[key]);
-    const text = [item.title, item.doc, item.category, item.subcategory, item.summary, item.significance].join(' ').toLowerCase();
-    return categoryMatch && subcategoryMatch && statusMatch && (!query || text.includes(query));
-  });
-}
-
 function renderPolicyNav() {
   const ul = document.getElementById('navList');
   ul.innerHTML = '';
@@ -3191,9 +3177,12 @@ function updatePolicyHomeSearch(value) {
     results.forEach(item => {
       const key = policyKey(item);
       const isRead = policyRead.includes(key);
+      const isStarred = policyStarred.includes(key);
       html += '<article class="policy-card ' + (isRead ? 'is-read' : '') + '" onmouseenter="warmPolicyPdf(\'' + esc(key) + '\')" onfocusin="warmPolicyPdf(\'' + esc(key) + '\')"><span class="policy-category">' + esc(item.category) + ' · ' + esc(item.subcategory) + '</span>' + policyInfoHtml(item) + '<h4>' + esc(item.title) + '</h4>';
-      html += '<div class="policy-meta"><span>' + esc(item.doc || '文号未注明') + '</span>' + (isRead ? '<span style="color:#137333">✓ 已读</span>' : '') + '</div>' + policyDateHtml(key) + '<div class="policy-actions">';
+      html += '<div class="policy-meta"><span>' + esc(item.doc || '文号未注明') + '</span>' + (isRead ? '<span style="color:#137333">✓ 已读</span>' : '') + (isStarred ? '<span style="color:#b06000">★ 已收藏</span>' : '') + '</div>' + policyDateHtml(key) + '<div class="policy-actions">';
       html += POLICY_PDF_MAP[key] ? '<button class="policy-action primary" onclick="openPolicyReader(\'' + esc(key) + '\')">阅读原文 →</button>' : '<span class="policy-action">暂无 PDF</span>';
+      html += '<button class="policy-action" onclick="togglePolicyStarred(\'' + esc(key) + '\')">' + (isStarred ? '★ 取消收藏' : '☆ 收藏') + '</button>';
+      html += '<button class="policy-action" onclick="togglePolicyRead(\'' + esc(key) + '\')">' + (isRead ? '↺ 标记未读' : '✓ 标记已读') + '</button>';
       html += '</div></article>';
     });
     html += '</div>';
@@ -3216,6 +3205,9 @@ function renderPolicyColumn(replace) {
   const items = sortPolicies(categoryItems.filter(item => (policyLifecycleFilter === '全部' || policyLifecycle(item).status === policyLifecycleFilter) && (policySubcategory === '全部' || item.subcategory === policySubcategory)));
   const lifecycleOptions = ['全部','最新政策','即将失效','已废止/被替代'];
   let html = '<div class="section-shell"><div class="policy-list-head"><div><h2>' + esc(policyCategory) + '</h2><div class="subtitle">按发布时间从新到旧 · 当前显示 ' + items.length + ' / ' + categoryItems.length + ' 份</div></div><button type="button" onclick="renderPolicyCategories()">← 返回政策主题</button></div>';
+  html += '<div class="policy-subcategory-bar">';
+  lifecycleOptions.forEach(opt => { const count = opt === '全部' ? categoryItems.length : categoryItems.filter(item => policyLifecycle(item).status === opt).length; html += '<button class="policy-subcategory-filter ' + (policyLifecycleFilter === opt ? 'active' : '') + '" onclick="setPolicyLifecycleFilter(\'' + opt + '\')">' + opt + '（' + count + '）</button>'; });
+  html += '</div>';
   if (subOptions.length > 1) {
     html += '<div class="policy-subcategory-bar">';
     subOptions.forEach(sub => { if (sub === '全部') return; const count = categoryItems.filter(item => item.subcategory === sub).length; html += '<button class="policy-subcategory-filter ' + (policySubcategory === sub ? 'active' : '') + '" onclick="setPolicySubcategory(\'' + esc(sub) + '\')">' + esc(sub) + '（' + count + '）</button>'; });
@@ -3225,14 +3217,17 @@ function renderPolicyColumn(replace) {
   items.forEach(item => {
     const key = policyKey(item);
     const isRead = policyRead.includes(key);
+    const isStarred = policyStarred.includes(key);
     html += '<article class="policy-card ' + (isRead ? 'is-read' : '') + '" onmouseenter="warmPolicyPdf(\'' + esc(key) + '\')" onfocusin="warmPolicyPdf(\'' + esc(key) + '\')" ontouchstart="warmPolicyPdf(\'' + esc(key) + '\')"><span class="policy-category">' + esc(item.subcategory) + '</span>' + policyInfoHtml(item) + '<h4>' + esc(item.title) + '</h4>';
-    html += '<div class="policy-meta"><span>' + esc(item.doc || '文号未注明') + '</span>' + (isRead ? '<span style="color:#137333">✓ 已读</span>' : '') + '</div>' + policyDateHtml(key);
+    html += '<div class="policy-meta"><span>' + esc(item.doc || '文号未注明') + '</span>' + (isRead ? '<span style="color:#137333">✓ 已读</span>' : '') + (isStarred ? '<span style="color:#b06000">★ 已收藏</span>' : '') + '</div>' + policyDateHtml(key);
     html += '<div class="policy-actions">';
     if (POLICY_PDF_MAP[key]) {
       html += '<button class="policy-action primary" onclick="openPolicyReader(\'' + esc(key) + '\')">阅读原文 →</button>';
     } else {
       html += '<span class="policy-action">暂无 PDF</span>';
     }
+    html += '<button class="policy-action" onclick="togglePolicyStarred(\'' + esc(key) + '\')">' + (isStarred ? '★ 取消收藏' : '☆ 收藏') + '</button>';
+    html += '<button class="policy-action" onclick="togglePolicyRead(\'' + esc(key) + '\')">' + (isRead ? '↺ 标记未读' : '✓ 标记已读') + '</button>';
     html += '</div></article>';
   });
   html += '</div></div>';
@@ -3259,21 +3254,9 @@ function policyPdfLoaded(element) {
   if (loading) loading.classList.add('done');
 }
 
-function setPolicyCategory(category) {
-  policyCategory = category;
-  policySubcategory = '全部';
-  renderPolicyNav();
-  renderPolicyColumn();
-}
-
 function setPolicySubcategory(category) {
   policySubcategory = category;
   renderPolicyColumn(true); // 二级筛选用 replaceState，不往浏览器历史栈新增记录
-}
-
-function setPolicyStatus(status) {
-  policyStatus = status;
-  renderPolicyColumn();
 }
 
 function togglePolicyRead(key) {
@@ -3392,6 +3375,7 @@ function openPolicyReader(key) {
   if (!pdfUrl) html += '<button class="policy-action" onclick="changeReaderFont(-1)">A−</button><button class="policy-action" onclick="changeReaderFont(1)">A＋</button>';
   if (pdfUrl) html += '<a class="policy-action reader-open" href="' + esc(pdfUrl) + '" target="_blank" rel="noopener">单独打开 PDF ↗</a>';
   if (item.url) html += '<a class="policy-action reader-open" href="' + esc(item.url) + '" target="_blank" rel="noopener noreferrer">核验官方来源 ↗</a>';
+  html += '<button class="policy-action" onclick="togglePolicyStarred(\'' + esc(key) + '\')">' + (policyStarred.includes(key) ? '★ 取消收藏' : '☆ 收藏') + '</button>';
   html += '</div>';
   html += '<div class="reader-meta-row"><div class="reader-doc">' + esc(item.doc || '文号未注明') + ' · ' + esc(item.category) + ' / ' + esc(item.subcategory) + '</div>' + policyInfoHtml(item) + policyDateHtml(key) + '</div></div>';
   if (pdfUrl) {
@@ -3414,13 +3398,6 @@ function changeReaderFont(delta) {
   if (!body) return;
   const current = parseFloat(getComputedStyle(body).fontSize);
   body.style.fontSize = Math.max(14, Math.min(24, current + delta)) + 'px';
-}
-
-function updatePolicySearch(value) {
-  policyQuery = value;
-  renderPolicyColumn();
-  const input = document.getElementById('policySearch');
-  if (input) { input.focus(); input.setSelectionRange(input.value.length, input.value.length); }
 }
 
 function renderSampleNav(bankData) {
