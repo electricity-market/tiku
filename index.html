@@ -894,8 +894,8 @@ body { background: var(--bg-grad); background-attachment: fixed; }
 </div>
 
 <script src="objective-questions.js?v=20260825-16" onerror="window.OBJECTIVE_LOAD_FAILED=true"></script>
-<script src="policy-library-data.js?v=20260829-1" onerror="window.POLICY_LOAD_FAILED=true"></script>
-<script src="policy-dates.js?v=20260829-3"></script>
+<script src="policy-library-data.js?v=20260829-2" onerror="window.POLICY_LOAD_FAILED=true"></script>
+<script src="policy-dates.js?v=20260829-4"></script>
 <script>
 /* ====== 跨设备进度同步层 (cloud-sync) ====== */
 (function(global){
@@ -1085,12 +1085,6 @@ function openAdmin(){
     cc.textContent = '已导入 ' + t.imported + ' 题 · 已删除 ' + t.deleted + ' 题';
   }
   loadAdminAccounts();
-}
-/* 题库编辑入口：关闭账号管理，进入客观题板块并提示编辑按钮位置 */
-function openQBankEditorEntry(){
-  closeAdmin();
-  renderQuestionSection();
-  showToast('已进入客观题板块。任意题型练习页中，每道题的按钮栏都有「✎ 编辑本题」。');
 }
 function closeAdmin(){
   closeModal('adminDialog');
@@ -1651,21 +1645,6 @@ function closeAllModals(){
   var backdrop = document.getElementById('modalBackdrop');
   if (backdrop) backdrop.classList.remove('active');
 }
-/* 兼容性：保留旧函数名当 stub，方便老代码不爆错 */
-function _closeAllFeedbackDialogs(exceptId){
-  var dialogs = document.querySelectorAll('.feedback-dialog');
-  dialogs.forEach(function(d){
-    if (d.id === exceptId) return;
-    d.classList.remove('active');
-    d.classList.add('dlg-force-closed');
-    d.style.display = 'none';
-  });
-}
-function _safeClose(dlg){
-  if (!dlg) return;
-  closeModal(dlg.id);
-}
-function _openDialog(id){ openModal(id); }
 function openQuestionManageDialog(tab) {
   if (!isAdmin()) return;
   var target = (tab === 'delete') ? 'delete' : 'import';
@@ -3203,7 +3182,6 @@ function renderPolicyColumn(replace) {
   const categoryItems = POLICY_DATA.filter(item => item.category === policyCategory);
   const subOptions = policySubcategories();
   const items = sortPolicies(categoryItems.filter(item => (policyLifecycleFilter === '全部' || policyLifecycle(item).status === policyLifecycleFilter) && (policySubcategory === '全部' || item.subcategory === policySubcategory)));
-  const lifecycleOptions = ['全部','最新政策','即将失效','已废止/被替代'];
   let html = '<div class="section-shell"><div class="policy-list-head"><div><h2>' + esc(policyCategory) + '</h2><div class="subtitle">按发布时间从新到旧 · 当前显示 ' + items.length + ' / ' + categoryItems.length + ' 份</div></div><button type="button" onclick="renderPolicyCategories()">← 返回政策主题</button></div>';
   if (subOptions.length > 1) {
     html += '<div class="policy-subcategory-bar">';
@@ -3232,11 +3210,6 @@ function renderPolicyColumn(replace) {
   const warmFirst = () => items.slice(0, 2).forEach(item => warmPolicyPdf(policyKey(item)));
   if ('requestIdleCallback' in window) requestIdleCallback(warmFirst, {timeout:1200});
   else setTimeout(warmFirst, 300);
-}
-
-function setPolicyLifecycleFilter(status) {
-  policyLifecycleFilter = status;
-  renderPolicyColumn();
 }
 
 function warmPolicyPdf(key) {
