@@ -1,1 +1,10 @@
+# 文本统一用 LF：本项目三个主要文件原本换行符不一致（index.html/objective-questions.js 是 LF，
+# policy-library-data.js 是 CRLF），编辑工具会来回翻转，导致 diff 出现全文件噪音。
+# 声明 eol=lf 后，git 在检出/提交时统一归一化，diff 只反映真实内容改动。
+* text=auto eol=lf
+
+# 二进制资源：禁止任何换行转换或文本差异比较
 *.pdf binary
+*.woff2 binary
+*.woff binary
+*.ttf binary

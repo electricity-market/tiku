@@ -665,7 +665,17 @@ body { background: var(--bg-grad); background-attachment: fixed; }
 .sidebar .progress-bar > div { border-radius: 999px; }
 .back-to-top { transition: opacity .25s var(--ease), transform .25s var(--ease), box-shadow .25s var(--ease); }
 .back-to-top:hover { transform: translateY(-2px) scale(1.06); box-shadow: 0 6px 18px rgba(29,78,216,.4); }
+
+/* ---- 数学公式（KaTeX）---- */
+.katex { font-size: 1.05em; }
 </style>
+<!-- 数学公式渲染（KaTeX 0.16.11，本地自托管）。
+     不走 CDN：GitHub Pages + 国内网络下外部 CDN 经常不可达，自托管才能保证公式稳定显示。
+     defer 异步加载，即便加载失败也只是公式退回纯文本，不阻塞页面（见 renderMathIn）。
+     字体只保留了 woff2（CSS 里排在最前），现代浏览器都支持，省掉 woff/ttf 共 876KB。 -->
+<link rel="stylesheet" href="vendor/katex/katex.min.css">
+<script defer src="vendor/katex/katex.min.js"></script>
+<script defer src="vendor/katex/auto-render.min.js"></script>
 </head>
 <body>
 <div class="login-gate" id="loginGate">
@@ -893,8 +903,8 @@ body { background: var(--bg-grad); background-attachment: fixed; }
   </div>
 </div>
 
-<script src="objective-questions.js?v=20260825-16" onerror="window.OBJECTIVE_LOAD_FAILED=true"></script>
-<script src="policy-library-data.js?v=20260829-2" onerror="window.POLICY_LOAD_FAILED=true"></script>
+<script src="objective-questions.js?v=20260829-6" onerror="window.OBJECTIVE_LOAD_FAILED=true"></script>
+<script src="policy-library-data.js?v=20260829-7" onerror="window.POLICY_LOAD_FAILED=true"></script>
 <script src="policy-dates.js?v=20260829-4"></script>
 <script>
 /* ====== 跨设备进度同步层 (cloud-sync) ====== */
@@ -1410,7 +1420,9 @@ try {
   QBANK_PRISTINE = JSON.parse(JSON.stringify(window.OBJECTIVE_QUESTIONS || []));
   QBANK_EDITS = JSON.parse(localStorage.getItem(QBANK_EDIT_KEY) || '{}');
 } catch (e) { QBANK_EDITS = {}; }
-function qesc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); }
+/* 题目编辑表单专用转义。与 esc() 行为完全一致，保留别名只为不改动编辑区的调用点，
+   避免出现两套转义规则不一致的隐患。 */
+function qesc(s) { return esc(s); }
 function applyQuestionEdit(q, edit) {
   q.stem = edit.stem;
   q.options = edit.options.map(function(o){ return { letter: o.letter, text: o.text }; });
@@ -2918,8 +2930,48 @@ let studyMode = false;
 let completed = JSON.parse(localStorage.getItem('huadian_q10_completed') || '[]');
 let reviewLater = JSON.parse(localStorage.getItem('huadian_q10_review') || '[]');
 
+/* HTML 转义。必须同时转义 & < > " '：
+   本页大量把变量拼进 onclick="fn('值')" 这类内联属性，值里一旦出现引号就会截断
+   属性/字符串导致按钮失效（甚至注入）。历史 bug：旧版只转义 & < >，数据含 &quot;
+   时还会被二次转义成字面量显示。 */
 function esc(s) {
-  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+/* 数学公式渲染（KaTeX）。
+   - 只启用 $$...$$ 定界符：题库里单 $ 是货币单位（如 20$/MWh），启用单 $ 会把价格误判成公式。
+   - KaTeX 是 defer 异步加载的，页面没加载完时先不动，等它就绪。
+   - 加载失败（离线 / CDN 不可达）时降级：去掉 $$ 定界符，让公式至少能读，绝不阻塞页面。 */
+function renderMathIn(container) {
+  if (!container) return;
+  if (typeof renderMathInElement === 'function') {
+    try {
+      renderMathInElement(container, {
+        delimiters: [{ left: '$$', right: '$$', display: false }],
+        throwOnError: false,
+        errorColor: '#cc0000'
+      });
+    } catch (e) { /* 个别公式语法怪异时保持原文，不影响整页渲染 */ }
+    return;
+  }
+  if (document.readyState === 'complete') stripMathDelimiters(container);
+}
+
+/* 降级处理：只改文本节点，不碰 HTML 结构（避免重排丢事件） */
+function stripMathDelimiters(root) {
+  var walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
+  var targets = [], n;
+  while ((n = walker.nextNode())) {
+    if (n.nodeValue && n.nodeValue.indexOf('$$') >= 0) targets.push(n);
+  }
+  targets.forEach(function (node) {
+    node.nodeValue = node.nodeValue.replace(/\$\$([\s\S]+?)\$\$/g, '$1');
+  });
 }
 
 /* 简易 toast：顶部居中悬浮提示，3 秒后自动消失；用于替换 alert 风格的丑陋弹窗 */
@@ -3418,6 +3470,7 @@ function renderSampleQuestion(q, idx) {
   html += '<div class="result-box" id="sampleResult" aria-live="polite"></div>';
   html += '</div>';
   document.getElementById('contentArea').innerHTML = html;
+  renderMathIn(document.getElementById('contentArea'));
   bindObjSearchImeGuard(document.getElementById('objectiveSearch'));
   // 渲染出 select 后再同步一次下拉框显示值（init 时 select 还不存在，跳过了回填）
   if (typeof applyQFontSizeFromStorage === 'function') applyQFontSizeFromStorage();
@@ -3596,10 +3649,11 @@ function collectAllSearchableItems() {
     out.push({
       _type: q.type,
       _title: q.title,
-      _stem: q.stem,
-      _options: q.options,
+      _stem: q.stem || '',
+      _options: q.options || [],
       _answer: q.answerText,
-      _haystack: q.stem + ' ' + (q.options || []).map(function (o) { return o.text; }).join(' ') + (q.type === 'short' ? ' ' + (q.answerText || '') : ''),
+      // 导入题可能缺字段：这里统一兜底，避免单条脏数据让整个搜索抛异常中断
+      _haystack: (q.stem || '') + ' ' + (q.options || []).map(function (o) { return (o && o.text) || ''; }).join(' ') + (q.type === 'short' ? ' ' + (q.answerText || '') : ''),
       _casePreview: ''
     });
   });
@@ -3686,6 +3740,7 @@ function renderSearchView() {
   }
   html += '</div>';
   container.innerHTML = html;
+  renderMathIn(container);
   if (!searchQueryText) {
     const inp = document.getElementById('searchInputBig');
     if (inp) inp.focus();
@@ -4059,6 +4114,7 @@ function renderQuestion(idx) {
   if (idx < items.length - 1) html += '<button class="btn btn-primary" onclick="goTo(' + (idx + 1) + ')">下一题 →</button>';
   html += '</div></div>';
   container.innerHTML = html;
+  renderMathIn(container);
 }
 
 function toggleAnswer(idx) {
