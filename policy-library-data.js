@@ -664,14 +664,6 @@ window.POLICY_DATA = [
     "origin": "国家发展改革委"
   },
   {
-    "category": "新能源与可再生能源",
-    "subcategory": "新能源消纳",
-    "title": "关于督促重点地区做好新能源消纳工作的通知",
-    "doc": "国能发电力〔2025〕77号",
-    "url": "https://www.nea.gov.cn/20250825/a3b969e68bc145578c9c8bc0c17b5bfb/c.html",
-    "origin": "国家能源局"
-  },
-  {
     "category": "监管、法规与标准",
     "subcategory": "市场监管",
     "title": "关于健全自然垄断环节监管体制机制的实施意见",
