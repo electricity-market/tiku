@@ -895,7 +895,7 @@ body { background: var(--bg-grad); background-attachment: fixed; }
 
 <script src="objective-questions.js?v=20260825-16" onerror="window.OBJECTIVE_LOAD_FAILED=true"></script>
 <script src="policy-library-data.js?v=20260829-1" onerror="window.POLICY_LOAD_FAILED=true"></script>
-<script src="policy-dates.js?v=20260829-1"></script>
+<script src="policy-dates.js?v=20260829-2"></script>
 <script>
 /* ====== 跨设备进度同步层 (cloud-sync) ====== */
 (function(global){
@@ -3205,9 +3205,6 @@ function renderPolicyColumn(replace) {
   const items = sortPolicies(categoryItems.filter(item => (policyLifecycleFilter === '全部' || policyLifecycle(item).status === policyLifecycleFilter) && (policySubcategory === '全部' || item.subcategory === policySubcategory)));
   const lifecycleOptions = ['全部','最新政策','即将失效','已废止/被替代'];
   let html = '<div class="section-shell"><div class="policy-list-head"><div><h2>' + esc(policyCategory) + '</h2><div class="subtitle">按发布时间从新到旧 · 当前显示 ' + items.length + ' / ' + categoryItems.length + ' 份</div></div><button type="button" onclick="renderPolicyCategories()">← 返回政策主题</button></div>';
-  html += '<div class="policy-subcategory-bar">';
-  lifecycleOptions.forEach(opt => { const count = opt === '全部' ? categoryItems.length : categoryItems.filter(item => policyLifecycle(item).status === opt).length; html += '<button class="policy-subcategory-filter ' + (policyLifecycleFilter === opt ? 'active' : '') + '" onclick="setPolicyLifecycleFilter(\'' + opt + '\')">' + opt + '（' + count + '）</button>'; });
-  html += '</div>';
   if (subOptions.length > 1) {
     html += '<div class="policy-subcategory-bar">';
     subOptions.forEach(sub => { if (sub === '全部') return; const count = categoryItems.filter(item => item.subcategory === sub).length; html += '<button class="policy-subcategory-filter ' + (policySubcategory === sub ? 'active' : '') + '" onclick="setPolicySubcategory(\'' + esc(sub) + '\')">' + esc(sub) + '（' + count + '）</button>'; });
