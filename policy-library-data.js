@@ -854,6 +854,86 @@ window.POLICY_DATA = [
     "doc": "国能发规划〔2026〕45号",
     "url": "https://www.nea.gov.cn/20260710/4acf5873e20149cdbc52c709b16b30ff/c.html",
     "origin": "国家能源局"
+  },
+  {
+    "category": "新能源与可再生能源",
+    "subcategory": "节能降碳",
+    "title": "关于完善能源绿色低碳转型体制机制和政策措施的意见",
+    "doc": "发改能源〔2022〕206号",
+    "url": "https://www.gov.cn/zhengce/zhengceku/2022-02/11/content_5673015.htm",
+    "origin": "国家发展改革委、国家能源局"
+  },
+  {
+    "category": "电力市场规则",
+    "subcategory": "零售与售电",
+    "title": "关于进一步做好电网企业代理购电工作的通知",
+    "doc": "发改办价格〔2022〕1047号",
+    "url": "https://zfxxgk.ndrc.gov.cn/web/iteminfo.jsp?id=20109",
+    "origin": "国家发展改革委"
+  },
+  {
+    "category": "绿电绿证",
+    "subcategory": "绿证管理",
+    "title": "关于可再生能源绿色电力证书核发有关事项的通知",
+    "doc": "国能发新能源〔2023〕64号",
+    "url": "https://www.cpem.cn/list/6/15469.html",
+    "origin": "国家能源局"
+  },
+  {
+    "category": "电力运行与供应管理",
+    "subcategory": "供电与收购",
+    "title": "电能质量管理办法(暂行)",
+    "doc": "发改令第8号",
+    "url": "https://zfxxgk.ndrc.gov.cn/upload/images/20240/202401016514394.pdf",
+    "origin": "国家发展改革委"
+  },
+  {
+    "category": "新型电力系统、储能与新型主体",
+    "subcategory": "专项行动",
+    "title": "关于加强电网调峰储能和智能化调度能力建设的指导意见",
+    "doc": "",
+    "url": "https://www.gov.cn/zhengce/zhengceku/202402/content_6934708.htm",
+    "origin": "国家发展改革委、国家能源局"
+  },
+  {
+    "category": "新型电力系统、储能与新型主体",
+    "subcategory": "新型储能",
+    "title": "关于促进新型储能并网和调度运用的通知",
+    "doc": "国能发科技规〔2024〕26号",
+    "url": "https://www.gov.cn/zhengce/zhengceku/202404/content_6945448.htm",
+    "origin": "国家能源局"
+  },
+  {
+    "category": "电力运行与供应管理",
+    "subcategory": "调度与可靠性",
+    "title": "关于加强煤电机组灵活性改造和深度调峰期间安全管理的通知",
+    "doc": "国能发安全〔2024〕58号",
+    "url": "https://zfxxgk.nea.gov.cn/2024-08/06/c_1212386624.htm",
+    "origin": "国家能源局"
+  },
+  {
+    "category": "新型电力系统、储能与新型主体",
+    "subcategory": "专项行动",
+    "title": "关于印发《配电网高质量发展行动实施方案(2024—2027年)》的通知",
+    "doc": "国能发电力〔2024〕59号",
+    "url": "https://www.gov.cn/zhengce/zhengceku/202408/content_6969919.htm",
+    "origin": "国家能源局"
+  },
+  {
+    "category": "新型电力系统、储能与新型主体",
+    "subcategory": "专项行动",
+    "title": "关于新形势下配电网高质量发展的指导意见",
+    "doc": "发改能源〔2024〕187号",
+    "url": "https://www.gov.cn/zhengce/zhengceku/202403/content_6935790.htm",
+    "origin": "国家发展改革委、国家能源局"
+  },
+  {
+    "category": "新能源与可再生能源",
+    "subcategory": "节能降碳",
+    "title": "关于更高水平更高质量做好节能降碳工作的意见",
+    "doc": "",
+    "url": "https://www.gov.cn/zhengce/202604/content_7066622.htm",
+    "origin": "中国政府网"
   }
 ];
 window.POLICY_PDF_MAP = {
@@ -959,6 +1039,17 @@ window.POLICY_PDF_MAP = {
   "发改运行〔2025〕1502号|关于做好2026年电力中长期合同签约履约工作的通知": "policies/library/policy-107.pdf",
   "国能发监管〔2026〕29号|关于开展2026年电力领域综合监管工作的通知": "policies/library/policy-108.pdf",
   "国能综通资质〔2026〕60号|关于组织推进非公共电网可再生能源发电项目绿证核发的通知": "policies/library/policy-109.pdf",
-  "国能发规划〔2026〕45号|能源领域节能降碳行动计划（2026—2028年）": "policies/library/policy-110.pdf"
+  "国能发规划〔2026〕45号|能源领域节能降碳行动计划（2026—2028年）": "policies/library/policy-110.pdf",
+  /* 2026-08-31 新增：政策汇编目录比对后补录 10 条（PDF 编号 112—121） */
+  "发改能源〔2022〕206号|关于完善能源绿色低碳转型体制机制和政策措施的意见": "policies/library/policy-112.pdf",
+  "发改办价格〔2022〕1047号|关于进一步做好电网企业代理购电工作的通知": "policies/library/policy-113.pdf",
+  "国能发新能源〔2023〕64号|关于可再生能源绿色电力证书核发有关事项的通知": "policies/library/policy-114.pdf",
+  "发改令第8号|电能质量管理办法(暂行)": "policies/library/policy-115.pdf",
+  "|关于加强电网调峰储能和智能化调度能力建设的指导意见": "policies/library/policy-116.pdf",
+  "国能发科技规〔2024〕26号|关于促进新型储能并网和调度运用的通知": "policies/library/policy-117.pdf",
+  "国能发安全〔2024〕58号|关于加强煤电机组灵活性改造和深度调峰期间安全管理的通知": "policies/library/policy-118.pdf",
+  "国能发电力〔2024〕59号|关于印发《配电网高质量发展行动实施方案(2024—2027年)》的通知": "policies/library/policy-119.pdf",
+  "发改能源〔2024〕187号|关于新形势下配电网高质量发展的指导意见": "policies/library/policy-120.pdf",
+  "|关于更高水平更高质量做好节能降碳工作的意见": "policies/library/policy-121.pdf"
 };
 
