@@ -149,6 +149,59 @@ function wait(ms) { return new Promise(r => setTimeout(r, ms)); }
     ok('切换政策库渲染成功', ca && ca.innerHTML.includes('policy-category-card'), '');
   } catch (err) { ok('切换政策库渲染', false, err.message); }
 
+  // 9) 计算题（DATA 内联在 index.html，按 CALCULATION_IDS 划分）
+  try {
+    // richQuestions() 依赖 activeBank，必须先切到计算题视图再取
+    w.switchQuestionType('calculation');
+    await wait(150);
+    const calc = w.richQuestions ? w.richQuestions() : [];
+    ok('计算题共 32 道', calc.length === 32, '实际 ' + calc.length + ' 道');
+    // DATA 是 const 声明，不会挂到 window，只能借 richQuestions() 反推仿真分析数量
+    w.switchQuestionType('analysis');
+    await wait(150);
+    const anal = w.richQuestions ? w.richQuestions() : [];
+    ok('仿真分析共 13 道', anal.length === 13, '实际 ' + anal.length + ' 道');
+    ok('两类题 id 无重复',
+       calc.filter(q => anal.some(a => a.id === q.id)).length === 0,
+       '重复 ' + calc.filter(q => anal.some(a => a.id === q.id)).length + ' 条');
+    const q44 = calc.find(q => q.id === 44);
+    const q45 = calc.find(q => q.id === 45);
+    ok('id44 垄断定价题已入库', !!q44 && q44.answers.length === 3,
+       q44 ? q44.title : '未找到');
+    ok('id45 备用市场题已入库', !!q45 && q45.answers.length === 3,
+       q45 ? q45.title : '未找到');
+    // 渲染新题 id45（排在计算题列表最后一位），验证公式与表格都能出
+    w.switchQuestionType('calculation');
+    await wait(150);
+    const idx45 = calc.findIndex(q => q.id === 45);
+    ok('id45 位于计算题列表末位', idx45 === calc.length - 1,
+       '索引 ' + idx45 + ' / 共 ' + calc.length + ' 道');
+    // id45（备用市场题）：表格为主
+    w.goTo(idx45);
+    await wait(150);
+    const cb45 = w.document.getElementById('contentArea');
+    ok('id45 渲染成功', cb45 && cb45.innerHTML.length > 500,
+       '内容长度 ' + (cb45 ? cb45.innerHTML.length : 0));
+    ok('id45 表格渲染', cb45 && cb45.querySelectorAll('.data-table table').length >= 2,
+       '表格数 ' + (cb45 ? cb45.querySelectorAll('.data-table table').length : 0));
+    // id44（垄断定价题）：含 KaTeX 公式
+    const idx44 = calc.findIndex(q => q.id === 44);
+    w.goTo(idx44);
+    await wait(150);
+    const cb44 = w.document.getElementById('contentArea');
+    ok('id44 渲染成功', cb44 && cb44.innerHTML.length > 500,
+       '内容长度 ' + (cb44 ? cb44.innerHTML.length : 0));
+    ok('id44 公式渲染出 KaTeX', cb44 && cb44.querySelectorAll('.katex').length >= 5,
+       '.katex 数量 ' + (cb44 ? cb44.querySelectorAll('.katex').length : 0));
+    ok('id44 汇总表渲染', cb44 && cb44.querySelectorAll('.data-table table').length >= 1,
+       '表格数 ' + (cb44 ? cb44.querySelectorAll('.data-table table').length : 0));
+    ok('新题公式无 KaTeX 解析错误',
+       cb44 && cb44.querySelectorAll('.katex-error').length === 0,
+       '错误节点 ' + (cb44 ? cb44.querySelectorAll('.katex-error').length : 0) + ' 个');
+    ok('新题无残留 $$ 定界符',
+       cb44 && cb45 && !cb44.textContent.includes('$$') && !cb45.textContent.includes('$$'), '');
+  } catch (err) { ok('计算题检查', false, err.message); }
+
   // 输出
   const out = [];
   out.push('='.repeat(72));
