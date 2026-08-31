@@ -934,6 +934,14 @@ window.POLICY_DATA = [
     "doc": "",
     "url": "https://www.gov.cn/zhengce/202604/content_7066622.htm",
     "origin": "中国政府网"
+  },
+  {
+    "category": "电价与输配电定价",
+    "subcategory": "输配电价",
+    "title": "关于第三监管周期省级电网输配电价及有关事项的通知",
+    "doc": "发改价格〔2023〕526号",
+    "url": "https://www.ndrc.gov.cn/xxgk/zcfb/tz/202305/t20230515_1355747.html",
+    "origin": "国家发展改革委"
   }
 ];
 window.POLICY_PDF_MAP = {
@@ -1050,6 +1058,7 @@ window.POLICY_PDF_MAP = {
   "国能发安全〔2024〕58号|关于加强煤电机组灵活性改造和深度调峰期间安全管理的通知": "policies/library/policy-118.pdf",
   "国能发电力〔2024〕59号|关于印发《配电网高质量发展行动实施方案(2024—2027年)》的通知": "policies/library/policy-119.pdf",
   "发改能源〔2024〕187号|关于新形势下配电网高质量发展的指导意见": "policies/library/policy-120.pdf",
-  "|关于更高水平更高质量做好节能降碳工作的意见": "policies/library/policy-121.pdf"
+  "|关于更高水平更高质量做好节能降碳工作的意见": "policies/library/policy-121.pdf",
+  "发改价格〔2023〕526号|关于第三监管周期省级电网输配电价及有关事项的通知": "policies/library/policy-122.pdf"
 };
 
