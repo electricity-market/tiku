@@ -69,7 +69,7 @@ function wait(ms) { return new Promise(r => setTimeout(r, ms)); }
   ok('页面加载无 JS 报错', errors.length === 0, errors.slice(0, 3).join(' | '));
 
   // 2) 数据就位
-  ok('题库加载 2591 题', w.OBJECTIVE_QUESTIONS && w.OBJECTIVE_QUESTIONS.length === 2591,
+  ok('题库加载 2592 题', w.OBJECTIVE_QUESTIONS && w.OBJECTIVE_QUESTIONS.length === 2592,
      w.OBJECTIVE_QUESTIONS ? String(w.OBJECTIVE_QUESTIONS.length) : '未加载');
   ok('政策库加载 118 条', w.POLICY_DATA && w.POLICY_DATA.length === 118,
      w.POLICY_DATA ? String(w.POLICY_DATA.length) : '未加载');
