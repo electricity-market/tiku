@@ -160,7 +160,7 @@ function wait(ms) { return new Promise(r => setTimeout(r, ms)); }
     w.switchQuestionType('analysis');
     await wait(150);
     const anal = w.richQuestions ? w.richQuestions() : [];
-    ok('仿真分析共 13 道', anal.length === 13, '实际 ' + anal.length + ' 道');
+    ok('仿真分析共 14 道', anal.length === 14, '实际 ' + anal.length + ' 道');
     ok('两类题 id 无重复',
        calc.filter(q => anal.some(a => a.id === q.id)).length === 0,
        '重复 ' + calc.filter(q => anal.some(a => a.id === q.id)).length + ' 条');
@@ -200,6 +200,24 @@ function wait(ms) { return new Promise(r => setTimeout(r, ms)); }
        '错误节点 ' + (cb44 ? cb44.querySelectorAll('.katex-error').length : 0) + ' 个');
     ok('新题无残留 $$ 定界符',
        cb44 && cb45 && !cb44.textContent.includes('$$') && !cb45.textContent.includes('$$'), '');
+    // id46 是仿真分析题，切到 analysis 视图验证
+    w.switchQuestionType('analysis');
+    await wait(150);
+    const anal2 = w.richQuestions ? w.richQuestions() : [];
+    const q46 = anal2.find(q => q.id === 46);
+    ok('id46 新能源阻塞返还题已入库', !!q46 && q46.answers.length === 3,
+       q46 ? q46.title : '未找到');
+    const idx46 = anal2.findIndex(q => q.id === 46);
+    w.goTo(idx46);
+    await wait(150);
+    const cb46 = w.document.getElementById('contentArea');
+    ok('id46 渲染成功', cb46 && cb46.innerHTML.length > 500,
+       '内容长度 ' + (cb46 ? cb46.innerHTML.length : 0));
+    ok('id46 公式渲染出 KaTeX', cb46 && cb46.querySelectorAll('.katex').length >= 4,
+       '.katex 数量 ' + (cb46 ? cb46.querySelectorAll('.katex').length : 0));
+    ok('id46 表格渲染', cb46 && cb46.querySelectorAll('.data-table table').length >= 1,
+       '表格数 ' + (cb46 ? cb46.querySelectorAll('.data-table table').length : 0));
+    ok('id46 无残留 $$ 定界符', cb46 && !cb46.textContent.includes('$$'), '');
   } catch (err) { ok('计算题检查', false, err.message); }
 
   // 输出
