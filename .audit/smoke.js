@@ -160,7 +160,7 @@ function wait(ms) { return new Promise(r => setTimeout(r, ms)); }
     w.switchQuestionType('analysis');
     await wait(150);
     const anal = w.richQuestions ? w.richQuestions() : [];
-    ok('仿真分析共 13 道', anal.length === 13, '实际 ' + anal.length + ' 道');
+    ok('仿真分析共 15 道', anal.length === 15, '实际 ' + anal.length + ' 道');
     ok('两类题 id 无重复',
        calc.filter(q => anal.some(a => a.id === q.id)).length === 0,
        '重复 ' + calc.filter(q => anal.some(a => a.id === q.id)).length + ' 条');
@@ -240,6 +240,53 @@ function wait(ms) { return new Promise(r => setTimeout(r, ms)); }
               && cb47.querySelectorAll('.katex-error').length === 0,
        '错误节点 ' + (cb46 ? cb46.querySelectorAll('.katex-error').length : 0)
                     + '/' + (cb47 ? cb47.querySelectorAll('.katex-error').length : 0) + ' 个');
+    // id48、id49 是仿真分析题，切到 analysis 视图验证
+    w.switchQuestionType('analysis');
+    await wait(150);
+    const anal2 = w.richQuestions ? w.richQuestions() : [];
+    const q48 = anal2.find(q => q.id === 48);
+    const q49 = anal2.find(q => q.id === 49);
+    ok('id48 煤电成本补偿题已入库(仿真分析)',
+       !!q48 && q48.answers.length === 3,
+       q48 ? q48.title : '未找到');
+    ok('id49 价格下限影响题已入库(仿真分析)',
+       !!q49 && q49.answers.length === 5,
+       q49 ? q49.title : '未找到');
+    // 渲染 id49（仿真分析末位，表格最多）
+    const idx49 = anal2.findIndex(q => q.id === 49);
+    ok('id49 位于仿真分析列表末位', idx49 === anal2.length - 1,
+       '索引 ' + idx49 + ' / 共 ' + anal2.length + ' 道');
+    w.goTo(idx49);
+    await wait(150);
+    const cb49 = w.document.getElementById('contentArea');
+    ok('id49 渲染成功', cb49 && cb49.innerHTML.length > 500,
+       '内容长度 ' + (cb49 ? cb49.innerHTML.length : 0));
+    ok('id49 公式渲染出 KaTeX',
+       cb49 && cb49.querySelectorAll('.katex').length >= 5,
+       '.katex 数量 ' + (cb49 ? cb49.querySelectorAll('.katex').length : 0));
+    ok('id49 汇总表渲染',
+       cb49 && cb49.querySelectorAll('.data-table table').length >= 1,
+       '表格数 ' + (cb49 ? cb49.querySelectorAll('.data-table table').length : 0));
+    ok('id49 无残留 $$ 定界符', cb49 && !cb49.textContent.includes('$$'), '');
+    // 渲染 id48
+    const idx48 = anal2.findIndex(q => q.id === 48);
+    w.goTo(idx48);
+    await wait(150);
+    const cb48 = w.document.getElementById('contentArea');
+    ok('id48 渲染成功', cb48 && cb48.innerHTML.length > 500,
+       '内容长度 ' + (cb48 ? cb48.innerHTML.length : 0));
+    ok('id48 公式渲染出 KaTeX',
+       cb48 && cb48.querySelectorAll('.katex').length >= 10,
+       '.katex 数量 ' + (cb48 ? cb48.querySelectorAll('.katex').length : 0));
+    ok('id48 表格渲染',
+       cb48 && cb48.querySelectorAll('.data-table table').length >= 1,
+       '表格数 ' + (cb48 ? cb48.querySelectorAll('.data-table table').length : 0));
+    ok('id48 无残留 $$ 定界符', cb48 && !cb48.textContent.includes('$$'), '');
+    ok('id48/id49 无 KaTeX 解析错误',
+       cb48 && cb49 && cb48.querySelectorAll('.katex-error').length === 0
+              && cb49.querySelectorAll('.katex-error').length === 0,
+       '错误节点 ' + (cb48 ? cb48.querySelectorAll('.katex-error').length : 0)
+                    + '/' + (cb49 ? cb49.querySelectorAll('.katex-error').length : 0) + ' 个');
   } catch (err) { ok('计算题检查', false, err.message); }
 
   // 输出
