@@ -155,12 +155,12 @@ function wait(ms) { return new Promise(r => setTimeout(r, ms)); }
     w.switchQuestionType('calculation');
     await wait(150);
     const calc = w.richQuestions ? w.richQuestions() : [];
-    ok('计算题共 32 道', calc.length === 32, '实际 ' + calc.length + ' 道');
+    ok('计算题共 34 道', calc.length === 34, '实际 ' + calc.length + ' 道');
     // DATA 是 const 声明，不会挂到 window，只能借 richQuestions() 反推仿真分析数量
     w.switchQuestionType('analysis');
     await wait(150);
     const anal = w.richQuestions ? w.richQuestions() : [];
-    ok('仿真分析共 14 道', anal.length === 14, '实际 ' + anal.length + ' 道');
+    ok('仿真分析共 13 道', anal.length === 13, '实际 ' + anal.length + ' 道');
     ok('两类题 id 无重复',
        calc.filter(q => anal.some(a => a.id === q.id)).length === 0,
        '重复 ' + calc.filter(q => anal.some(a => a.id === q.id)).length + ' 条');
@@ -174,7 +174,7 @@ function wait(ms) { return new Promise(r => setTimeout(r, ms)); }
     w.switchQuestionType('calculation');
     await wait(150);
     const idx45 = calc.findIndex(q => q.id === 45);
-    ok('id45 位于计算题列表末位', idx45 === calc.length - 1,
+    ok('id45 在计算题列表内', idx45 >= 0 && idx45 < calc.length,
        '索引 ' + idx45 + ' / 共 ' + calc.length + ' 道');
     // id45（备用市场题）：表格为主
     w.goTo(idx45);
@@ -200,14 +200,14 @@ function wait(ms) { return new Promise(r => setTimeout(r, ms)); }
        '错误节点 ' + (cb44 ? cb44.querySelectorAll('.katex-error').length : 0) + ' 个');
     ok('新题无残留 $$ 定界符',
        cb44 && cb45 && !cb44.textContent.includes('$$') && !cb45.textContent.includes('$$'), '');
-    // id46 是仿真分析题，切到 analysis 视图验证
-    w.switchQuestionType('analysis');
+    // id46 已改为计算题，切回 calculation 视图验证
+    w.switchQuestionType('calculation');
     await wait(150);
-    const anal2 = w.richQuestions ? w.richQuestions() : [];
-    const q46 = anal2.find(q => q.id === 46);
-    ok('id46 新能源阻塞返还题已入库', !!q46 && q46.answers.length === 3,
+    const calc2 = w.richQuestions ? w.richQuestions() : [];
+    const q46 = calc2.find(q => q.id === 46);
+    ok('id46 新能源阻塞返还题已入库(计算题)', !!q46 && q46.answers.length === 3,
        q46 ? q46.title : '未找到');
-    const idx46 = anal2.findIndex(q => q.id === 46);
+    const idx46 = calc2.findIndex(q => q.id === 46);
     w.goTo(idx46);
     await wait(150);
     const cb46 = w.document.getElementById('contentArea');
@@ -218,6 +218,28 @@ function wait(ms) { return new Promise(r => setTimeout(r, ms)); }
     ok('id46 表格渲染', cb46 && cb46.querySelectorAll('.data-table table').length >= 1,
        '表格数 ' + (cb46 ? cb46.querySelectorAll('.data-table table').length : 0));
     ok('id46 无残留 $$ 定界符', cb46 && !cb46.textContent.includes('$$'), '');
+    // id47 偏差考核题（计算题末位）
+    const q47 = calc2.find(q => q.id === 47);
+    ok('id47 偏差考核题已入库(计算题)', !!q47 && q47.answers.length === 3,
+       q47 ? q47.title : '未找到');
+    const idx47 = calc2.findIndex(q => q.id === 47);
+    ok('id47 位于计算题列表末位', idx47 === calc2.length - 1,
+       '索引 ' + idx47 + ' / 共 ' + calc2.length + ' 道');
+    w.goTo(idx47);
+    await wait(150);
+    const cb47 = w.document.getElementById('contentArea');
+    ok('id47 渲染成功', cb47 && cb47.innerHTML.length > 500,
+       '内容长度 ' + (cb47 ? cb47.innerHTML.length : 0));
+    ok('id47 公式渲染出 KaTeX', cb47 && cb47.querySelectorAll('.katex').length >= 5,
+       '.katex 数量 ' + (cb47 ? cb47.querySelectorAll('.katex').length : 0));
+    ok('id47 表格渲染', cb47 && cb47.querySelectorAll('.data-table table').length >= 1,
+       '表格数 ' + (cb47 ? cb47.querySelectorAll('.data-table table').length : 0));
+    ok('id47 无残留 $$ 定界符', cb47 && !cb47.textContent.includes('$$'), '');
+    ok('新题公式无 KaTeX 解析错误',
+       cb46 && cb47 && cb46.querySelectorAll('.katex-error').length === 0
+              && cb47.querySelectorAll('.katex-error').length === 0,
+       '错误节点 ' + (cb46 ? cb46.querySelectorAll('.katex-error').length : 0)
+                    + '/' + (cb47 ? cb47.querySelectorAll('.katex-error').length : 0) + ' 个');
   } catch (err) { ok('计算题检查', false, err.message); }
 
   // 输出
